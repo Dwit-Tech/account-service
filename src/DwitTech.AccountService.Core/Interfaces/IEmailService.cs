@@ -1,0 +1,13 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DwitTech.AccountService.Core.Interfaces
+{
+    public interface IEmailService
+    {
+        bool SendEmail(string From, string To, string Subject, string Body, string CC="", string BCC="");
+    }
+}
