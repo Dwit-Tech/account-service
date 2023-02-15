@@ -9,6 +9,6 @@ namespace DwitTech.AccountService.Core.Interfaces
 {
     public interface ISecurityService
     {
-        string HashString(string inputString);
+        string HashString(string hashString);
     }
 }
