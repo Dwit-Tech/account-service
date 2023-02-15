@@ -21,6 +21,9 @@ namespace DwitTech.AccountService.Core.Services
             {
                 return null;
             }
+
+            if (string.IsNullOrEmpty(inputString)) return null;
+            
             var md5 = MD5.Create();
              var data = md5.ComputeHash(Encoding.ASCII.GetBytes(inputString));
 
