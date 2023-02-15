@@ -10,30 +10,26 @@ namespace DwitTech.AccountService.Core.Services
 {
     public class SecurityService : ISecurityService
     {
-        
         public string HashString(string inputString)
         {
             if (inputString == null)
             {
                 return null;
             }
-            byte[] inputStringHash;
-            byte[] asciiByte;
 
-            asciiByte = ASCIIEncoding.ASCII.GetBytes(inputString);
-            inputStringHash = new MD5CryptoServiceProvider().ComputeHash(asciiByte);
-            return ConvertByteToString(inputStringHash);
-        }
-
-         private string ConvertByteToString(byte[] inputString)
-        {
-            StringBuilder hashedStringOutput = new StringBuilder(inputString.Length);
-            for (int i = 0; i < hashedStringOutput.Length; i++)
+            if (inputString.Equals(""))
             {
-                hashedStringOutput.Append(inputString[i].ToString("X2"));
+                return null;
             }
-            return hashedStringOutput.ToString();
+
+            if (string.IsNullOrEmpty(inputString)) return null;
+
+            var md5 = MD5.Create();
+            var data = md5.ComputeHash(Encoding.ASCII.GetBytes(inputString));
+
+            return Convert.ToHexString(data).ToLower();
         }
+
 
     }
 
