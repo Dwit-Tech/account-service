@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Tests
 {
-    public  class SecurityServiceTests 
+    public  class SecurityServiceTests
     {
         [Theory]
         [InlineData("          ", "41b394758330c83757856aa482c79977")]
