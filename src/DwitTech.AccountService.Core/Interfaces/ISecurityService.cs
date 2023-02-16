@@ -12,3 +12,5 @@ namespace DwitTech.AccountService.Core.Interfaces
         string HashString(string inputString);
     }
 }
+
+ 
