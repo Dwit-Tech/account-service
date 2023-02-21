@@ -17,10 +17,12 @@ namespace DwitTech.AccountService.Core.Services
     public class AuthenticationService:IAuthenticationService
     {
         private readonly IConfiguration _configuration;
+        private readonly IUserService _userService;
 
-        public AuthenticationService(IConfiguration configuration)
+        public AuthenticationService(IConfiguration configuration, IUserService userService)
         {
             _configuration = configuration;
+            _userService = userService;
         }
 
 
@@ -53,6 +55,58 @@ namespace DwitTech.AccountService.Core.Services
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
-        }        
+        }
+
+        public async Task<TokenModel> GenerateAccessTokenfromRefreshToken(TokenModel tokenModel)
+        {
+            string accessToken = tokenModel.accessToken;
+            string refreshToken = tokenModel.refreshToken;
+
+            var principal = GetPrincipalFromExpiredToken(accessToken);
+
+            string userEmail = principal.FindFirstValue(ClaimTypes.Email);
+
+            var user = await _userService.GetUserByEmailAsync(userEmail);
+            if (user == null)
+            {
+                // return an error response indicating that the user does not exist
+                throw new ArgumentException("User not found");
+            }
+
+            var newAccessToken = GenerateAccessToken(user);
+            var newRefreshToken = GenerateRefreshToken();
+
+            var currentSession = await _userService.GetSessionByUserIdAsync(user.Id);
+
+            currentSession.RefreshToken = newRefreshToken;
+            //currentSession.RefreshTokenExpiryTime = DateTime.SpecifyKind(DateTime.Now.AddMinutes(double.Parse(_configuration["Jwt:RefreshTokenExpiryTime"])), DateTimeKind.Utc);
+
+            await _userService.UpdateSessionTokenAsync(currentSession);
+
+            return new TokenModel
+            {
+                accessToken = newAccessToken,
+                refreshToken = newRefreshToken
+            };
+        }
+
+        private ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"])),
+                ValidateLifetime = false
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+            if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+                throw new SecurityTokenException("Invalid token");
+
+            return principal;
+        }
     }
 }

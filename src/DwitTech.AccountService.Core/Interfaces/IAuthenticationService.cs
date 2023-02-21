@@ -12,5 +12,6 @@ namespace DwitTech.AccountService.Core.Interfaces
     {
         string GenerateAccessToken(User user);
         string GenerateRefreshToken();
+        Task<TokenModel> GenerateAccessTokenfromRefreshToken(TokenModel tokenModel);
     }
 }

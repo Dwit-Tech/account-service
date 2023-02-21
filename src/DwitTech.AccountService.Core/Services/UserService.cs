@@ -41,9 +41,9 @@ namespace DwitTech.AccountService.Core.Services
             return _repository.AddSessionAsync(sessionDetails);
         }
 
-        public async Task<bool> SaveChangesAsync()
-        {
-            return await _repository.SaveChangesAsync();
-        }
+        //public async Task<bool> SaveChangesAsync()
+        //{
+        //    return await _repository.SaveChangesAsync();
+        //}
     }
 }
