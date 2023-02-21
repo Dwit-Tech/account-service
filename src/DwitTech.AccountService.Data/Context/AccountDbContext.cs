@@ -20,7 +20,7 @@ namespace DwitTech.AccountService.Data.Context
 
         
         public DbSet<User> Users { get; set; }
-
+        public DbSet<ValidationCode> ValidationCode { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -29,3 +29,4 @@ namespace DwitTech.AccountService.Data.Context
         }
     }
 }
+

@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Interfaces
 {
-    public interface IUserService
+    public interface IEmailService
     {
-        bool SendActivationEmail(string email );
+        bool SendEmail(string FromEmail, string ToEmail, string Body, string Subject, string CC, string BCC);
     }
 }

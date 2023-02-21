@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DwitTech.AccountService.Core.Interfaces
+namespace DwitTech.AccountService.Core.Enums
 {
-    public interface IUserService
+    public enum ActivationType
     {
-        bool SendActivationEmail(string email );
+        Activation
     }
 }
