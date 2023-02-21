@@ -62,10 +62,18 @@ namespace DwitTech.AccountService.WebApi
 
             app.UseHttpsRedirection();
 
+            app.UseRouting();
+
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
 
-            app.MapControllers();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+
 
             app.SetupMigrations(app.Services, app.Configuration);
 

@@ -20,6 +20,7 @@ namespace DwitTech.AccountService.Data.Context
 
         
         public DbSet<User> Users { get; set; }
+        public DbSet<UserLogOn> UserLogOn { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -1,6 +1,7 @@
 ﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Context;
+using DwitTech.AccountService.Data.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -42,6 +43,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddServices(this IServiceCollection service, IConfiguration configuration)
         {
+            service.AddScoped<IAuthenticationService, AuthenticationService>();
+            service.AddScoped<IUserRepository, UserRepository>();
+            service.AddScoped<IUserService, UserService>();
 
             service.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             return service;
@@ -64,11 +68,15 @@ namespace Microsoft.Extensions.DependencyInjection
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = true,
                     ValidateLifetime = true,
-                    ValidateAudience = false,
+                    ValidateAudience = true,
+                    ValidIssuer = configuration["Jwt:Issuer"],
                     ValidAudiences = new List<string> { configuration["JWT:Audience"] },
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]))
                 };
             });
-        }
 
+            services.AddMvc();
+            services.AddControllers();
+        }
     }
 }
