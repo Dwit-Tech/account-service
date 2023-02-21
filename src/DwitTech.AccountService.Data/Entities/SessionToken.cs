@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Data.Entities
 {
-    public class UserLogOn:BaseEntity
+    public class SessionToken:BaseEntity
     {
         public int UserId { get; set; }
         public string RefreshToken{ get; set; }
-        public DateTime RefreshTokenExpiryTime { get; set; }
     }
 }

@@ -10,5 +10,11 @@ namespace DwitTech.AccountService.Core.Interfaces
 {
     public interface IUserService
     {
+        Task<User> GetUserByEmailAsync(string email);
+        Task<bool> SaveChangesAsync();
+        Task<bool> UpdateSessionTokenAsync(SessionToken sessionDetails);
+        Task<SessionToken> GetSessionByUserIdAsync(int userId);
+        Task<bool> AddSessionAsync(SessionToken sessionDetails);
+
     }
 }
