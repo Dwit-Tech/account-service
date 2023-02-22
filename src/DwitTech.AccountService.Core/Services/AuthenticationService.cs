@@ -43,7 +43,7 @@ namespace DwitTech.AccountService.Core.Services
             var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
                 _configuration["Jwt:Audience"],
                 claims,
-                expires: DateTime.Now.AddHours(double.Parse(_configuration["Jwt:JwtTokenExpiryTime"])),
+                expires: DateTime.Now.AddHours(int.Parse(_configuration["Jwt:JwtTokenExpiryTime"])),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
@@ -59,6 +59,7 @@ namespace DwitTech.AccountService.Core.Services
 
         public async Task<TokenModel> GenerateAccessTokenfromRefreshToken(TokenModel tokenModel)
         {
+            //Generates new access and refresh tokens, and saves the refresh token to the db.
             string accessToken = tokenModel.accessToken;
             string refreshToken = tokenModel.refreshToken;
 
@@ -77,9 +78,7 @@ namespace DwitTech.AccountService.Core.Services
             var newRefreshToken = GenerateRefreshToken();
 
             var currentSession = await _userService.GetSessionByUserIdAsync(user.Id);
-
             currentSession.RefreshToken = newRefreshToken;
-            //currentSession.RefreshTokenExpiryTime = DateTime.SpecifyKind(DateTime.Now.AddMinutes(double.Parse(_configuration["Jwt:RefreshTokenExpiryTime"])), DateTimeKind.Utc);
 
             await _userService.UpdateSessionTokenAsync(currentSession);
 
@@ -90,7 +89,7 @@ namespace DwitTech.AccountService.Core.Services
             };
         }
 
-        private ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)
+        public ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)//Return to private after test
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
@@ -107,6 +106,26 @@ namespace DwitTech.AccountService.Core.Services
                 throw new SecurityTokenException("Invalid token");
 
             return principal;
+        }
+
+        public bool ValidateAccessToken(string accessToken)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            try
+            {
+                tokenHandler.ValidateToken(accessToken, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]))
+                }, out SecurityToken validatedToken);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
