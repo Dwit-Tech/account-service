@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Enums
 {
-    public enum ActivationChannel   
+    public enum NotificationChannel   
     {
         Email,
         SMS 

@@ -21,15 +21,12 @@ namespace Microsoft.Extensions.DependencyInjection
         {
 
             string connectionString = configuration.GetConnectionString("AccountDbContext");
-            //connectionString = connectionString.Replace("{DBHost}", configuration["DB_HOSTNAME"]);
-            //connectionString = connectionString.Replace("{DBName}", configuration["DB_NAME"]);
-            //connectionString = connectionString.Replace("{DBUser}", configuration["DB_USERNAME"]);
-            //connectionString = connectionString.Replace("{DBPassword}", configuration["DB_PASSWORD"]);
+            connectionString = connectionString.Replace("{DBHost}", configuration["DB_HOSTNAME"]);
+            connectionString = connectionString.Replace("{DBPort}", configuration["DB_PORT"]);
+            connectionString = connectionString.Replace("{DBName}", configuration["DB_NAME"]);
+            connectionString = connectionString.Replace("{DBUser}", configuration["DB_USERNAME"]);
+            connectionString = connectionString.Replace("{DBPassword}", configuration["DB_PASSWORD"]);
 
-            connectionString = connectionString.Replace("{DBHost}","localhost");
-            connectionString = connectionString.Replace("{DBName}", "activation-db");
-            connectionString = connectionString.Replace("{DBUser}", "postgres");
-            connectionString = connectionString.Replace("{DBPassword}", "1234567890");
 
 
             service.AddDbContext<AccountDbContext>(opt =>

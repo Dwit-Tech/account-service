@@ -11,13 +11,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DwitTech.AccountService.Data.Entities
 {
-    public class ValidationCode
+    public class ValidationCode : BaseEntity
     {
         [Key]
-        public string? UserId { set; get; }
+        public string UserId { set; get; }
         public string Code { set; get; }
-        public ActivationType ActivationType { set; get; }
-        public ActivationChannel ActivationChannel { set; get; }
+        public CodeType ActivationType { set; get; }
+        public NotificationChannel ActivationChannel { set; get; }
 
 
     }

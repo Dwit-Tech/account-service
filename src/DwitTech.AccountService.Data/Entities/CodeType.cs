@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Enums
 {
-    public enum ActivationType
+    public enum CodeType
     {
         Activation
     }

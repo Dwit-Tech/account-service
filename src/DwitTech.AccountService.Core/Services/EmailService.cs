@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Services
 {
-    public class SendEmailService : IEmailService
+    public class EmailService : IEmailService
     {
         public bool SendEmail(string FromEmail, string ToEmail, string Body, string Subject, string CC, string BCC)
         {
