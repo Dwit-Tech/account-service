@@ -8,7 +8,7 @@ namespace DwitTech.AccountService.Data.Entities
 {
     public enum UserStatus
     {
-        Pending,
-        Active
+        Active,
+        Inactive
     }
 }

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Data.Entities
 {
-    public class RefreshActivationCode
+    public class ActivationDetail : BaseEntity
     {
-        public string activationCode { get; set; }
+        public string ActivationCode { get; set; }
         public DateTime Created { get; set; }
         public DateTime Expires { get; set; }
     }

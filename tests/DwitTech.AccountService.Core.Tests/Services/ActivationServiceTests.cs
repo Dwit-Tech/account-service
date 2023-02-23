@@ -1,4 +1,5 @@
 ﻿using DwitTech.AccountService.Core.Services;
+using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 .AddInMemoryCollection(inMemorySettings)
                 .Build();
 
+            
             var actService = new ActivationService(configuration);
 
             //Act

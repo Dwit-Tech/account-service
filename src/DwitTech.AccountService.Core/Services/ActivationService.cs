@@ -1,27 +1,27 @@
 ﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Utilities;
-using Microsoft.AspNetCore.Http;
+using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Mail;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace DwitTech.AccountService.Core.Services
 {
     public class ActivationService : IActivationService
     {
         private readonly IConfiguration _configuration; //Config instance for GetBaseUrl method
+        private readonly IUserRepository _userRepository;
 
-        public ActivationService(IConfiguration configuration)
+        public ActivationDetail codeDetail { get; private set; }
+        public int Id { get; private set; }
+
+        public ActivationService(IConfiguration configuration, IUserRepository userRepository)
         {
             _configuration = configuration;
+            _userRepository = userRepository;
         }
 
-        public string GetActivationCode()
+        private string GetActivationCode()
         {
             var activationCode = RandomUtil.GenerateUniqueCode();
             return activationCode;
@@ -32,7 +32,7 @@ namespace DwitTech.AccountService.Core.Services
             return _configuration.GetSection("BaseUrl").Value;
         }
 
-        public string GetActivationUrl()
+        private string GetActivationUrl()
         {
             string baseUrl = GetBaseUrl();
             string activationCode = GetActivationCode();
@@ -55,17 +55,42 @@ namespace DwitTech.AccountService.Core.Services
             return true;
         }
 
-        public bool SendActivationEmail(string fromEmail, string toEmail, string templateName, string RecipientName, string subject = "Account Activation", string cc = "", string bcc = "")
+        private bool SendActivationEmail(string fromEmail, string toEmail, string templateName, string RecipientName, string subject = "Account Activation", string cc = "", string bcc = "")
         {
             var baseUrl = GetBaseUrl();
             var activationUrl = GetActivationUrl();
             string templateText = GetTemplate(templateName);
-            templateText = templateText.Replace("{{name}}", RecipientName) ;
+            templateText = templateText.Replace("{{name}}", RecipientName);
             templateText = templateText.Replace("{{activationUrl}}", activationUrl);
             string body = templateText;
             var response = SendMail(fromEmail, toEmail, subject, body, cc, bcc);
 
             return response;
+        }
+
+        public async Task<bool> ActivateUser(string activationCode)
+        {
+            var activationDetail = await _userRepository.GetActivationDetail(activationCode);
+
+            var user = await _userRepository.GetUser(activationDetail.Id);
+            {
+                if (user.Status != UserStatus.Inactive)
+                {
+                    throw new Exception("User already Verified.");
+                }
+            }
+
+            var activationCodeExpiry = await _userRepository.ActivationCodeExpiry(codeDetail);
+            {
+                return true;
+            }
+
+            
+            var updateUserStatus = await _userRepository.UpdateUserStatus(Id);
+            {
+                return true;
+            }
+           
         }
     }
 }

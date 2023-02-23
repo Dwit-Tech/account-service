@@ -9,55 +9,33 @@ namespace DwitTech.AccountService.WebApi.Controllers
 { 
     public class UserController : BaseController
     {
-        public static User user = new User();
-
-        private readonly IValidationService _validationService;
         private readonly IActivationService _activationService;
 
-        public UserController(IValidationService validationService, IActivationService activationService)
+        public UserController(IActivationService activationService)
         {
-            _validationService = validationService;
+           
             _activationService = activationService;
         }
 
 
-        [HttpGet("/Account/Activation/{activationCode}")]
-        public IActionResult Get()
+        [HttpGet("/Activation/{activationCode}")]
+        public async Task<IActionResult> ActivateUser(string activationCode)
         {
-            _activationService.GetActivationUrl();
-            return Ok();
-        }
-
-
-        [AllowAnonymous]
-        [HttpPost("Update status")]
-        public IActionResult UpdateStatus(UserStatus status)
-        {
-            _validationService.UpdateUserStatus(status);
-            return Ok();
-        }
-
-        [AllowAnonymous]
-        [HttpPost("Send Welcome Email")]
-        public IActionResult SendWelcomeEmail([FromBody] UserStatus status)
-        {
-            _validationService.SendWelcomeEmail();
-            return Ok();
-        }
-            
-        [AllowAnonymous]
-        [HttpPost]
-        public IActionResult ResponseCode()
-        {
-            if(ModelState.IsValid)
+            try
             {
-                return this.StatusCode(StatusCodes.Status200OK, "Verified");
+                var activationResult = await _activationService.ActivateUser(activationCode);
+                return Ok();
             }
-            else
+            catch (Exception e)
             {
-                return this.StatusCode(StatusCodes.Status503ServiceUnavailable, "Error message");
+                return StatusCode(500, "Internal Server Error. Something went Wrong!");
             }
+
         }
+
+
+  
+        
         
     }
 

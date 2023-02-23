@@ -9,7 +9,11 @@ namespace DwitTech.AccountService.Data.Repository
 {
     public interface IUserRepository
     {
+        Task<User> GetActivationDetail(string activationCode);
+        Task<User> GetUser(int Id);
+        Task<ActivationDetail> ActivationCodeExpiry(ActivationDetail codeDetail);
+        Task<User> UpdateUserStatus(int Id);
         
-
+        
     }
 }

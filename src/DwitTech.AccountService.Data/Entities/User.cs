@@ -52,8 +52,8 @@ namespace DwitTech.AccountService.Data.Entities
 
         public UserStatus Status { get; set; }
 
-        public string RefreshActivationCode { get; set; }
-        public DateTime ActivationCodeCreated { get; set; }
-        public DateTime ActivationCodeExpired { get; set; }
+        public string ActivationDetail { get; set; }
+        public DateTime ActivationDetailCreated { get; set; }
+        public DateTime ActivationDetailExpires { get; set; }
     }
 }
