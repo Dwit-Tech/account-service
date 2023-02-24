@@ -1,24 +1,24 @@
 ﻿using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Utilities;
-using Microsoft.AspNetCore.Http;
+using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Mail;
-using System.Text;
-using System.Threading.Tasks;
+using RestSharp;
+using System.Security.Cryptography.X509Certificates;
 
 namespace DwitTech.AccountService.Core.Services
 {
     public class ActivationService : IActivationService
     {
-        private readonly IConfiguration _configuration; //Config instance for GetBaseUrl method
+        private readonly IConfiguration _configuration;
+        private readonly IUserRepository _userRepository;
 
-        public ActivationService(IConfiguration configuration)
+
+        public ActivationService(IConfiguration configuration, IUserRepository userRepository)
         {
             _configuration = configuration;
+            _userRepository = userRepository;
+
         }
 
         private static string GetActivationCode()
@@ -32,10 +32,13 @@ namespace DwitTech.AccountService.Core.Services
             return _configuration.GetSection("BaseUrl").Value;
         }
 
-        private string GetActivationUrl()
+        private async Task<string> GetActivationUrl(string userId)
         {
             string baseUrl = GetBaseUrl();
             string activationCode = GetActivationCode();
+            var SaveResponse = await _userRepository.SaveUserValidationCode(userId, activationCode);
+            if (SaveResponse is null)
+                throw new Exception("Failed to save validation code");
             string activationUrl = baseUrl + "/Account/Activation/" + activationCode;
             return activationUrl;
         }
@@ -50,20 +53,30 @@ namespace DwitTech.AccountService.Core.Services
             return templateText.ToString();
         }
 
-        private static bool SendMail(string fromEmail, string toEmail, string subject, string body, string cc = "", string bcc = "") //TODO
+        private async Task<bool> SendMailAsync(string fromEmail, string toEmail, string subject, string body, string cc = "", string bcc = "")
         {
-            return true;
+            var emailObject = new Email { FromEmail = fromEmail, ToEmail = toEmail, Subject = subject, Body = body };
+
+            var client = new RestClient(_configuration["NotificationService:BaseUrl"]);
+            var request = new RestRequest(_configuration["NotificationService:SendEmail"]).AddJsonBody(emailObject);
+            var response = await client.PostAsync<string>(request);
+            if (request is null);
+
+            return false;
+
         }
 
-        public bool SendActivationEmail(string fromEmail, string toEmail, string templateName, string RecipientName, string subject = "Account Activation", string cc = "", string bcc = "")
+        public async Task<bool> SendActivationEmail(string userId, string fromEmail, string toEmail, string templateName, string RecipientName,
+            string subject = "Account Activation", string cc = "", string bcc = "")
         {
+
             var baseUrl = GetBaseUrl();
-            var activationUrl = GetActivationUrl();
+            var activationUrl = await GetActivationUrl(userId);
             string templateText = GetTemplate(templateName);
-            templateText = templateText.Replace("{{name}}", RecipientName) ;
+            templateText = templateText.Replace("{{name}}", RecipientName);
             templateText = templateText.Replace("{{activationUrl}}", activationUrl);
             string body = templateText;
-            var response = SendMail(fromEmail, toEmail, subject, body, cc, bcc);
+            var response = await SendMailAsync(fromEmail, toEmail, subject, body, cc, bcc);
 
             return response;
         }

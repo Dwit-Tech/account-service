@@ -26,6 +26,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2CD127B7-8FA1-4D44-847B-D86EA93801F8}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		Dockerfile = Dockerfile
 		README.md = README.md
 	EndProjectSection

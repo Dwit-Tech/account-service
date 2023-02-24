@@ -8,6 +8,7 @@ namespace DwitTech.AccountService.Core.Interfaces
 {
     public interface IActivationService
     {
-        bool SendActivationEmail(string fromEmail, string toEmail, string templateName, string RecipientName, string subject, string cc, string bcc);
+        Task<bool> SendActivationEmail(string userId, string fromEmail, string toEmail, string templateName, string RecipientName,
+             string subject = "Account Activation", string cc = "", string bcc = "");
     }
 }
