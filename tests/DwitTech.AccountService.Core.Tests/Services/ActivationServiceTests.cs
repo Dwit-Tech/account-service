@@ -1,11 +1,8 @@
 ﻿using DwitTech.AccountService.Core.Services;
+using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Moq;
 
 namespace DwitTech.AccountService.Core.Tests.Services
 {
@@ -25,8 +22,12 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 .AddInMemoryCollection(inMemorySettings)
                 .Build();
 
+            var mockDbContext = new Mock<AccountDbContext>();
+
+            IUserRepository repository = new UserRepository(mockDbContext.Object);
+
             
-            var actService = new ActivationService(configuration);
+            var actService = new ActivationService(configuration, repository);
 
             //Act
             var actual = actService.SendActivationEmail(fromMail, toMail, templateName, RecipientName);
