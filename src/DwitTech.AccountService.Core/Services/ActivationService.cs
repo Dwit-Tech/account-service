@@ -55,13 +55,26 @@ namespace DwitTech.AccountService.Core.Services
             return true;
         }
 
-        private bool SendActivationEmail(string fromEmail, string toEmail, string templateName, string RecipientName, string subject = "Account Activation", string cc = "", string bcc = "")
+        public bool SendActivationEmail(string fromEmail, string toEmail, string templateName, string RecipientName, string subject = "Account Activation", string cc = "", string bcc = "")
         {
             var baseUrl = GetBaseUrl();
             var activationUrl = GetActivationUrl();
             string templateText = GetTemplate(templateName);
             templateText = templateText.Replace("{{name}}", RecipientName);
             templateText = templateText.Replace("{{activationUrl}}", activationUrl);
+            string body = templateText;
+            var response = SendMail(fromEmail, toEmail, subject, body, cc, bcc);
+
+            return response;
+        }
+
+        private bool SendWelcomeEmail(string fromEmail, string toEmail, string templateName, string FirstName, string LastName, string Password, string subject = "Welcome Message", string cc = "", string bcc = "")
+        {
+            string templateText = GetTemplate(templateName);
+            templateText = templateText.Replace("{{Firstname}}", FirstName);
+            templateText = templateText.Replace("{{Lastname}}", LastName);
+            templateText = templateText.Replace("{{Email}}", toEmail);
+            templateText = templateText.Replace("{{Password}}", Password);
             string body = templateText;
             var response = SendMail(fromEmail, toEmail, subject, body, cc, bcc);
 
@@ -85,12 +98,18 @@ namespace DwitTech.AccountService.Core.Services
                 return true;
             }
 
+            var actvationEmail = SendActivationEmail("elugwujecinta@gmail.com", "jecinta.elugwu@whogohost.com", "EmailTemplate", "Jessie Jhay", "", "", "");
             
-            var updateUserStatus = await _userRepository.UpdateUserStatus(Id);
+            if (actvationEmail)
             {
-                return true;
+                var updateUserStatus = await _userRepository.UpdateUserStatus(Id);
+                {
+                    return true;
+                }
             }
-           
+            
+            var welcomeEmail = SendWelcomeEmail("elugwujecinta@gmail.com", "jecinta.elugwu@whogohost.com", "WelcomeEmail", "Jessie Jhay", "", "", "");
+
         }
     }
 }
