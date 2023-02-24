@@ -47,6 +47,8 @@ namespace DwitTech.AccountService.WebApi
             builder.Services.ConfigureAuthentication(builder.Configuration);
 
             builder.Services.AddAuthorization();
+            builder.Services.AddMvc();
+            builder.Services.AddControllers();
 
             var app = builder.Build();
 

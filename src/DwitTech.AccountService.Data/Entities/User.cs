@@ -9,7 +9,7 @@ namespace DwitTech.AccountService.Data.Entities
 {
     public class User : BaseEntity
     {
-
+        [Key]
         [Required]
         [MaxLength(25)]
         public int Id { get; set; }

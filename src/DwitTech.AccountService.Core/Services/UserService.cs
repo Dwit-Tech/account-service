@@ -7,7 +7,7 @@ using AutoMapper;
 using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Data.Entities;
-using DwitTech.AccountService.Data.Repository;
+using DwitTech.AccountService.Data.repository;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -24,21 +24,6 @@ namespace DwitTech.AccountService.Core.Services
         public async Task<User> GetUserByEmailAsync(string email)
         {
             return await _repository.FindByEmailAsync(email);
-        }
-
-        public async Task<bool> UpdateSessionTokenAsync(SessionToken sessionDetails)
-        {
-            return await _repository.UpdateSessionTokenAsync(sessionDetails);
-        }
-
-        public Task<SessionToken> GetSessionByUserIdAsync(int userId)
-        {
-            return _repository.FindSessionByUserIdAsync(userId);
-        }
-
-        public Task<bool> AddSessionAsync(SessionToken sessionDetails)
-        {
-            return _repository.AddSessionAsync(sessionDetails);
         }
 
         //public async Task<bool> SaveChangesAsync()

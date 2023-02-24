@@ -1,5 +1,6 @@
 ﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -11,22 +12,26 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using DwitTech.AccountService.Data.repository;
 
 namespace DwitTech.AccountService.Core.Services
 {
     public class AuthenticationService:IAuthenticationService
     {
         private readonly IConfiguration _configuration;
-        private readonly IUserService _userService;
+        private readonly IAuthenticationRepository _repository;
+        private readonly ISecurityService _securityService;
+        private const string token_Type = "Bearer";
 
-        public AuthenticationService(IConfiguration configuration, IUserService userService)
+        public AuthenticationService(IConfiguration configuration, IAuthenticationRepository repository, ISecurityService securityService)
         {
             _configuration = configuration;
-            _userService = userService;
+            _repository = repository;
+            _securityService = securityService;
         }
 
 
-        public string GenerateAccessToken(User user)
+        public async Task<TokenModel> GenerateAccessToken(User user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -40,13 +45,42 @@ namespace DwitTech.AccountService.Core.Services
                 new Claim(ClaimTypes.Role, "User")
             };
 
-            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
-                _configuration["Jwt:Audience"],
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
                 claims,
-                expires: DateTime.Now.AddHours(int.Parse(_configuration["Jwt:JwtTokenExpiryTime"])),
+                expires: DateTime.Now.AddMinutes(int.Parse(_configuration["Jwt:JwtTokenExpiryTime"])),
                 signingCredentials: credentials);
+            
+            var AccessToken = new JwtSecurityTokenHandler().WriteToken(token);
+            var RefreshToken = GenerateRefreshToken();
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var currentUserSession = await GetSessionByUserIdAsync(user.Id);
+
+            if (currentUserSession != null)
+            {
+                currentUserSession.RefreshToken = _securityService.HashString(RefreshToken);
+                currentUserSession.ModifiedOnUtc = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+                await UpdateSessionTokenAsync(currentUserSession);
+            }
+            else
+            {
+                var newUserSession = new SessionToken
+                {
+                    UserId = user.Id,
+                    RefreshToken = _securityService.HashString(RefreshToken),
+                };
+
+                await AddSessionAsync(newUserSession);
+            }
+
+            return new TokenModel
+            {
+                accessToken = AccessToken,
+                tokenType = token_Type,
+                expiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), //convert to seconds
+                refreshToken = RefreshToken
+            };
         }
 
         public string GenerateRefreshToken()
@@ -59,32 +93,47 @@ namespace DwitTech.AccountService.Core.Services
 
         public async Task<TokenModel> GenerateAccessTokenfromRefreshToken(TokenModel tokenModel)
         {
-            //Generates new access and refresh tokens, and saves the refresh token to the db.
-            string accessToken = tokenModel.accessToken;
-            string refreshToken = tokenModel.refreshToken;
+            // This method generates new access and refresh tokens, and updates the refresh token in the db.
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var principal = GetPrincipalFromExpiredToken(accessToken);
+            //Get principal from expired access token
+            var principal = GetPrincipalFromExpiredToken(tokenModel.accessToken);
 
-            string userEmail = principal.FindFirstValue(ClaimTypes.Email);
-
-            var user = await _userService.GetUserByEmailAsync(userEmail);
-            if (user == null)
+            // Create a new JWT token
+            var newClaims = new[]
             {
-                // return an error response indicating that the user does not exist
-                throw new ArgumentException("User not found");
-            }
+                new Claim("UserId", principal.FindFirst("UserId").Value),
+                new Claim(ClaimTypes.Email, principal.FindFirst(ClaimTypes.Email).Value),
+                new Claim(ClaimTypes.GivenName, principal.FindFirst(ClaimTypes.GivenName).Value),
+                new Claim(ClaimTypes.Surname, principal.FindFirst(ClaimTypes.Surname).Value),
+                new Claim(ClaimTypes.Role, "User")
+            };
+                        
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                newClaims,
+                expires: DateTime.Now.AddMinutes(int.Parse(_configuration["Jwt:JwtTokenExpiryTime"])),
+                signingCredentials: credentials);
 
-            var newAccessToken = GenerateAccessToken(user);
+            // Serialize the token to a string
+            string AccessToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+            //store tokens
+            var newAccessToken = AccessToken;
             var newRefreshToken = GenerateRefreshToken();
 
-            var currentSession = await _userService.GetSessionByUserIdAsync(user.Id);
-            currentSession.RefreshToken = newRefreshToken;
-
-            await _userService.UpdateSessionTokenAsync(currentSession);
+            //update refresh token to db in hashed format
+            var currentSession = await GetSessionByUserIdAsync(int.Parse(principal.FindFirst("UserId").Value));
+            currentSession.RefreshToken = _securityService.HashString(newRefreshToken);
+            await UpdateSessionTokenAsync(currentSession);
 
             return new TokenModel
             {
                 accessToken = newAccessToken,
+                tokenType = token_Type,
+                expiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), //convert to seconds
                 refreshToken = newRefreshToken
             };
         }
@@ -126,6 +175,21 @@ namespace DwitTech.AccountService.Core.Services
                 return false;
             }
             return true;
+        }
+
+        public async Task<bool> UpdateSessionTokenAsync(SessionToken sessionDetails)
+        {
+            return await _repository.UpdateSessionTokenAsync(sessionDetails);
+        }
+
+        public Task<SessionToken> GetSessionByUserIdAsync(int userId)
+        {
+            return _repository.FindSessionByUserIdAsync(userId);
+        }
+
+        public Task<bool> AddSessionAsync(SessionToken sessionDetails)
+        {
+            return _repository.AddSessionAsync(sessionDetails);
         }
     }
 }
