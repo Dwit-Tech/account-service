@@ -1,7 +1,15 @@
-﻿using DwitTech.AccountService.Core.Utilities;
+﻿using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Services;
+using DwitTech.AccountService.Core.Utilities;
+using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Repository;
+using Microsoft.Extensions.Configuration;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -189,6 +197,19 @@ namespace DwitTech.AccountService.Core.Tests.Utilities
 
             //Assert
             Assert.Equal(expected, counter);
+        }
+
+
+        [Fact]
+        public void GenerateRandomString_Returns_Valid_String_Result()
+        {
+            //Act
+            var result = RandomUtil.GenerateRandomBase64string();
+
+            //Assert
+            Assert.NotEmpty(result);
+            Assert.NotNull(result);
+            Assert.IsType<string>(result);
         }
     }
 }

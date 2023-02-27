@@ -2,7 +2,7 @@
 using DwitTech.AccountService.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace DwitTech.AccountService.Data.repository
+namespace DwitTech.AccountService.Data.Repository
 {
     public class UserRepository : IUserRepository
     {

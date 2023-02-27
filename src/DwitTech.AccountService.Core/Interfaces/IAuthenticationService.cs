@@ -12,8 +12,7 @@ namespace DwitTech.AccountService.Core.Interfaces
 {
     public interface IAuthenticationService
     {
-        Task<TokenModel> GenerateAccessToken(User user);
-        string GenerateRefreshToken();
+        Task<TokenModel> GenerateAccessToken(int userId, List<Claim> claims);
         Task<TokenModel> GenerateAccessTokenfromRefreshToken(TokenModel tokenModel);
         bool ValidateAccessToken(string accessToken);
         ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token);//Remove after test

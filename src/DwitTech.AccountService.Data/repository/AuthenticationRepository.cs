@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DwitTech.AccountService.Data.repository
+namespace DwitTech.AccountService.Data.Repository
 {
     public class AuthenticationRepository:IAuthenticationRepository
     {

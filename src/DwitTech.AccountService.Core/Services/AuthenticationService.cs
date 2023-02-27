@@ -12,7 +12,8 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using DwitTech.AccountService.Data.repository;
+using DwitTech.AccountService.Data.Repository;
+using DwitTech.AccountService.Core.Utilities;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -31,31 +32,12 @@ namespace DwitTech.AccountService.Core.Services
         }
 
 
-        public async Task<TokenModel> GenerateAccessToken(User user)
+        public async Task<TokenModel> GenerateAccessToken(int userId, List<Claim> claims)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var AccessToken = RandomUtil.GetJwt(claims, _configuration);
+            var RefreshToken = RandomUtil.GenerateRandomBase64string();
 
-            var claims = new[]
-            {
-                new Claim("UserId", user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.GivenName, user.Firstname),
-                new Claim(ClaimTypes.Surname, user.Lastname),
-                new Claim(ClaimTypes.Role, "User")
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims,
-                expires: DateTime.Now.AddMinutes(int.Parse(_configuration["Jwt:JwtTokenExpiryTime"])),
-                signingCredentials: credentials);
-            
-            var AccessToken = new JwtSecurityTokenHandler().WriteToken(token);
-            var RefreshToken = GenerateRefreshToken();
-
-            var currentUserSession = await GetSessionByUserIdAsync(user.Id);
+            var currentUserSession = await GetSessionByUserIdAsync(userId);
 
             if (currentUserSession != null)
             {
@@ -67,7 +49,7 @@ namespace DwitTech.AccountService.Core.Services
             {
                 var newUserSession = new SessionToken
                 {
-                    UserId = user.Id,
+                    UserId = userId,
                     RefreshToken = _securityService.HashString(RefreshToken),
                 };
 
@@ -82,50 +64,30 @@ namespace DwitTech.AccountService.Core.Services
                 refreshToken = RefreshToken
             };
         }
-
-        public string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
-        }
+                
 
         public async Task<TokenModel> GenerateAccessTokenfromRefreshToken(TokenModel tokenModel)
         {
             // This method generates new access and refresh tokens, and updates the refresh token in the db.
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             //Get principal from expired access token
             var principal = GetPrincipalFromExpiredToken(tokenModel.accessToken);
 
-            // Create a new JWT token
-            var newClaims = new[]
-            {
-                new Claim("UserId", principal.FindFirst("UserId").Value),
-                new Claim(ClaimTypes.Email, principal.FindFirst(ClaimTypes.Email).Value),
-                new Claim(ClaimTypes.GivenName, principal.FindFirst(ClaimTypes.GivenName).Value),
-                new Claim(ClaimTypes.Surname, principal.FindFirst(ClaimTypes.Surname).Value),
-                new Claim(ClaimTypes.Role, "User")
-            };
-                        
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                newClaims,
-                expires: DateTime.Now.AddMinutes(int.Parse(_configuration["Jwt:JwtTokenExpiryTime"])),
-                signingCredentials: credentials);
+            var userId = int.Parse(principal.FindFirst("UserId")?.Value ?? throw new ArgumentException("Missing UserId claim.", nameof(tokenModel.accessToken)));
+            List<Claim> claimsList = new List<Claim>();
 
-            // Serialize the token to a string
-            string AccessToken = new JwtSecurityTokenHandler().WriteToken(token);
+            // Add each claim from the principal to the list
+            foreach (Claim claim in principal.Claims) 
+            {
+                claimsList.Add(claim);
+            }
 
             //store tokens
-            var newAccessToken = AccessToken;
-            var newRefreshToken = GenerateRefreshToken();
+            var newAccessToken = RandomUtil.GetJwt(claimsList,_configuration);
+            var newRefreshToken = RandomUtil.GenerateRandomBase64string();
 
             //update refresh token to db in hashed format
-            var currentSession = await GetSessionByUserIdAsync(int.Parse(principal.FindFirst("UserId").Value));
+            var currentSession = await GetSessionByUserIdAsync(userId);
             currentSession.RefreshToken = _securityService.HashString(newRefreshToken);
             await UpdateSessionTokenAsync(currentSession);
 
@@ -140,21 +102,28 @@ namespace DwitTech.AccountService.Core.Services
 
         public ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)//Return to private after test
         {
-            var tokenValidationParameters = new TokenValidationParameters
+            try
             {
-                ValidateAudience = false,
-                ValidateIssuer = false,
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"])),
-                ValidateLifetime = false
-            };
+                var tokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"])),
+                    ValidateLifetime = false
+                };
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-            if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-                throw new SecurityTokenException("Invalid token");
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+                if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+                    throw new SecurityTokenException("Invalid token");
 
-            return principal;
+                return principal;
+            }
+            catch (Exception ex) when (ex is SecurityTokenException || ex is ArgumentException)
+            {
+                throw new SecurityTokenException("Invalid token", ex);
+            }            
         }
 
         public bool ValidateAccessToken(string accessToken)
