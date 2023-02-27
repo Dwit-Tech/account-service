@@ -1,14 +1,12 @@
-﻿using AutoMapper;
-using DwitTech.AccountService.Data.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DwitTech.AccountService.Core.Dtos
+namespace DwitTech.AccountService.Data.Entities
 {
-    public class RoleDto : Profile
+    public class Role : BaseEntity
     {
         public RoleName Roles { get; set; }
     }

@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-
+using DwitTech.AccountService.Data.Entities;
 
 namespace DwitTech.AccountService.Data.Context
 {
@@ -17,6 +17,8 @@ namespace DwitTech.AccountService.Data.Context
         public AccountDbContext(DbContextOptions options) : base(options)
         {
         }
+
+        public DbSet<Role> Roles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
