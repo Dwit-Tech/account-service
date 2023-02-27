@@ -21,8 +21,7 @@ namespace DwitTech.AccountService.Data.Repository
         public async Task<ValidationCode> SaveUserValidationCode(string userId, string validationCode)
         {
 
-           var response = await
-            _accountDbContext.ValidationCode.AddAsync(new ValidationCode { Code= validationCode, UserId= userId });
+           var response = await _accountDbContext.ValidationCode.AddAsync(new ValidationCode { Code= validationCode, UserId= userId });
             return response.Entity;
         }
     }

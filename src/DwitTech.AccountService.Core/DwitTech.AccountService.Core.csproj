@@ -17,9 +17,6 @@
 	<InternalsVisibleTo Include="*.Tests" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\.editorconfig" Link=".editorconfig" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DwitTech.AccountService.Data\DwitTech.AccountService.Data.csproj" />

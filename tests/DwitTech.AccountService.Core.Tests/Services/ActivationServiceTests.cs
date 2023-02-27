@@ -33,8 +33,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
             IUserRepository repository = new UserRepository(mockDbContext.Object);
 
-
-            ActivationService actService = new ActivationService(configuration, repository);
+            
+            var actService = new ActivationService(configuration, repository);
 
             //Act
             var actual = await actService.SendActivationEmail(Guid.NewGuid().ToString(), fromMail, toMail, templateName, RecipientName);

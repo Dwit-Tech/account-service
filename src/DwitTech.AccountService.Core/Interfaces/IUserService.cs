@@ -8,6 +8,6 @@ namespace DwitTech.AccountService.Core.Interfaces
 {
     public interface IUserService
     {
-        bool SendActivationEmail(string email );
+       public Task<bool> SendActivationEmail(string email );
     }
 }

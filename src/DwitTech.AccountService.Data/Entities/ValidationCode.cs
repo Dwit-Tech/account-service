@@ -13,7 +13,6 @@ namespace DwitTech.AccountService.Data.Entities
 {
     public class ValidationCode : BaseEntity
     {
-        [Key]
         public string UserId { set; get; }
         public string Code { set; get; }
         public CodeType ActivationType { set; get; }

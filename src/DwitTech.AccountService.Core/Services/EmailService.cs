@@ -9,7 +9,7 @@ namespace DwitTech.AccountService.Core.Services
 {
     public class EmailService : IEmailService
     {
-        public bool SendEmail(string FromEmail, string ToEmail, string Body, string Subject, string CC, string BCC)
+        public async Task<bool> SendEmail(string userId, string FromEmail, string ToEmail, string Body, string Subject, string CC, string BCC)
         {
             throw new NotImplementedException();
         }

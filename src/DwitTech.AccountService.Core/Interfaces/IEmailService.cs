@@ -8,6 +8,6 @@ namespace DwitTech.AccountService.Core.Interfaces
 {
     public interface IEmailService
     {
-        bool SendEmail(string FromEmail, string ToEmail, string Body, string Subject, string CC, string BCC);
+       public Task<bool> SendEmail(string userId, string FromEmail, string ToEmail, string Body, string Subject, string CC, string BCC);
     }
 }

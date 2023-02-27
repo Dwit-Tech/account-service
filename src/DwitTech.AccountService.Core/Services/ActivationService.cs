@@ -61,8 +61,7 @@ namespace DwitTech.AccountService.Core.Services
             var request = new RestRequest(_configuration["NotificationService:SendEmail"]).AddJsonBody(emailObject);
             var response = await client.PostAsync<string>(request);
             if (request is null);
-
-            return false;
+            return true;
 
         }
 
@@ -71,6 +70,7 @@ namespace DwitTech.AccountService.Core.Services
         {
 
             var baseUrl = GetBaseUrl();
+
             var activationUrl = await GetActivationUrl(userId);
             string templateText = GetTemplate(templateName);
             templateText = templateText.Replace("{{name}}", RecipientName);
