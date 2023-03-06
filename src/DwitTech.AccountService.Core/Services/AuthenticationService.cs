@@ -75,7 +75,7 @@ namespace DwitTech.AccountService.Core.Services
         }
                 
 
-        public async Task<TokenModel> GenerateAccessTokenfromRefreshToken(TokenModel tokenModel)
+        public async Task<TokenModel> GenerateAccessTokenFromRefreshToken(TokenModel tokenModel)
         {
             // This method generates new access and refresh tokens, and updates the refresh token in the db.
 

@@ -6,6 +6,6 @@ namespace DwitTech.AccountService.Core.Interfaces
     public interface IAuthenticationService
     {
         Task<TokenModel> GenerateAccessToken(User user);
-        Task<TokenModel> GenerateAccessTokenfromRefreshToken(TokenModel tokenModel);
+        Task<TokenModel> GenerateAccessTokenFromRefreshToken(TokenModel tokenModel);
     }
 }

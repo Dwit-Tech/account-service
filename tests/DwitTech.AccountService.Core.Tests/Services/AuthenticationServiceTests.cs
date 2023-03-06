@@ -128,7 +128,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
 
         [Fact]
-        public async Task GenerateAccessTokenfromRefreshToken_ReturnsTokenModel_WhenModifiedOnUtcValueIsPresent_AndTokenIsValid()
+        public async Task GenerateAccessTokenFromRefreshToken_ReturnsTokenModel_WhenModifiedOnUtcValueIsPresent_AndTokenIsValid()
         {
             // Arrange
             var accessToken = JwtUtil.GenerateJwtToken(claims, _configuration);
@@ -152,7 +152,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             };
 
             // Act
-            var result = await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+            var result = await authService.GenerateAccessTokenFromRefreshToken(tokenModel);
 
             // Assert
             Assert.NotNull(result);
@@ -164,7 +164,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
 
         [Fact]
-        public async Task GenerateAccessTokenfromRefreshToken_ReturnsTokenModel_WhenModifiedOnUtcValueIsNotPresent_AndTokenIsValid()
+        public async Task GenerateAccessTokenFromRefreshToken_ReturnsTokenModel_WhenModifiedOnUtcValueIsNotPresent_AndTokenIsValid()
         {
             // Arrange
             var accessToken = JwtUtil.GenerateJwtToken(claims, _configuration);
@@ -187,7 +187,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             };
 
             // Act
-            var result = await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+            var result = await authService.GenerateAccessTokenFromRefreshToken(tokenModel);
 
             // Assert
             Assert.NotNull(result);
@@ -199,7 +199,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
 
         [Fact]
-        public async Task GenerateAccessTokenfromRefreshToken_ThrowsEntityNotFoundException_WhenCurrentSessionIsNull()
+        public async Task GenerateAccessTokenFromRefreshToken_ThrowsEntityNotFoundException_WhenCurrentSessionIsNull()
         {
             // Arrange
             var expectedExceptionMessage = "The specified entity does not exist in the database";
@@ -215,7 +215,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 .ReturnsAsync((SessionToken?)null);
 
             // Act
-            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenFromRefreshToken(tokenModel);
 
             // Assert
             var ex = await Assert.ThrowsAsync<EntityNotFoundException>(act);
@@ -225,7 +225,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
 
         [Fact]
-        public async Task GenerateAccessTokenfromRefreshToken_ThrowsArgumentException_WhenRefreshTokensDoNotMatch()
+        public async Task GenerateAccessTokenFromRefreshToken_ThrowsArgumentException_WhenRefreshTokensDoNotMatch()
         {
             // Arrange
             var expectedExceptionMessage = "Refresh token is not valid. (Parameter 'RefreshToken')";
@@ -246,7 +246,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 });
 
             // Act
-            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenFromRefreshToken(tokenModel);
 
             // Assert
             var ex = await Assert.ThrowsAsync<ArgumentException>(act);
@@ -256,7 +256,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
 
         [Fact]
-        public async Task GenerateAccessTokenfromRefreshToken_ThrowsArgumentException_WhenRefreshTokenHasExpired()
+        public async Task GenerateAccessTokenFromRefreshToken_ThrowsArgumentException_WhenRefreshTokenHasExpired()
         {
             // Arrange
             var expectedExceptionMessage = "Refresh token is not valid. (Parameter 'RefreshToken')";
@@ -277,7 +277,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 });
 
             // Act
-            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenFromRefreshToken(tokenModel);
 
             // Assert
             var ex = await Assert.ThrowsAsync<ArgumentException>(act);
@@ -287,7 +287,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
 
         [Fact]
-        public async Task GenerateAccessTokenfromRefreshToken_ThrowsSecurityTokenException_WhenUserIdIsMissingFromClaims()
+        public async Task GenerateAccessTokenFromRefreshToken_ThrowsSecurityTokenException_WhenUserIdIsMissingFromClaims()
         {
             // Arrange
             var expectedExceptionMessage = "Missing UserId claim.";
@@ -309,7 +309,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             };
 
             // Act
-            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenFromRefreshToken(tokenModel);
 
             // Assert
             var ex = await Assert.ThrowsAsync<SecurityTokenException>(act);
@@ -334,7 +334,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             mockAuthRepository.Setup(x => x.FindSessionByUserIdAsync(It.IsAny<int>())).ReturnsAsync((SessionToken?)null);
 
             // Act
-            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenFromRefreshToken(tokenModel);
 
             // Assert
             var ex = await Assert.ThrowsAsync<EntityNotFoundException>(act);
@@ -368,7 +368,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 });
 
             // Act
-            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenFromRefreshToken(tokenModel);
 
             // Assert
             var ex = await Assert.ThrowsAsync<SecurityTokenException>(act);
@@ -398,7 +398,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 });
 
             // Act
-            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenFromRefreshToken(tokenModel);
 
             // Assert
             var ex = await Assert.ThrowsAsync<SecurityTokenException>(act);
