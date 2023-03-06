@@ -24,4 +24,10 @@
     <ProjectReference Include="..\DwitTech.AccountService.Data\DwitTech.AccountService.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Templates\EmailTemplate.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

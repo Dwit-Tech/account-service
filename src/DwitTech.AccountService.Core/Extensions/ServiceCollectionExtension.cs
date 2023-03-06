@@ -1,4 +1,6 @@
-﻿using DwitTech.AccountService.Data.Context;
+﻿using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Services;
+using DwitTech.AccountService.Data.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

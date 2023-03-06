@@ -14,7 +14,7 @@ namespace DwitTech.AccountService.Data.Context
 {
     public class AccountDbContext : DbContext
     {
-        public AccountDbContext(DbContextOptions options) : base(options)
+        public AccountDbContext(DbContextOptions<AccountDbContext> options) : base(options)
         {
         }
 
