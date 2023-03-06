@@ -1,17 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Utilities
 {
-    public static class RandomUtil 
+    public static class StringUtil 
 
     {
         internal static readonly string characterOptions = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
@@ -60,30 +52,33 @@ namespace DwitTech.AccountService.Core.Utilities
         }
 
 
+        public static string HashString(string inputString)
+        {
+            if (inputString == null)
+            {
+                return null;
+            }
+
+            if (inputString.Equals(""))
+            {
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(inputString)) return null;
+
+            var md5 = MD5.Create();
+            var data = md5.ComputeHash(Encoding.ASCII.GetBytes(inputString));
+
+            return Convert.ToHexString(data).ToLower();
+        }
+
+
         public static string GenerateRandomBase64string()
         {
             var randomNumber = new byte[32];
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
-        }
-
-
-        public static string GetJwt(List<Claim> claims, IConfiguration configuration)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: configuration["Jwt:Issuer"],
-                audience: configuration["Jwt:Audience"],
-                claims,
-                expires: DateTime.Now.AddMinutes(int.Parse(configuration["Jwt:JwtTokenExpiryTime"])),
-                signingCredentials: credentials);
-
-            // Serialize the token to a string
-            string accessToken = new JwtSecurityTokenHandler().WriteToken(token);
-            return accessToken;
         }
     }
 }

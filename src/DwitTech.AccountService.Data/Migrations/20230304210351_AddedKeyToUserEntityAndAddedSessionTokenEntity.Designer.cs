@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DwitTech.AccountService.Data.Migrations
 {
     [DbContext(typeof(AccountDbContext))]
-    [Migration("20230221163057_AddedSessionTokensTable")]
-    partial class AddedSessionTokensTable
+    [Migration("20230304210351_AddedKeyToUserEntityAndAddedSessionTokenEntity")]
+    partial class AddedKeyToUserEntityAndAddedSessionTokenEntity
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

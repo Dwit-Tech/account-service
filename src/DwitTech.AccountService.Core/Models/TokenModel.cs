@@ -10,12 +10,12 @@ namespace DwitTech.AccountService.Core.Models
     public class TokenModel
     {
         [JsonPropertyName("access_token")]
-        public string accessToken { get; set; }
+        public string AccessToken { get; set; }
         [JsonPropertyName("token_type")]
-        public string tokenType { get; set; }
+        public string TokenType { get; set; }
         [JsonPropertyName("expires_in")]
-        public int expiresIn { get; set; }
+        public int ExpiresIn { get; set; }
         [JsonPropertyName("refresh_token")]
-        public string refreshToken { get; set; }
+        public string RefreshToken { get; set; }
     }
 }

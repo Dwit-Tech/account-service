@@ -10,7 +10,5 @@ namespace DwitTech.AccountService.Core.Interfaces
 {
     public interface IUserService
     {
-        Task<User> GetUserByEmailAsync(string email);        
-        //Task<bool> SaveChangesAsync();
     }
 }

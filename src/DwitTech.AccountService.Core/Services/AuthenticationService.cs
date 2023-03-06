@@ -1,19 +1,14 @@
 ﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Core.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using DwitTech.AccountService.Data.Repository;
 using DwitTech.AccountService.Core.Utilities;
+using DwitTech.AccountService.Core.Exceptions;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -21,48 +16,62 @@ namespace DwitTech.AccountService.Core.Services
     {
         private readonly IConfiguration _configuration;
         private readonly IAuthenticationRepository _repository;
-        private readonly ISecurityService _securityService;
-        private const string token_Type = "Bearer";
+        private const string tokenType = "Bearer";
 
-        public AuthenticationService(IConfiguration configuration, IAuthenticationRepository repository, ISecurityService securityService)
+        public AuthenticationService(IConfiguration configuration, IAuthenticationRepository repository)
         {
             _configuration = configuration;
             _repository = repository;
-            _securityService = securityService;
         }
 
 
-        public async Task<TokenModel> GenerateAccessToken(int userId, List<Claim> claims)
+        public async Task<TokenModel> GenerateAccessToken(User user)
         {
-            var AccessToken = RandomUtil.GetJwt(claims, _configuration);
-            var RefreshToken = RandomUtil.GenerateRandomBase64string();
+            var claims = new List<Claim>
+            {
+                new Claim("UserId", user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.GivenName, user.Firstname),
+                new Claim(ClaimTypes.Surname, user.Lastname),
+                new Claim(ClaimTypes.Role, "User")
+            };
 
-            var currentUserSession = await GetSessionByUserIdAsync(userId);
+            return await GenerateSecurityTokens(user.Id, claims);
+        }
+
+
+        private async Task<TokenModel> GenerateSecurityTokens(int userId, List<Claim> claims)
+        {
+            var accessToken = JwtUtil.GenerateJwtToken(claims, _configuration);
+            var refreshToken = StringUtil.GenerateRandomBase64string();
+
+            var currentUserSession = await _repository.FindSessionByUserIdAsync(userId);
+
+            var tokenModel = new TokenModel
+            {
+                AccessToken = accessToken,
+                TokenType = tokenType,
+                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), //convert to seconds
+                RefreshToken = refreshToken
+            };
 
             if (currentUserSession != null)
             {
-                currentUserSession.RefreshToken = _securityService.HashString(RefreshToken);
-                currentUserSession.ModifiedOnUtc = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
-                await UpdateSessionTokenAsync(currentUserSession);
-            }
-            else
-            {
-                var newUserSession = new SessionToken
-                {
-                    UserId = userId,
-                    RefreshToken = _securityService.HashString(RefreshToken),
-                };
-
-                await AddSessionAsync(newUserSession);
+                currentUserSession.RefreshToken = StringUtil.HashString(refreshToken);
+                currentUserSession.ModifiedOnUtc = DateTime.UtcNow;
+                await _repository.UpdateSessionTokenAsync();
+                return tokenModel;
             }
 
-            return new TokenModel
+            var newUserSession = new SessionToken
             {
-                accessToken = AccessToken,
-                tokenType = token_Type,
-                expiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), //convert to seconds
-                refreshToken = RefreshToken
+                UserId = userId,
+                RefreshToken = StringUtil.HashString(refreshToken),
             };
+
+            await _repository.AddSessionAsync(newUserSession);
+
+            return tokenModel;
         }
                 
 
@@ -71,10 +80,18 @@ namespace DwitTech.AccountService.Core.Services
             // This method generates new access and refresh tokens, and updates the refresh token in the db.
 
             //Get principal from expired access token
-            var principal = GetPrincipalFromExpiredToken(tokenModel.accessToken);
+            var principal = GetPrincipalFromExpiredToken(tokenModel.AccessToken);
 
-            var userId = int.Parse(principal.FindFirst("UserId")?.Value ?? throw new ArgumentException("Missing UserId claim.", nameof(tokenModel.accessToken)));
-            List<Claim> claimsList = new List<Claim>();
+            var userId = int.Parse(principal.FindFirst("UserId")?.Value ?? throw new SecurityTokenException("Missing UserId claim."));
+
+            //Validate the refresh token
+            var isValid = await ValidateUserRefreshToken(userId, tokenModel.RefreshToken);
+            if (!isValid)
+            {
+                throw new ArgumentException("Refresh token is not valid.", nameof(TokenModel.RefreshToken));
+            }
+
+            var claimsList = new List<Claim>();
 
             // Add each claim from the principal to the list
             foreach (Claim claim in principal.Claims) 
@@ -83,82 +100,92 @@ namespace DwitTech.AccountService.Core.Services
             }
 
             //store tokens
-            var newAccessToken = RandomUtil.GetJwt(claimsList,_configuration);
-            var newRefreshToken = RandomUtil.GenerateRandomBase64string();
+            var newAccessToken = JwtUtil.GenerateJwtToken(claimsList,_configuration);
+            var newRefreshToken = StringUtil.GenerateRandomBase64string();
 
             //update refresh token to db in hashed format
-            var currentSession = await GetSessionByUserIdAsync(userId);
-            currentSession.RefreshToken = _securityService.HashString(newRefreshToken);
-            await UpdateSessionTokenAsync(currentSession);
+            var currentSession = await _repository.FindSessionByUserIdAsync(userId);
+
+            if (currentSession == null)
+            {
+                throw new EntityNotFoundException();
+            }
+            currentSession.RefreshToken = StringUtil.HashString(newRefreshToken);
+            await _repository.UpdateSessionTokenAsync();
 
             return new TokenModel
             {
-                accessToken = newAccessToken,
-                tokenType = token_Type,
-                expiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), //convert to seconds
-                refreshToken = newRefreshToken
+                AccessToken = newAccessToken,
+                TokenType = tokenType,
+                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), //convert to seconds
+                RefreshToken = newRefreshToken
             };
         }
 
-        public ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)//Return to private after test
+
+        private async Task<bool> ValidateUserRefreshToken(int userId, string refreshToken)
         {
+            var currentSession = await _repository.FindSessionByUserIdAsync(userId);
+            var hashedrefreshToken = StringUtil.HashString(refreshToken);
+
+            if (currentSession == null)
+            {
+                throw new EntityNotFoundException();
+            }
+            else
+            {
+                if (currentSession.ModifiedOnUtc.HasValue)
+                {
+                    if (hashedrefreshToken == currentSession.RefreshToken &&
+                    DateTime.UtcNow < currentSession.ModifiedOnUtc.Value.AddHours(int.Parse(_configuration["Jwt:RefreshTokenExpiryTime"])))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+                if (hashedrefreshToken == currentSession.RefreshToken &&
+                    DateTime.UtcNow < currentSession.CreatedOnUtc.AddHours(int.Parse(_configuration["Jwt:RefreshTokenExpiryTime"])))
+                {
+                    return true;
+                }
+
+                return false;
+
+            }
+        }
+
+
+        private ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
+        {
+            if (token.IsNullOrEmpty())
+            {
+                throw new ArgumentException("token should not be null or empty");
+            }
+
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"])),
+                ValidateLifetime = false
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+
             try
             {
-                var tokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateAudience = false,
-                    ValidateIssuer = false,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"])),
-                    ValidateLifetime = false
-                };
-
-                var tokenHandler = new JwtSecurityTokenHandler();
                 var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+
                 if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                     throw new SecurityTokenException("Invalid token");
-
                 return principal;
             }
             catch (Exception ex) when (ex is SecurityTokenException || ex is ArgumentException)
             {
-                throw new SecurityTokenException("Invalid token", ex);
+                throw new SecurityTokenException("Invalid access token", ex);
             }            
-        }
-
-        public bool ValidateAccessToken(string accessToken)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            try
-            {
-                tokenHandler.ValidateToken(accessToken, new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]))
-                }, out SecurityToken validatedToken);
-            }
-            catch
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public async Task<bool> UpdateSessionTokenAsync(SessionToken sessionDetails)
-        {
-            return await _repository.UpdateSessionTokenAsync(sessionDetails);
-        }
-
-        public Task<SessionToken> GetSessionByUserIdAsync(int userId)
-        {
-            return _repository.FindSessionByUserIdAsync(userId);
-        }
-
-        public Task<bool> AddSessionAsync(SessionToken sessionDetails)
-        {
-            return _repository.AddSessionAsync(sessionDetails);
         }
     }
 }

@@ -1,21 +1,10 @@
 ﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Core.Utilities;
-using DwitTech.AccountService.Data.Entities;
-using DwitTech.AccountService.Data.Repository;
-using Microsoft.Extensions.Configuration;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Tests.Utilities
 {
-    public class RandomUtilTests
+    public class StringUtilTests
     {
         [Fact]
         public void GenerateUniqueCode_Check_Returns_Unique_twenty_Character_Alphanum_string()
@@ -27,7 +16,7 @@ namespace DwitTech.AccountService.Core.Tests.Utilities
             //Act
             for (int i = 0; i < expected; i++)
             {
-                string codeValue = RandomUtil.GenerateUniqueCode();
+                string codeValue = StringUtil.GenerateUniqueCode();
                 if (!valuesDict.ContainsKey(codeValue))
                 {
                     valuesDict[codeValue] = i.ToString();
@@ -49,7 +38,7 @@ namespace DwitTech.AccountService.Core.Tests.Utilities
             //Act
             foreach (int number in noOfCharactersOptions)
             {
-                string resultValue = RandomUtil.GenerateUniqueCode(number);
+                string resultValue = StringUtil.GenerateUniqueCode(number);
                 if (number == resultValue.Length)
                 {
                     counter += 1;
@@ -78,7 +67,7 @@ namespace DwitTech.AccountService.Core.Tests.Utilities
                 //loop to generate results {expected} number of times, and populate the list with the results.
                 for (int i = 0; i < expected; i++)
                 {
-                    string result = RandomUtil.GenerateUniqueCode(noOfCharacters, useNumbers, useAlphabets, useSymbols);
+                    string result = StringUtil.GenerateUniqueCode(noOfCharacters, useNumbers, useAlphabets, useSymbols);
                     resultsList.Add(result);
                 }
 
@@ -125,7 +114,7 @@ namespace DwitTech.AccountService.Core.Tests.Utilities
                 //loop to generate results {expected} number of times, and populate the list with the results.
                 for (int i = 0; i < expected; i++)
                 {
-                    string result = RandomUtil.GenerateUniqueCode(noOfCharacters, useNumbers, useAlphabets, useSymbols);
+                    string result = StringUtil.GenerateUniqueCode(noOfCharacters, useNumbers, useAlphabets, useSymbols);
                     resultsList.Add(result);
                 }
 
@@ -171,7 +160,7 @@ namespace DwitTech.AccountService.Core.Tests.Utilities
                 //loop to generate results {expected} number of times, and populate the list with the results.
                 for (int i = 0; i < expected; i++)
                 {
-                    string result = RandomUtil.GenerateUniqueCode(noOfCharacters, useNumbers, useAlphabets, useSymbols);
+                    string result = StringUtil.GenerateUniqueCode(noOfCharacters, useNumbers, useAlphabets, useSymbols);
                     resultsList.Add(result);
                 }
 
@@ -200,11 +189,29 @@ namespace DwitTech.AccountService.Core.Tests.Utilities
         }
 
 
+        [Theory]
+        [InlineData("          ", "41b394758330c83757856aa482c79977")]
+        [InlineData("I am testing my hash code", "5c00305ca173f8ae536a344df422bfb8")]
+        [InlineData(null, null)]
+        [InlineData("", null)]
+        public void HashString_String_return_Hash(string inputString, string hashString)
+        {
+            //Arrange
+            ISecurityService SecurityService = new SecurityService();
+
+            //Act
+            var actual = StringUtil.HashString(inputString);
+
+            //Assert
+            Assert.Equal(hashString, actual);
+        }
+
+
         [Fact]
         public void GenerateRandomString_Returns_Valid_String_Result()
         {
             //Act
-            var result = RandomUtil.GenerateRandomBase64string();
+            var result = StringUtil.GenerateRandomBase64string();
 
             //Assert
             Assert.NotEmpty(result);

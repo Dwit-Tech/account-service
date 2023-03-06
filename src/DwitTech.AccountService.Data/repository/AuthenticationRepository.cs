@@ -19,47 +19,21 @@ namespace DwitTech.AccountService.Data.Repository
         }
 
 
-        public async Task<bool> UpdateSessionTokenAsync(SessionToken sessionDetails)
+        public async Task<SessionToken?> FindSessionByUserIdAsync(int userId)
         {
-            // Update the properties of the existing entity with the new values
-
-            var existingSession = await _context.SessionTokens.Where(x => x.UserId == sessionDetails.UserId).FirstOrDefaultAsync();
-
-            if (existingSession == null)
-            {
-                throw new ArgumentException("Entity does not exist.");
-            }
-
-            existingSession.RefreshToken = sessionDetails.RefreshToken;
-
-            return await SaveChangesAsync();
+            return await _context.SessionTokens.Where(x => x.UserId == userId).FirstOrDefaultAsync();
         }
 
-        public async Task<SessionToken> FindSessionByUserIdAsync(int userId)
+        public async Task UpdateSessionTokenAsync()
         {
-            var session = await _context.SessionTokens.Where(x => x.UserId == userId).FirstOrDefaultAsync();
-            return session;
+            await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> AddSessionAsync(SessionToken sessionDetails)
+
+        public async Task AddSessionAsync(SessionToken sessionDetails)
         {
             await _context.SessionTokens.AddAsync(sessionDetails);
             await _context.SaveChangesAsync();
-
-            return await SaveChangesAsync();
-        }
-
-        public async Task<bool> SaveChangesAsync()
-        {
-            try
-            {
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
         }
     }
 }

@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\DwitTech.Authentication\DwitTech.Authentication.csproj" />
     <ProjectReference Include="..\DwitTech.AccountService.Core\DwitTech.AccountService.Core.csproj" />
     <ProjectReference Include="..\DwitTech.AccountService.Core\DwitTech.AccountService.Core.csproj" />
   </ItemGroup>

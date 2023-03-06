@@ -30,6 +30,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DwitTech.Authentication", "DwitTech.Authentication\DwitTech.Authentication.csproj", "{3D5BF3EF-2909-4075-8F77-8B02F118DA51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,6 +62,10 @@ Global
 		{D3CA6EB7-DD9A-4051-91C7-4EDB42AB5E87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3CA6EB7-DD9A-4051-91C7-4EDB42AB5E87}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3CA6EB7-DD9A-4051-91C7-4EDB42AB5E87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D5BF3EF-2909-4075-8F77-8B02F118DA51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D5BF3EF-2909-4075-8F77-8B02F118DA51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D5BF3EF-2909-4075-8F77-8B02F118DA51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D5BF3EF-2909-4075-8F77-8B02F118DA51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -71,6 +77,7 @@ Global
 		{701968A1-C9CB-43E1-A12D-5D7901D3FE65} = {12DE9949-1F6F-4643-8E5B-D9F9C2FFD4F4}
 		{535D423B-3EE8-43DA-A2C3-3171583B2384} = {12DE9949-1F6F-4643-8E5B-D9F9C2FFD4F4}
 		{D3CA6EB7-DD9A-4051-91C7-4EDB42AB5E87} = {12DE9949-1F6F-4643-8E5B-D9F9C2FFD4F4}
+		{3D5BF3EF-2909-4075-8F77-8B02F118DA51} = {6C1480BF-9B2F-419C-A437-24237CF52BD1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0A9E9250-9D79-4FB6-B26F-FBCB93A7C7BC}

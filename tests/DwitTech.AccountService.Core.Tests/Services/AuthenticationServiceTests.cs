@@ -1,33 +1,36 @@
-﻿using DwitTech.AccountService.Core.Interfaces;
+﻿using DwitTech.AccountService.Core.Exceptions;
+using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Services;
+using DwitTech.AccountService.Core.Utilities;
 using DwitTech.AccountService.Data.Entities;
-using DwitTech.AccountService.Data.repository;
+using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Tests.Services
 {
     public class AuthenticationServiceTests
     {
-        //Arrange
-        private User _user;
+        //Setup
+        private User mockUser;
         private IConfiguration _configuration;
-        private Mock<ISecurityService> _mockSecurityService;
-        private Mock<IAuthenticationRepository> _mockAuthRepository;
-        private IAuthenticationService _authService;
+        private Mock<IAuthenticationRepository> mockAuthRepository;
+        private IAuthenticationService authService;
+        private const string tokenType = "Bearer";
+        private const string validJwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxIiwi" +
+                "aHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiZmlyc3RuYW1lQGdtYWlsLmNvbSIsImh0" +
+                "dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2dpdmVubmFtZSI6IkZpcnN0TmFtZSIsImh0dHA6Ly9zY2hlbWFzLnhtb" +
+                "HNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL3N1cm5hbWUiOiJMYXN0TmFtZSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8" +
+                "wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlVzZXIiLCJleHAiOjE2Nzc3ODczMzQsImlzcyI6InRlc3RJc3N1ZXIifQ.PMOYitdiHpshT04kaUb0yJUWlnjtMFjVh_3kpblEsN8";
+        private const string validRefreshToken = "HC2MBsmq7zRY3iWc3jvkjukYu/jdYab9c5+MENq2+RQ=";
+        private List<Claim> claims;
 
         public AuthenticationServiceTests()
         {
-            _user = new User
+            mockUser = new User
             {
                 Id = 1,
                 Firstname = "FirstName",
@@ -45,65 +48,362 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 ModifiedOnUtc = DateTime.UtcNow
             };
 
-            //generate 128 bit key
-            byte[] key = new byte[16];
-            using (var generator = RandomNumberGenerator.Create())
+            claims = new List<Claim>
             {
-                generator.GetBytes(key);
-            }
-            string base64Key = Convert.ToBase64String(key);
+                new Claim("UserId", mockUser.Id.ToString()),
+                new Claim(ClaimTypes.Email, mockUser.Email),
+                new Claim(ClaimTypes.GivenName, mockUser.Firstname),
+                new Claim(ClaimTypes.Surname, mockUser.Lastname),
+                new Claim(ClaimTypes.Role, "User")
+            };
 
             _configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
-                    {"Jwt:Key", base64Key},
+                    {"Jwt:Key", "oAZjokG5AONGvEX80R/ggQ=="},
                     {"Jwt:Issuer", "testIssuer"},
-                    {"JwtAuduence", "testAudience"},
-                    {"Jwt:JwtTokenExpiryTime", "15"}
+                    {"Jwt:JwtTokenExpiryTime", "15"},
+                    {"Jwt:RefreshTokenExpiryTime", "1"}
                 })
                 .Build();
 
+            mockAuthRepository = new Mock<IAuthenticationRepository>();
 
-            _mockSecurityService = new Mock<ISecurityService>();
-            _mockSecurityService.Setup(x => x.HashString(It.IsAny<string>())).Returns("hashed_string");
+            authService = new AuthenticationService(_configuration, mockAuthRepository.Object);           
+        }
+ 
 
-            _mockAuthRepository = new Mock<IAuthenticationRepository>();
+        [Fact]
+        public async Task GenerateAccessToken_Returns_TokenModel_When_User_Is_Valid()
+        {
+            //Act
+            var result = await authService.GenerateAccessToken(mockUser);
 
-            _authService = new AuthenticationService(_configuration, _mockAuthRepository.Object, _mockSecurityService.Object);
+            //Assert
+            Assert.NotNull(result);
+            Assert.False(string.IsNullOrEmpty(result.AccessToken));
+            Assert.False(string.IsNullOrEmpty(result.RefreshToken));
+            Assert.Equal(60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), result.ExpiresIn);
+            Assert.Equal(tokenType, result.TokenType);            
         }
 
 
         [Fact]
-        public async Task GenerateAccessToken_Returns_Valid_TokenModel_When_User_Is_Valid()
+        public async Task GenerateSecurityTokens_CallsMethodToAddNewSession_When_SessionDoesNotExist()
         {
+            //Arrange
+            mockAuthRepository.Setup(x => x.FindSessionByUserIdAsync(It.IsAny<int>())).ReturnsAsync((SessionToken?)null);
+
             //Act
-            var result = await _authService.GenerateAccessToken(_user);
+            var result = await authService.GenerateAccessToken(mockUser);
 
             //Assert
-            Assert.NotNull(result);
-            Assert.False(string.IsNullOrEmpty(result.accessToken));
-            Assert.False(string.IsNullOrEmpty(result.refreshToken));
-            Assert.Equal(60*15, result.expiresIn);
-            Assert.Equal("Bearer", result.tokenType);
-            _mockSecurityService.Verify((x => x.HashString(It.IsAny<string>())), Times.Once());
+            mockAuthRepository.Verify(x => x.FindSessionByUserIdAsync(mockUser.Id), Times.Once);
+            mockAuthRepository.Verify(x => x.AddSessionAsync(It.IsAny<SessionToken>()), Times.Once);
+            mockAuthRepository.Verify(x => x.UpdateSessionTokenAsync(), Times.Never);
         }
 
 
         [Fact]
-        public void GenerateRefreshToken_Returns_Valid_String_Result()
+        public async Task GenerateSecurityTokens_CallsMethodToUpdateSession_When_SessionExists()
         {
+            //Arrange
+            var sessionToken = new SessionToken
+            {
+                UserId = mockUser.Id,
+                RefreshToken = StringUtil.HashString(validRefreshToken),
+                ModifiedOnUtc = DateTime.UtcNow - TimeSpan.FromHours(int.Parse(_configuration["Jwt:RefreshTokenExpiryTime"]))
+            };
+
+            mockAuthRepository.Setup(x => x.FindSessionByUserIdAsync(It.IsAny<int>())).ReturnsAsync((sessionToken));
+
             //Act
-            var result = _authService.GenerateRefreshToken();
-            
+            var result = await authService.GenerateAccessToken(mockUser);
+
             //Assert
-            Assert.NotEmpty(result);
-            Assert.NotNull(result);
-            Assert.IsType<string>(result);
+            mockAuthRepository.Verify(x => x.FindSessionByUserIdAsync(mockUser.Id), Times.Once);
+            mockAuthRepository.Verify(x => x.UpdateSessionTokenAsync(), Times.Once);
+            mockAuthRepository.Verify(x => x.AddSessionAsync(It.IsAny<SessionToken>()), Times.Never);
         }
 
 
-        public async Task GenerateAccessTokenFromRefreshToken_Returns_Valid_TokenModel()
+        [Fact]
+        public async Task GenerateAccessTokenfromRefreshToken_ReturnsTokenModel_WhenModifiedOnUtcValueIsPresent_AndTokenIsValid()
         {
+            // Arrange
+            var accessToken = JwtUtil.GenerateJwtToken(claims, _configuration);
+            var refreshToken = StringUtil.GenerateRandomBase64string();
+
+            var sessionToken = new SessionToken
+            {
+                UserId = mockUser.Id,
+                RefreshToken = StringUtil.HashString(refreshToken),
+                ModifiedOnUtc = DateTime.UtcNow
+            };
+
+            mockAuthRepository.Setup(x => x.FindSessionByUserIdAsync(It.IsAny<int>())).ReturnsAsync(sessionToken);
+
+            var tokenModel = new TokenModel
+            {
+                AccessToken = accessToken,
+                TokenType = tokenType,
+                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                RefreshToken = refreshToken
+            };
+
+            // Act
+            var result = await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(tokenType, result.TokenType);
+            Assert.Equal(60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), result.ExpiresIn);
+            Assert.NotNull(result.AccessToken);
+            Assert.NotNull(result.RefreshToken);
+        }
+
+
+        [Fact]
+        public async Task GenerateAccessTokenfromRefreshToken_ReturnsTokenModel_WhenModifiedOnUtcValueIsNotPresent_AndTokenIsValid()
+        {
+            // Arrange
+            var accessToken = JwtUtil.GenerateJwtToken(claims, _configuration);
+            var refreshToken = StringUtil.GenerateRandomBase64string();
+
+            var sessionToken = new SessionToken
+            {
+                UserId = mockUser.Id,
+                RefreshToken = StringUtil.HashString(refreshToken),
+            };
+
+            mockAuthRepository.Setup(x => x.FindSessionByUserIdAsync(It.IsAny<int>())).ReturnsAsync(sessionToken);
+
+            var tokenModel = new TokenModel
+            {
+                AccessToken = accessToken,
+                TokenType = tokenType,
+                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                RefreshToken = refreshToken
+            };
+
+            // Act
+            var result = await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(tokenType, result.TokenType);
+            Assert.Equal(60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), result.ExpiresIn);
+            Assert.NotNull(result.AccessToken);
+            Assert.NotNull(result.RefreshToken);
+        }
+
+
+        [Fact]
+        public async Task GenerateAccessTokenfromRefreshToken_ThrowsEntityNotFoundException_WhenCurrentSessionIsNull()
+        {
+            // Arrange
+            var expectedExceptionMessage = "The specified entity does not exist in the database";
+            var tokenModel = new TokenModel
+            {
+                AccessToken = validJwtToken,
+                TokenType = tokenType,
+                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                RefreshToken = validRefreshToken
+            };
+
+            mockAuthRepository.Setup(x => x.FindSessionByUserIdAsync(It.IsAny<int>()))
+                .ReturnsAsync((SessionToken?)null);
+
+            // Act
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+
+            // Assert
+            var ex = await Assert.ThrowsAsync<EntityNotFoundException>(act);
+
+            Assert.Equal(expectedExceptionMessage, ex.Message);
+        }
+
+
+        [Fact]
+        public async Task GenerateAccessTokenfromRefreshToken_ThrowsArgumentException_WhenRefreshTokensDoNotMatch()
+        {
+            // Arrange
+            var expectedExceptionMessage = "Refresh token is not valid. (Parameter 'RefreshToken')";
+            var tokenModel = new TokenModel
+            {
+                AccessToken = validJwtToken,
+                TokenType = tokenType,
+                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                RefreshToken = "invalid_refresh_token"
+            };
+
+            mockAuthRepository.Setup(x => x.FindSessionByUserIdAsync(It.IsAny<int>()))
+                .ReturnsAsync(new SessionToken
+                {
+                    UserId = mockUser.Id,
+                    RefreshToken = StringUtil.HashString(validRefreshToken),
+                    ModifiedOnUtc = DateTime.UtcNow
+                });
+
+            // Act
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+
+            // Assert
+            var ex = await Assert.ThrowsAsync<ArgumentException>(act);
+
+            Assert.Equal(expectedExceptionMessage, ex.Message);
+        }
+
+
+        [Fact]
+        public async Task GenerateAccessTokenfromRefreshToken_ThrowsArgumentException_WhenRefreshTokenHasExpired()
+        {
+            // Arrange
+            var expectedExceptionMessage = "Refresh token is not valid. (Parameter 'RefreshToken')";
+            var tokenModel = new TokenModel
+            {
+                AccessToken = validJwtToken,
+                TokenType = tokenType,
+                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                RefreshToken = validRefreshToken
+            };
+
+            mockAuthRepository.Setup(x => x.FindSessionByUserIdAsync(It.IsAny<int>()))
+                .ReturnsAsync(new SessionToken
+                {
+                    UserId = mockUser.Id,
+                    RefreshToken = StringUtil.HashString(validRefreshToken),
+                    ModifiedOnUtc = DateTime.UtcNow-TimeSpan.FromHours(int.Parse(_configuration["Jwt:RefreshTokenExpiryTime"]))
+                });
+
+            // Act
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+
+            // Assert
+            var ex = await Assert.ThrowsAsync<ArgumentException>(act);
+
+            Assert.Equal(expectedExceptionMessage, ex.Message);
+        }
+
+
+        [Fact]
+        public async Task GenerateAccessTokenfromRefreshToken_ThrowsSecurityTokenException_WhenUserIdIsMissingFromClaims()
+        {
+            // Arrange
+            var expectedExceptionMessage = "Missing UserId claim.";
+            claims = new List<Claim>
+            {
+                //Id is omitted.
+                new Claim(ClaimTypes.Email, mockUser.Email),
+                new Claim(ClaimTypes.GivenName, mockUser.Firstname),
+                new Claim(ClaimTypes.Surname, mockUser.Lastname),
+                new Claim(ClaimTypes.Role, "User")
+            };
+
+            var tokenModel = new TokenModel
+            {
+                AccessToken = JwtUtil.GenerateJwtToken(claims, _configuration),
+                TokenType = tokenType,
+                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                RefreshToken = "invalid_refresh_token"
+            };
+
+            // Act
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+
+            // Assert
+            var ex = await Assert.ThrowsAsync<SecurityTokenException>(act);
+            Assert.Equal(expectedExceptionMessage, ex.Message);
+        }
+
+
+        [Fact]
+        public async Task ValidateRefreshToken_ThrowsEntityNotFoundException_When_UserSessionDoesNotExist()
+        {
+            // Arrange
+            var expectedExceptionMessage = "The specified entity does not exist in the database";
+           
+            var tokenModel = new TokenModel
+            {
+                AccessToken = JwtUtil.GenerateJwtToken(claims, _configuration),
+                TokenType = tokenType,
+                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                RefreshToken = "invalid_refresh_token"
+            };
+
+            mockAuthRepository.Setup(x => x.FindSessionByUserIdAsync(It.IsAny<int>())).ReturnsAsync((SessionToken?)null);
+
+            // Act
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+
+            // Assert
+            var ex = await Assert.ThrowsAsync<EntityNotFoundException>(act);
+            Assert.Equal(expectedExceptionMessage, ex.Message);
+        }
+
+
+        [Fact]
+        public async Task GetPrincipalFromExpiredToken_ThrowsSecurityTokenException_WhenJwtkeySignatureIsInvalid()
+        {
+            // Arrange
+            var expectedExceptionMessage = "Invalid access token";
+            var tokenModel = new TokenModel
+            {
+                AccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxIiwi" +
+                "aHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZ" +
+                "XNzIjoiZmlyc3RuYW1lQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUv" +
+                "aWRlbnRpdHkvY2xhaW1zL2dpdmVubmFtZSI6IkZpcnN0TmFtZSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL" +
+                "3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL3N1cm5hbWUiOiJMYXN0T",
+                TokenType = tokenType,
+                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                RefreshToken = validRefreshToken
+            };
+
+            mockAuthRepository.Setup(x => x.FindSessionByUserIdAsync(It.IsAny<int>()))
+                .ReturnsAsync(new SessionToken
+                {
+                    UserId = mockUser.Id,
+                    RefreshToken = StringUtil.HashString(validRefreshToken),
+                    ModifiedOnUtc = DateTime.UtcNow
+                });
+
+            // Act
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+
+            // Assert
+            var ex = await Assert.ThrowsAsync<SecurityTokenException>(act);
+
+            Assert.Equal(expectedExceptionMessage, ex.Message);
+        }
+
+        [Fact]
+        public async Task GetPrincipalFromExpiredToken_ThrowsSecurityTokenException_WhenAccessTokenIsNotJwt()
+        {
+            // Arrange
+            var expectedExceptionMessage = "Invalid access token";
+            var tokenModel = new TokenModel
+            {
+                AccessToken = "certainly_not_jwt_token",
+                TokenType = tokenType,
+                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                RefreshToken = validRefreshToken
+            };
+
+            mockAuthRepository.Setup(x => x.FindSessionByUserIdAsync(It.IsAny<int>()))
+                .ReturnsAsync(new SessionToken
+                {
+                    UserId = mockUser.Id,
+                    RefreshToken = StringUtil.HashString(validRefreshToken),
+                    ModifiedOnUtc = DateTime.UtcNow
+                });
+
+            // Act
+            async Task<TokenModel> act() => await authService.GenerateAccessTokenfromRefreshToken(tokenModel);
+
+            // Assert
+            var ex = await Assert.ThrowsAsync<SecurityTokenException>(act);
+
+            Assert.Equal(expectedExceptionMessage, ex.Message);
         }
     }
 }
