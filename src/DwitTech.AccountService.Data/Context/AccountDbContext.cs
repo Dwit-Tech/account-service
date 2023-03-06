@@ -25,6 +25,12 @@ namespace DwitTech.AccountService.Data.Context
             var assembly = Assembly.GetExecutingAssembly();
             builder.AddEntityConfigurations(assembly);
             base.OnModelCreating(builder);
+
+            #region OwnedTypeSeed
+            builder.Entity<Role>().OwnsOne(r => r.Roles).HasData(
+                new { RoleId = 1, Name = "", Description = "" },
+                new { RoleId = 2, Name = "", Description = "" });
+            #endregion
         }
     }
 }
