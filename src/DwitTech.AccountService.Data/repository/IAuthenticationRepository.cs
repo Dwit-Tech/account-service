@@ -10,7 +10,7 @@ namespace DwitTech.AccountService.Data.Repository
     public interface IAuthenticationRepository
     {
         Task<SessionToken?> FindSessionByUserIdAsync(int userId);
-        Task UpdateSessionTokenAsync();
+        Task UpdateSessionTokenAsync(SessionToken sessiondetails);
         Task AddSessionAsync(SessionToken sessionDetails);
     }
 }

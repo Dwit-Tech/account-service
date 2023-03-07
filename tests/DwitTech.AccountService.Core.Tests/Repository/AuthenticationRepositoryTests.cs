@@ -4,11 +4,6 @@ using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Tests.Repository
 {
@@ -62,7 +57,7 @@ namespace DwitTech.AccountService.Core.Tests.Repository
 
             //Act
             existingSession.RefreshToken = sessionDetails.RefreshToken;
-            await authRepo.UpdateSessionTokenAsync();
+            await authRepo.UpdateSessionTokenAsync(existingSession);
 
             //Assert
             var updatedSession = await accountDbContext.SessionTokens.FirstOrDefaultAsync(x => x.UserId == sessionDetails.UserId);

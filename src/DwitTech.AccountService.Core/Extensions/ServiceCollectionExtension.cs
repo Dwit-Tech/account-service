@@ -24,6 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 opt.UseNpgsql(connectionString, c => c.CommandTimeout(120));
 #if DEBUG
                 opt.EnableSensitiveDataLogging();
+                opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 #endif
             },
             contextLifetime: ServiceLifetime.Scoped,

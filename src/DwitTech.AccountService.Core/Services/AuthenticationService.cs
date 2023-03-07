@@ -8,7 +8,6 @@ using System.Security.Claims;
 using System.Text;
 using DwitTech.AccountService.Data.Repository;
 using DwitTech.AccountService.Core.Utilities;
-using DwitTech.AccountService.Core.Exceptions;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -59,7 +58,7 @@ namespace DwitTech.AccountService.Core.Services
             {
                 currentUserSession.RefreshToken = StringUtil.HashString(refreshToken);
                 currentUserSession.ModifiedOnUtc = DateTime.UtcNow;
-                await _repository.UpdateSessionTokenAsync();
+                await _repository.UpdateSessionTokenAsync(currentUserSession);
                 return tokenModel;
             }
 
@@ -82,13 +81,13 @@ namespace DwitTech.AccountService.Core.Services
             //Get principal from expired access token
             var principal = GetPrincipalFromExpiredToken(tokenModel.AccessToken);
 
-            var userId = int.Parse(principal.FindFirst("UserId")?.Value ?? throw new SecurityTokenException("Missing UserId claim."));
+            var userId = int.Parse(principal!.FindFirst("UserId")?.Value ?? throw new SecurityTokenException("Missing UserId claim."));
 
             //Validate the refresh token
             var isValid = await ValidateUserRefreshToken(userId, tokenModel.RefreshToken);
             if (!isValid)
             {
-                throw new ArgumentException("Refresh token is not valid.", nameof(TokenModel.RefreshToken));
+                throw new ArgumentException("The refresh token is not valid.");
             }
 
             var claimsList = new List<Claim>();
@@ -105,13 +104,8 @@ namespace DwitTech.AccountService.Core.Services
 
             //update refresh token to db in hashed format
             var currentSession = await _repository.FindSessionByUserIdAsync(userId);
-
-            if (currentSession == null)
-            {
-                throw new EntityNotFoundException();
-            }
-            currentSession.RefreshToken = StringUtil.HashString(newRefreshToken);
-            await _repository.UpdateSessionTokenAsync();
+            currentSession!.RefreshToken = StringUtil.HashString(newRefreshToken);
+            await _repository.UpdateSessionTokenAsync(currentSession);
 
             return new TokenModel
             {
@@ -130,29 +124,17 @@ namespace DwitTech.AccountService.Core.Services
 
             if (currentSession == null)
             {
-                throw new EntityNotFoundException();
-            }
-            else
-            {
-                if (currentSession.ModifiedOnUtc.HasValue)
-                {
-                    if (hashedrefreshToken == currentSession.RefreshToken &&
-                    DateTime.UtcNow < currentSession.ModifiedOnUtc.Value.AddHours(int.Parse(_configuration["Jwt:RefreshTokenExpiryTime"])))
-                    {
-                        return true;
-                    }
-
-                    return false;
-                }
-                if (hashedrefreshToken == currentSession.RefreshToken &&
-                    DateTime.UtcNow < currentSession.CreatedOnUtc.AddHours(int.Parse(_configuration["Jwt:RefreshTokenExpiryTime"])))
-                {
-                    return true;
-                }
-
                 return false;
-
             }
+
+            if (currentSession.ModifiedOnUtc.HasValue)
+            {
+                return hashedrefreshToken == currentSession.RefreshToken &&
+                       DateTime.UtcNow < currentSession.ModifiedOnUtc.Value.AddHours(int.Parse(_configuration["Jwt:RefreshTokenExpiryTime"]));
+            }
+
+            return hashedrefreshToken == currentSession.RefreshToken &&
+                   DateTime.UtcNow < currentSession.CreatedOnUtc.AddHours(int.Parse(_configuration["Jwt:RefreshTokenExpiryTime"]));
         }
 
 

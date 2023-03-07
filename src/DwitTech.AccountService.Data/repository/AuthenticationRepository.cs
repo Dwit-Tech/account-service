@@ -24,8 +24,9 @@ namespace DwitTech.AccountService.Data.Repository
             return await _context.SessionTokens.Where(x => x.UserId == userId).FirstOrDefaultAsync();
         }
 
-        public async Task UpdateSessionTokenAsync()
+        public async Task UpdateSessionTokenAsync(SessionToken sessionDetails)
         {
+            _context.Update(sessionDetails);
             await _context.SaveChangesAsync();
         }
 
