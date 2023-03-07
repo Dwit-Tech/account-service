@@ -18,6 +18,7 @@ namespace DwitTech.AccountService.Data.Context
         {
         }
 
+        public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -27,9 +28,9 @@ namespace DwitTech.AccountService.Data.Context
             base.OnModelCreating(builder);
 
             #region OwnedTypeSeed
-            builder.Entity<Role>().OwnsOne(r => r.Roles).HasData(
-                new { RoleId = 1, Name = "", Description = "" },
-                new { RoleId = 2, Name = "", Description = "" });
+            builder.Entity<Role>().HasData(
+                new Role { Id = 1, Name = "Admin", Description = "Administrator Role" },
+                new Role { Id = 2, Name = "User", Description = "User Role" });
             #endregion
         }
     }

@@ -8,6 +8,7 @@ namespace DwitTech.AccountService.Data.Entities
 {
     public class Role : BaseEntity
     {
-        public RoleName Roles { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
     }
 }
