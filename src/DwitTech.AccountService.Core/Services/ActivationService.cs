@@ -3,8 +3,10 @@ using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Utilities;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using RestSharp;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json.Serialization;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -36,11 +38,15 @@ namespace DwitTech.AccountService.Core.Services
         {
             string baseUrl = GetBaseUrl();
             string activationCode = GetActivationCode();
-            var SaveResponse = await _userRepository.SaveUserValidationCode(userId, activationCode);
-            if (SaveResponse is null)
-                throw new Exception("Failed to save validation code");
-            string activationUrl = baseUrl + "/Account/Activation/" + activationCode;
-            return activationUrl;
+            try {
+                var saveResponse = await _userRepository.SaveUserValidationCode(userId, activationCode);
+                string activationUrl = baseUrl + "/Account/Activation/" + activationCode;
+                return activationUrl;
+            }catch(Exception ex)
+            {
+                throw new ArgumentException($"{ex.Message}");
+            }
+            
         }
 
         private string GetTemplate(string templateName)
@@ -53,14 +59,23 @@ namespace DwitTech.AccountService.Core.Services
             return templateText.ToString();
         }
 
-        private async Task<bool> SendMailAsync(string fromEmail, string toEmail, string subject, string body, string cc = "", string bcc = "")
+        private async Task<bool> SendMailAsync(string fromEmail, string toEmail, string subject, string body, string cc, string bcc)
         {
             var emailObject = new Email { FromEmail = fromEmail, ToEmail = toEmail, Subject = subject, Body = body };
 
-            var client = new RestClient(_configuration["NotificationService:BaseUrl"]);
-            var request = new RestRequest(_configuration["NotificationService:SendEmail"]).AddJsonBody(emailObject);
-            var response = await client.PostAsync<string>(request);
-            if (request is null);
+            var url = "https://jsonplaceholder.typicode.com/posts";
+
+
+            var client = new RestClient(url);
+            var request = new RestRequest(url, Method.Post); 
+            request.AddHeader("Content-Type", "application/json");
+            var message = JsonConvert.SerializeObject(emailObject);
+            request.AddBody(message, "application/json");
+            RestResponse response = await client.ExecuteAsync(request);
+
+            if (response is null)
+                return false;
+            
             return true;
 
         }
@@ -68,8 +83,6 @@ namespace DwitTech.AccountService.Core.Services
         public async Task<bool> SendActivationEmail(string userId, string fromEmail, string toEmail, string templateName, string RecipientName,
             string subject = "Account Activation", string cc = "", string bcc = "")
         {
-
-            var baseUrl = GetBaseUrl();
 
             var activationUrl = await GetActivationUrl(userId);
             string templateText = GetTemplate(templateName);

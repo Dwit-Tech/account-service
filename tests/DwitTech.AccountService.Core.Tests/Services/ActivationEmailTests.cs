@@ -14,14 +14,14 @@ namespace DwitTech.AccountService.Core.Tests.Services
     {
 
         [Theory]
-        [InlineData("userId", "FromEmail", "ToEmail", "Body", "Subject", "CC", "BCC")]
-        public async Task Send_Activation_Email(string userId, string FromEmail, string ToEmail, string Body, string Subject, string CC, string BCC)
+        [InlineData("userId=2", "testcase@gmail.com", "example@gmail.com", "EmailTemplate.html", "sendActivationEmail", "cc", "bcc")]
+        public async Task Send_Activation_Email(string userId, string fromEmail, string toEmail, string body, string subject, string cc, string bcc)
         {
             //Arrange
-            IEmailService EmailService = new EmailService();
+            IEmailService emailService = new EmailService();
 
             //Act
-            var actual = await EmailService.SendEmail(userId, FromEmail, ToEmail, Body, Subject, CC, BCC);
+            var actual = await emailService.SendEmail(userId, fromEmail, toEmail, body, subject, cc, bcc);
 
             //Assert
             Assert.True(actual);

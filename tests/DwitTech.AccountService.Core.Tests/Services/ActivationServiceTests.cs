@@ -1,6 +1,10 @@
-﻿using DwitTech.AccountService.Core.Services;
+﻿using Castle.Core.Configuration;
+using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Repository;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using System;
@@ -14,34 +18,25 @@ namespace DwitTech.AccountService.Core.Tests.Services
     public class ActivationServiceTests
     {
         [Theory]
-        [InlineData("testcase@gmail.com", "example@gmail.com", "EmailTemplate.html", "Mike", true)]
-        public async Task SendActivationEmail_Returns_True(string fromMail, string toMail, string templateName, string RecipientName, bool expected)
+       [InlineData("2", "testcase@gmail.com", "example@gmail.com", "EmailTemplate.html", "Mike", true)]
+
+        public async Task SendActivationEmail_Returns_True(string userId, string fromMail, string toMail, string templateName, string RecipientName, bool expected)
+        
         {
-            //Arrange
-            var inMemorySettings = new Dictionary<string, string> {
-                {"BaseUrl", "https://example.com"},
-                {"NotificationService:BaseUrl","https://example.com" },
-                {"NotificationService:SendEmail", "/send"},
-            };
+            var _configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
+            {
 
 
-            IConfiguration configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(inMemorySettings)
-                .Build();
-          
-            var mockDbContext = new Mock<AccountDbContext>();
+            }).Build();
 
-            IUserRepository repository = new UserRepository(mockDbContext.Object);
+            var userRepository = new Mock<IUserRepository>();
+            IActivationService activationService = new ActivationService(_configuration, userRepository.Object);
+            var result = await activationService.SendActivationEmail(userId, fromMail, toMail, templateName, RecipientName);
+            Assert.True(result);
 
-            
-            var actService = new ActivationService(configuration, repository);
 
-            //Act
-            var actual = await actService.SendActivationEmail(Guid.NewGuid().ToString(), fromMail, toMail, templateName, RecipientName);
 
-            //Assert
-            Assert.Equal(expected, actual);
+
         }
     }
 }
-  

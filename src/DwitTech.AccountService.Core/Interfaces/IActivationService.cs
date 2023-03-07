@@ -10,5 +10,6 @@ namespace DwitTech.AccountService.Core.Interfaces
     {
         Task<bool> SendActivationEmail(string userId, string fromEmail, string toEmail, string templateName, string RecipientName,
              string subject = "Account Activation", string cc = "", string bcc = "");
+        
     }
 }
