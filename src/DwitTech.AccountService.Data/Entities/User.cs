@@ -11,11 +11,11 @@ namespace DwitTech.AccountService.Data.Entities
     {
         [Required]
         [MaxLength(25)]
-        public string Firstname { get; set; }
+        public string FirstName { get; set; }
 
         [Required]
         [MaxLength(25)]
-        public string Lastname { get; set; }
+        public string LastName { get; set; }
 
         [Required]
         [MaxLength(45)]
@@ -52,8 +52,5 @@ namespace DwitTech.AccountService.Data.Entities
 
         public UserStatus Status { get; set; }
 
-        public string ActivationDetail { get; set; }
-        public DateTime ActivationDetailCreated { get; set; }
-        public DateTime ActivationDetailExpires { get; set; }
     }
 }

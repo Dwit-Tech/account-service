@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using DwitTech.AccountService.Data.Entities;
+using static DwitTech.AccountService.Data.Repository.IUserRepository;
 
 namespace DwitTech.AccountService.Data.Context
 {
@@ -20,7 +21,7 @@ namespace DwitTech.AccountService.Data.Context
 
         
         public DbSet<User> Users { get; set; }
-        public DbSet<ActivationDetail> activationDetails { get; set; }
+        public DbSet<ValidationCode> ValidationCodes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

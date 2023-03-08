@@ -4,16 +4,12 @@ using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
 
-
 namespace DwitTech.AccountService.Core.Services
 {
     public class ActivationService : IActivationService
     {
         private readonly IConfiguration _configuration; //Config instance for GetBaseUrl method
         private readonly IUserRepository _userRepository;
-
-        public ActivationDetail codeDetail { get; private set; }
-        public int Id { get; private set; }
 
         public ActivationService(IConfiguration configuration, IUserRepository userRepository)
         {
@@ -68,48 +64,47 @@ namespace DwitTech.AccountService.Core.Services
             return response;
         }
 
-        private bool SendWelcomeEmail(string fromEmail, string toEmail, string templateName, string FirstName, string LastName, string Password, string subject = "Welcome Message", string cc = "", string bcc = "")
+        public bool SendWelcomeEmail(string fromEmail, string toEmail, string templateName, string subject = "Account Details", string cc = "", string bcc = "")
         {
+            var user = new User();
             string templateText = GetTemplate(templateName);
-            templateText = templateText.Replace("{{Firstname}}", FirstName);
-            templateText = templateText.Replace("{{Lastname}}", LastName);
-            templateText = templateText.Replace("{{Email}}", toEmail);
-            templateText = templateText.Replace("{{Password}}", Password);
+            templateText = templateText.Replace("{{Firstname}}", user.FirstName);
+            templateText = templateText.Replace("{{Lastname}}", user.LastName);
+            templateText = templateText.Replace("{{Email}}", user.Email);
+            templateText = templateText.Replace("{{Password}}", user.Password);
             string body = templateText;
             var response = SendMail(fromEmail, toEmail, subject, body, cc, bcc);
 
             return response;
         }
 
-        public async Task<bool> ActivateUser(string activationCode)
+        public async Task<bool> ActivateUser(string activationCode, string fromEmail, string toEmail, string templateName, string subject = "Account Details", string cc = "", string bcc = "")
         {
-            var activationDetail = await _userRepository.GetActivationDetail(activationCode);
-
-            var user = await _userRepository.GetUser(activationDetail.Id);
+            var activationResult = await _userRepository.GetActivationDetail(activationCode);
+            if (activationResult == null)
             {
-                if (user.Status != UserStatus.Inactive)
-                {
-                    throw new Exception("User already Verified.");
-                }
+                return false;
             }
-
-            var activationCodeExpiry = await _userRepository.ActivationCodeExpiry(codeDetail);
-            {
-                return true;
-            }
-
-            var actvationEmail = SendActivationEmail("elugwujecinta@gmail.com", "jecinta.elugwu@whogohost.com", "EmailTemplate", "Jessie Jhay", "", "", "");
+        
+            var userStatus = await _userRepository.GetUserStatus(activationResult.UserId);
             
-            if (actvationEmail)
+            if (!userStatus)
             {
-                var updateUserStatus = await _userRepository.UpdateUserStatus(Id);
-                {
-                    return true;
-                }
-            }
-            
-            var welcomeEmail = SendWelcomeEmail("elugwujecinta@gmail.com", "jecinta.elugwu@whogohost.com", "WelcomeEmail", "Jessie Jhay", "", "", "");
+                throw new Exception("User already Verified.");
+            } 
 
+            var validationCode = await _userRepository.ValidateActivationCodeExpiry(activationCode);
+
+            if (!validationCode)
+            {
+                throw new InvalidOperationException("Activation Code has expired");
+            }
+
+            await _userRepository.UpdateUserStatus(activationResult);
+            
+            var response = SendWelcomeEmail(fromEmail, toEmail, templateName, subject,  cc, bcc);
+            return response;
+            
         }
     }
 }

@@ -1,5 +1,8 @@
 ﻿using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using static DwitTech.AccountService.Data.Repository.IUserRepository;
 
 namespace DwitTech.AccountService.Data.Repository
 {
@@ -12,45 +15,49 @@ namespace DwitTech.AccountService.Data.Repository
             _dbContext = dbContext;
         }
 
-
-        public async Task<User> GetActivationDetail(string activationCode) 
+        public async Task<ValidationCode> GetActivationDetail(string activationCode)
         {
-            return _dbContext.Users.FirstOrDefault(x => x.ActivationDetail == activationCode.ToString());
+            var validationCode = await _dbContext.ValidationCodes.Where(x => x.Code == activationCode).FirstOrDefaultAsync();
+            return validationCode;
         }
 
-
-        public async Task<User> GetUser(int Id)
+        public async Task<bool> GetUserStatus(int id)
         {
-            return _dbContext.Users.FirstOrDefault(x => x.Status == UserStatus.Inactive);
-        }
-
-
-        public async Task<ActivationDetail> ActivationCodeExpiry(ActivationDetail codeDetail)
-        {
-            var activationCode = new ActivationDetail()
+            var status = await _dbContext.Users.Where(x => x.Id == id).Select(x => x.Status).FirstOrDefaultAsync();
+            if (status == UserStatus.Inactive)
             {
-                Expires = DateTime.Now.AddMinutes(10),
-                Created = DateTime.Now
-            };
-
-           if (codeDetail.Expires == DateTime.Now)
-            {
-                throw new InvalidOperationException("Activation Code has expired");
+                return true;
             }
-            return codeDetail;
+            return false;
         }
-    
-        public async Task<User> UpdateUserStatus(int Id)
+
+        public async Task<bool> ValidateActivationCodeExpiry(string activationCode)
+        {
+            var validationCode = await GetActivationDetail(activationCode);
+
+            DateTime ExpiredTime = validationCode.CreatedTime.AddMinutes(10);           
+
+            if (DateTime.UtcNow > ExpiredTime)
+            {
+                return false;
+            }
+            return true;
+        }
+
+
+        public async Task UpdateUserStatus(ValidationCode validationDetails)
         {
 
-            var user = await UserRepository.GetUser(id).ToString();
-           
-            foreach (var Status in user)
+            var userStatus = await GetUserStatus(validationDetails.UserId);
+
+            if (userStatus)
             {
-                Status = UserStatus.Active;
+                var user = await _dbContext.Users.Where(x => x.Id == validationDetails.UserId).FirstOrDefaultAsync();
+                user.Status = UserStatus.Active;
+                _dbContext.Update(user);
+                await _dbContext.SaveChangesAsync();
+
             }
-            user.Status.SaveChanges();
-            return user.Status;
         }
     }
 }

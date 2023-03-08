@@ -23,19 +23,22 @@ namespace DwitTech.AccountService.WebApi.Controllers
         {
             try
             {
-                var activationResult = await _activationService.ActivateUser(activationCode);
-                return Ok();
+                string fromEmail = "support@gmail";
+                string toEmail = "info@gmail.com";
+                string templateName = "WelcomeEmail";
+                string subject = "Account Details";
+                string cc = "";
+                string bcc = "";
+
+                var activationResult = await _activationService.ActivateUser(activationCode, fromEmail , toEmail, templateName, subject, cc, bcc);
+                return Ok(activationResult);
             }
             catch (Exception e)
             {
                 return StatusCode(500, "Internal Server Error. Something went Wrong!");
             }
 
-        }
-
-
-  
-        
+        } 
         
     }
 
