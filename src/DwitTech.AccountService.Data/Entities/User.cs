@@ -55,6 +55,8 @@ namespace DwitTech.AccountService.Data.Entities
         [Range(8,16)]
         public string Password { get; set; }
 
+        public Role Roles { get; set; }
+
           
     }
 }
