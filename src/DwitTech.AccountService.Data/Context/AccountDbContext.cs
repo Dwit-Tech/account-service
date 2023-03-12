@@ -20,6 +20,7 @@ namespace DwitTech.AccountService.Data.Context
 
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<SessionToken> SessionTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -23,7 +23,7 @@ namespace DwitTech.AccountService.Core.Services
 
         private static string GetActivationCode()
         {
-            var activationCode = RandomUtil.GenerateUniqueCode();
+            var activationCode = StringUtil.GenerateUniqueCode();
             return activationCode;
         }
 
