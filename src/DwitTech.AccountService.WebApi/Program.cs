@@ -1,4 +1,3 @@
-using DwitTech.Authentication;
 using System.Text.Json.Serialization;
 
 namespace DwitTech.AccountService.WebApi
