@@ -105,6 +105,7 @@ namespace DwitTech.AccountService.Core.Services
             //update refresh token to db in hashed format
             var currentSession = await _repository.FindSessionByUserIdAsync(userId);
             currentSession!.RefreshToken = StringUtil.HashString(newRefreshToken);
+            currentSession.ModifiedOnUtc = DateTime.UtcNow;
             await _repository.UpdateSessionTokenAsync(currentSession);
 
             return new TokenModel
@@ -150,7 +151,7 @@ namespace DwitTech.AccountService.Core.Services
                 ValidateAudience = false,
                 ValidateIssuer = false,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"])),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])),
                 ValidateLifetime = false
             };
 
