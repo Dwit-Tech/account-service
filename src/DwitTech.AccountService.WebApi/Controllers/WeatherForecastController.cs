@@ -1,4 +1,5 @@
 using DwitTech.AccountService.Core.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DwitTech.AccountService.WebApi.Controllers
@@ -17,6 +18,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
             _logger = logger;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
