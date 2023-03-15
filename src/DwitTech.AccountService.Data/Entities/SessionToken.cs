@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Data.Entities
 {
-    public abstract class BaseEntity
+    public class SessionToken:BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
-        public DateTime CreatedOnUtc { get; private set; } = DateTime.UtcNow;
-        public DateTime? ModifiedOnUtc { get; set; }
+        [Required]
+        public int UserId { get; set; }
+        [Required]
+        public string RefreshToken{ get; set; }
     }
 }

@@ -1,16 +1,9 @@
 ﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Context;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using DwitTech.AccountService.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -19,7 +12,6 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddDatabaseService(this IServiceCollection service, IConfiguration configuration)
         {
-
             string connectionString = configuration.GetConnectionString("AccountDbContext");
             connectionString = connectionString.Replace("{DBHost}", configuration["DB_HOSTNAME"]);
             connectionString = connectionString.Replace("{DBPort}", configuration["DB_PORT"]);
@@ -34,6 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 opt.UseNpgsql(connectionString, c => c.CommandTimeout(120));
 #if DEBUG
                 opt.EnableSensitiveDataLogging();
+                opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 #endif
             },
             contextLifetime: ServiceLifetime.Scoped,
@@ -45,33 +38,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddServices(this IServiceCollection service, IConfiguration configuration)
         {
+            service.AddScoped<IAuthenticationService, AuthenticationService>();
+            service.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
 
             service.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             return service;
-        }
-
-        public static void ConfigureAuthentication(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddAuthentication(options =>
-            {
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.Authority = configuration["JWT:Authority"];
-                options.Audience = configuration["JWT:Audience"];
-
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    ValidateIssuer = true,
-                    ValidateLifetime = true,
-                    ValidateAudience = false,
-                    ValidAudiences = new List<string> { configuration["JWT:Audience"] },
-                };
-            });
-        }
-
+        }        
     }
 }

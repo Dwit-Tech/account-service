@@ -9,7 +9,7 @@ namespace DwitTech.AccountService.Data.Entities
 {
     public class User : BaseEntity
     {
-
+        [Key]
         [Required]
         [MaxLength(25)]
         public int Id { get; set; }
@@ -54,6 +54,8 @@ namespace DwitTech.AccountService.Data.Entities
         [Required]
         [Range(8,16)]
         public string Password { get; set; }
+
+        public Role Roles { get; set; }
 
           
     }
