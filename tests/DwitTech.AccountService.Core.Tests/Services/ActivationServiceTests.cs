@@ -17,7 +17,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 {
     public class ActivationServiceTests
     {
-        [Theory]
+       [Theory]
        [InlineData("2", "testcase@gmail.com", "example@gmail.com", "EmailTemplate.html", "Mike", true)]
 
         public async Task SendActivationEmail_Returns_True(string userId, string fromMail, string toMail, string templateName, string RecipientName, bool expected)
