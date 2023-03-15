@@ -17,8 +17,8 @@ namespace DwitTech.AccountService.Data.Repository
 
         public async Task<ValidationCode> GetActivationDetail(string activationCode)
         {
-            var validationCode = await _dbContext.ValidationCodes.Where(x => x.Code == activationCode).FirstOrDefaultAsync();
-            return validationCode;
+            return await _dbContext.ValidationCodes.Where(x => x.Code == activationCode).FirstOrDefaultAsync();
+           
         }
 
         public async Task<bool> GetUserStatus(int id)
@@ -39,9 +39,9 @@ namespace DwitTech.AccountService.Data.Repository
 
             if (DateTime.UtcNow > ExpiredTime)
             {
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
 
 

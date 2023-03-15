@@ -5,12 +5,14 @@ using DwitTech.AccountService.Data.Repository;
 using DwitTech.AccountService.WebApi.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore.InMemory;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace DwitTech.AccountService.WebApi.Tests.Controllers
 {
@@ -23,16 +25,11 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
         [Fact]
         public void ActivateUser_ShouldReturn_HTTP200()
         {
-            //Arrange
-            var inMemorySettings = new Dictionary<string, string>
-            {
-            };
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
 
-            IConfiguration configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(inMemorySettings)
-                .Build();
-
-            var mockDbContext = new Mock<AccountDbContext>();
+            var mockDbContext = new Mock<AccountDbContext>(options);
             var userRepository = new Mock<UserRepository>(mockDbContext.Object);
             var iConfig = new Mock<IConfiguration>();
 

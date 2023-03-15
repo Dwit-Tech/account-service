@@ -17,7 +17,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
             _activationService = activationService;
         }
 
-
+        
         [HttpGet("/Activation/{activationCode}")]
         public async Task<IActionResult> ActivateUser(string activationCode)
         {

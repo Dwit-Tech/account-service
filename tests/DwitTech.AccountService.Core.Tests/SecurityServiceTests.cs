@@ -13,9 +13,9 @@ namespace DwitTech.AccountService.Core.Tests
     {
         [Theory]
         [InlineData("          ", "41b394758330c83757856aa482c79977")]
-        [InlineData("I am testing my hash", 
-            "4ed43d04e7808a252608996917cbab8")]
+        [InlineData("I am testing my hash code", "5c00305ca173f8ae536a344df422bfb8")]
         [InlineData(null, null)]
+        [InlineData("", null)]
         public void HashString_String_return_Hash(string inputString, string hashString)
         {
             //Arrange
