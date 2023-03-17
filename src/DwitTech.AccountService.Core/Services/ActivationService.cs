@@ -64,23 +64,21 @@ namespace DwitTech.AccountService.Core.Services
             return response;
         }
 
-        public bool SendWelcomeEmail(string fromEmail, string toEmail, string templateName, string subject = "Account Details", string cc = "", string bcc = "")
+        public bool SendWelcomeEmail(User user, string fromEmail, string toEmail, string templateName, string subject, string cc, string bcc)
         {
-            var user = new User();
+            
             string templateText = GetTemplate(templateName);
-            templateText = templateText.Replace("{{Firstname}}", user.FirstName);
-            templateText = templateText.Replace("{{Lastname}}", user.LastName);
-            templateText = templateText.Replace("{{Email}}", user.Email);
-            templateText = templateText.Replace("{{Password}}", user.Password);
+            templateText = templateText.Replace("{{Firstname}}", user.Firstname);
+            templateText = templateText.Replace("{{Lastname}}", user.Lastname);
             string body = templateText;
             var response = SendMail(fromEmail, toEmail, subject, body, cc, bcc);
 
             return response;
         }
 
-        public async Task<bool> ActivateUser(string activationCode, string fromEmail, string toEmail, string templateName, string subject = "Account Details", string cc = "", string bcc = "")
+        public async Task<bool> ActivateUser(string activationCode, User user, string fromEmail, string toEmail, string templateName, string subject = "Account Details", string cc = "", string bcc = "")
         {
-            var activationResult = await _userRepository.GetActivationDetail(activationCode);
+            var activationResult = await _userRepository.GetUserActivationDetail(activationCode);
             if (activationResult == null)
             {
                 return false;
@@ -93,7 +91,7 @@ namespace DwitTech.AccountService.Core.Services
                 throw new Exception("User already Verified.");
             } 
 
-            var validationCode = await _userRepository.ValidateActivationCodeExpiry(activationCode);
+            var validationCode = await _userRepository.ValidateUserActivationCodeExpiry(activationCode);
 
             if (!validationCode)
             {
@@ -102,7 +100,7 @@ namespace DwitTech.AccountService.Core.Services
 
             await _userRepository.UpdateUserStatus(activationResult);
             
-            var response = SendWelcomeEmail(fromEmail, toEmail, templateName, subject,  cc, bcc);
+            var response = SendWelcomeEmail(user, fromEmail, toEmail, templateName, subject,  cc, bcc);
             return response;
             
         }

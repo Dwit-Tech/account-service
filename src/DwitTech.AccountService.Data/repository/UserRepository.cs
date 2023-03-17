@@ -1,8 +1,6 @@
 ﻿using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using static DwitTech.AccountService.Data.Repository.IUserRepository;
 
 namespace DwitTech.AccountService.Data.Repository
 {
@@ -15,9 +13,9 @@ namespace DwitTech.AccountService.Data.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<ValidationCode> GetActivationDetail(string activationCode)
+        public async Task<ValidationCode> GetUserActivationDetail(string activationCode)
         {
-            return await _dbContext.ValidationCodes.Where(x => x.Code == activationCode).FirstOrDefaultAsync();
+            return await _dbContext.ValidationCode.Where(x => x.Code == activationCode).FirstOrDefaultAsync();
            
         }
 
@@ -31,13 +29,13 @@ namespace DwitTech.AccountService.Data.Repository
             return false;
         }
 
-        public async Task<bool> ValidateActivationCodeExpiry(string activationCode)
+        public async Task<bool> ValidateUserActivationCodeExpiry(string activationCode)
         {
-            var validationCode = await GetActivationDetail(activationCode);
+            var validationCode = await GetUserActivationDetail(activationCode);
 
-            DateTime ExpiredTime = validationCode.CreatedTime.AddMinutes(10);           
+            DateTime expiredTime = validationCode.CreatedOnUtc.AddMinutes(10);
 
-            if (DateTime.UtcNow > ExpiredTime)
+            if (DateTime.UtcNow > expiredTime)
             {
                 return true;
             }

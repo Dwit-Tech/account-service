@@ -13,12 +13,6 @@ namespace DwitTech.AccountService.Core.Tests.Services
 {
     public class ActivationServiceTests
     {
-        private readonly IConfiguration _configuration;
-        private IActivationService actService;
-        private User mockUser;
-        private ValidationCode mockValidationCode;
-        private Mock<IUserRepository> mockUserRepository;
-
 
         [Theory]
         [InlineData("testcase@gmail.com", "example@gmail.com", "EmailTemplate.html", "Mike", true)]
@@ -40,7 +34,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
             var mockDbContext = new Mock<AccountDbContext>(options);
             IUserRepository repository = new UserRepository(mockDbContext.Object);
-            var iConfig = new Mock<IConfiguration>();
+            //var iConfig = new Mock<IConfiguration>();
             var actService = new ActivationService(configuration, repository);
 
             //Act
@@ -50,6 +44,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             Assert.Equal(expected, actual);
         }
 
+        private readonly IConfiguration _configuration;
 
         [Fact]
         public async Task ActivateUser_Returns_BooleanResult()
@@ -59,22 +54,26 @@ namespace DwitTech.AccountService.Core.Tests.Services
             {
                 Id = 01,
                 UserId = 1,
-                Code = "activationCode",
-                Channel = 27,
-                CodeType = 2,
+                Code = "erg3345dh2"
             };
 
             var mockUserRepository = new Mock<IUserRepository>();
-            
 
 
-            mockUserRepository.Setup(x => x.GetActivationDetail(It.IsAny<string>())).ReturnsAsync(mockValidationCode);
+            mockUserRepository.Setup(x => x.GetUserActivationDetail(It.IsAny<string>())).ReturnsAsync(mockValidationCode);
             mockUserRepository.Setup(x => x.GetUserStatus(It.IsAny<int>())).ReturnsAsync(true);
-            mockUserRepository.Setup(x => x.ValidateActivationCodeExpiry(It.IsAny<string>())).ReturnsAsync(true);
+            mockUserRepository.Setup(x => x.ValidateUserActivationCodeExpiry(It.IsAny<string>())).ReturnsAsync(true);
 
             var actService = new ActivationService(_configuration, mockUserRepository.Object);
 
             string activationCode = "erg3345dh2";
+            var user = new User()
+            {
+                Firstname = "Jane",
+                Lastname = "Doe",
+                Email = "info@janedoe",
+                Password = "reddanger"
+            };
             string fromEmail = "support@gmail";
             string toEmail = "info@gmail.com";
             string templateName = "WelcomeEmail.html";
@@ -83,12 +82,12 @@ namespace DwitTech.AccountService.Core.Tests.Services
             string bcc = "";
 
             //Act
-            var actual = await actService.ActivateUser(activationCode, fromEmail, toEmail, templateName, subject, cc, bcc);
+            var actual = await actService.ActivateUser(activationCode,user, fromEmail, toEmail, templateName, subject, cc, bcc);
 
             //Assert
-            mockUserRepository.Verify(x => x.GetActivationDetail(activationCode), Times.Once);
+            mockUserRepository.Verify(x => x.GetUserActivationDetail(activationCode), Times.Once);
             mockUserRepository.Verify(x => x.GetUserStatus(It.IsAny<int>()), Times.Once);
-            mockUserRepository.Verify(x => x.ValidateActivationCodeExpiry(activationCode), Times.Once);
+            mockUserRepository.Verify(x => x.ValidateUserActivationCodeExpiry(activationCode), Times.Once);
             mockUserRepository.Verify(x => x.UpdateUserStatus(It.IsAny<ValidationCode>()), Times.Once);
 
         }

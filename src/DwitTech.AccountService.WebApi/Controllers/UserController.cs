@@ -19,18 +19,11 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
         
         [HttpGet("/Activation/{activationCode}")]
-        public async Task<IActionResult> ActivateUser(string activationCode)
+        public async Task<IActionResult> ActivateUser(string activationCode, User user, string fromEmail , string toEmail, string templateName, string subject, string cc, string bcc)
         {
             try
             {
-                string fromEmail = "support@gmail";
-                string toEmail = "info@gmail.com";
-                string templateName = "WelcomeEmail";
-                string subject = "Account Details";
-                string cc = "";
-                string bcc = "";
-
-                var activationResult = await _activationService.ActivateUser(activationCode, fromEmail , toEmail, templateName, subject, cc, bcc);
+                var activationResult = await _activationService.ActivateUser(activationCode, user, fromEmail , toEmail, templateName, subject, cc, bcc);
                 return Ok(activationResult);
             }
             catch (Exception e)

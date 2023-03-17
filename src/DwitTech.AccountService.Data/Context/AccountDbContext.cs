@@ -21,7 +21,7 @@ namespace DwitTech.AccountService.Data.Context
 
         
         public DbSet<User> Users { get; set; }
-        public DbSet<ValidationCode> ValidationCodes { get; set; }
+        public DbSet<ValidationCode> ValidationCode { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

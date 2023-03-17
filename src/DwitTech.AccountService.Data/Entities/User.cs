@@ -11,11 +11,11 @@ namespace DwitTech.AccountService.Data.Entities
     {
         [Required]
         [MaxLength(25)]
-        public string FirstName { get; set; }
+        public string Firstname { get; set; }
 
         [Required]
         [MaxLength(25)]
-        public string LastName { get; set; }
+        public string Lastname { get; set; }
 
         [Required]
         [MaxLength(45)]

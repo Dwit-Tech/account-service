@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using DwitTech.AccountService.Data.Entities;
 
 namespace DwitTech.AccountService.WebApi.Tests.Controllers
 {
@@ -20,7 +21,6 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
     {
         private readonly Mock<IActivationService> _mockActService;
         private readonly UserController _controller;
-        private readonly IConfiguration _configuration;
 
         [Fact]
         public void ActivateUser_ShouldReturn_HTTP200()
@@ -38,9 +38,20 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             var userController = new UserController(_mockService.Object);
 
             string activationCode = "erg3345dh2";
+            var user = new User()
+            {
+                Firstname = "Jane",
+                Lastname = "Doe",
+            };
+            string fromEmail = "support@gmail";
+            string toEmail = "info@gmail.com";
+            string templateName = "WelcomeEmail";
+            string subject = "Welcome message";
+            string cc = "";
+            string bcc = "";
 
             //act
-            var actual = userController.ActivateUser(activationCode);
+            var actual = userController.ActivateUser(activationCode, user, fromEmail, toEmail, templateName, subject, cc, bcc);
 
             //assert
             Assert.True(actual.IsCompletedSuccessfully);
