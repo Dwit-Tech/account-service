@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -57,5 +58,11 @@ namespace DwitTech.AccountService.Data.Repository
 
             }
         }
+=======
+﻿namespace DwitTech.AccountService.Data.Repository
+{
+    public class UserRepository : IUserRepository
+    {
+>>>>>>> 3f3714c76094d5c905c8d46d52bbc2c705b884e1
     }
 }

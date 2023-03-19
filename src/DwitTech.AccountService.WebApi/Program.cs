@@ -47,6 +47,8 @@ namespace DwitTech.AccountService.WebApi
             builder.Services.ConfigureAuthentication(builder.Configuration);
 
             builder.Services.AddAuthorization();
+            builder.Services.AddMvc();
+            builder.Services.AddControllers();
 
             var app = builder.Build();
 
@@ -62,10 +64,18 @@ namespace DwitTech.AccountService.WebApi
 
             app.UseHttpsRedirection();
 
+            app.UseRouting();
+
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
 
-            app.MapControllers();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+
 
             app.SetupMigrations(app.Services, app.Configuration);
 

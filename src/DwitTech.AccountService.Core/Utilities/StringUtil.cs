@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Utilities
 {
-    public static class RandomUtil 
+    public static class StringUtil 
 
     {
         internal static readonly string characterOptions = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
@@ -53,6 +49,36 @@ namespace DwitTech.AccountService.Core.Utilities
 
             return result.ToString();
 
+        }
+
+
+        public static string HashString(string inputString)
+        {
+            if (inputString == null)
+            {
+                return null;
+            }
+
+            if (inputString.Equals(""))
+            {
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(inputString)) return null;
+
+            var md5 = MD5.Create();
+            var data = md5.ComputeHash(Encoding.ASCII.GetBytes(inputString));
+
+            return Convert.ToHexString(data).ToLower();
+        }
+
+
+        public static string GenerateRandomBase64string()
+        {
+            var randomNumber = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
     }
 }
