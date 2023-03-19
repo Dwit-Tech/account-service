@@ -26,9 +26,9 @@ namespace DwitTech.AccountService.WebApi.Controllers
                 var activationResult = await _activationService.ActivateUser(activationCode, user, fromEmail , toEmail, templateName, subject, cc, bcc);
                 return Ok(activationResult);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Internal Server Error. Something went Wrong!");
+                return BadRequest($"Something went wrong, due to {ex.Message}, please try again");
             }
 
         } 

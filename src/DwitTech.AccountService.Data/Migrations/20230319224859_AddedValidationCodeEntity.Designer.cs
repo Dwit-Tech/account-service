@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DwitTech.AccountService.Data.Migrations
 {
     [DbContext(typeof(AccountDbContext))]
-    [Migration("20230315120059_ModifiedUserEntity")]
-    partial class ModifiedUserEntity
+    [Migration("20230319224859_AddedValidationCodeEntity")]
+    partial class AddedValidationCodeEntity
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -56,12 +56,12 @@ namespace DwitTech.AccountService.Data.Migrations
                         .HasMaxLength(45)
                         .HasColumnType("character varying(45)");
 
-                    b.Property<string>("FirstName")
+                    b.Property<string>("Firstname")
                         .IsRequired()
                         .HasMaxLength(25)
                         .HasColumnType("character varying(25)");
 
-                    b.Property<string>("LastName")
+                    b.Property<string>("Lastname")
                         .IsRequired()
                         .HasMaxLength(25)
                         .HasColumnType("character varying(25)");
@@ -98,7 +98,7 @@ namespace DwitTech.AccountService.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("DwitTech.AccountService.Data.Repository.IUserRepository+ValidationCode", b =>
+            modelBuilder.Entity("DwitTech.AccountService.Data.Entities.ValidationCode", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -106,17 +106,14 @@ namespace DwitTech.AccountService.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Channel")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("CodeType")
-                        .HasColumnType("integer");
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("CreatedTime")
+                    b.Property<DateTime?>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserId")
@@ -124,7 +121,7 @@ namespace DwitTech.AccountService.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ValidationCodes");
+                    b.ToTable("ValidationCode");
                 });
 #pragma warning restore 612, 618
         }
