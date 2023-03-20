@@ -1,10 +1,11 @@
 ﻿using DwitTech.AccountService.Core.Interfaces;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace DwitTech.AccountService.Core.Services
 {
     public class SecurityService : ISecurityService
     {
-<<<<<<< HEAD
         
         public string HashString(string inputString)
         {
@@ -25,9 +26,6 @@ namespace DwitTech.AccountService.Core.Services
 
             return Convert.ToHexString(data).ToLower();
         }
-
-=======
->>>>>>> 3f3714c76094d5c905c8d46d52bbc2c705b884e1
     }
 
 }

@@ -170,44 +170,42 @@ namespace DwitTech.AccountService.Data.Migrations
                     b.ToTable("Users");
                 });
 
-<<<<<<< HEAD
             modelBuilder.Entity("DwitTech.AccountService.Data.Entities.ValidationCode", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("text");
+                b.Property<string>("Code")
+                    .IsRequired()
+                    .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedOnUtc")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime>("CreatedOnUtc")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("ModifiedOnUtc")
-                        .HasColumnType("timestamp with time zone");
+                b.Property<DateTime?>("ModifiedOnUtc")
+                    .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                b.Property<int>("UserId")
+                    .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("ValidationCode");
-=======
-            modelBuilder.Entity("DwitTech.AccountService.Data.Entities.User", b =>
-                {
-                    b.HasOne("DwitTech.AccountService.Data.Entities.Role", "Roles")
-                        .WithMany()
-                        .HasForeignKey("RolesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                b.ToTable("ValidationCode");
+                modelBuilder.Entity("DwitTech.AccountService.Data.Entities.User", b =>
+                    {
+                        b.HasOne("DwitTech.AccountService.Data.Entities.Role", "Roles")
+                            .WithMany()
+                            .HasForeignKey("RolesId")
+                            .OnDelete(DeleteBehavior.Cascade)
+                            .IsRequired();
 
-                    b.Navigation("Roles");
->>>>>>> 3f3714c76094d5c905c8d46d52bbc2c705b884e1
-                });
+                        b.Navigation("Roles");
+                    });
 #pragma warning restore 612, 618
+            });
         }
     }
 }

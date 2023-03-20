@@ -36,12 +36,9 @@ namespace DwitTech.AccountService.Core.Dtos
         [Required]
         public string PostalCode { get; set; }
 
-<<<<<<< HEAD
         public UserStatus Status { get; set; }
 
-=======
         public Role Roles { get; set; }
->>>>>>> 3f3714c76094d5c905c8d46d52bbc2c705b884e1
     }
 
 }

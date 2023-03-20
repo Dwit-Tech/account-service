@@ -34,7 +34,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
             var mockDbContext = new Mock<AccountDbContext>(options);
             IUserRepository repository = new UserRepository(mockDbContext.Object);
-            //var iConfig = new Mock<IConfiguration>();
+            
             var actService = new ActivationService(configuration, repository);
 
             //Act

@@ -97,8 +97,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
             //Act
             var actual = await userRepository.GetUserStatus(mockActivationDetails.UserId);
-            //async Task act() => await userRepository.GetUserStatus(mockActivationDetails.UserId);
-
+            
             //Assert
             Assert.True(actual);
         }
