@@ -30,6 +30,9 @@ namespace DwitTech.AccountService.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -49,12 +52,14 @@ namespace DwitTech.AccountService.Data.Migrations
                         new
                         {
                             Id = 1,
+                            CreatedOnUtc = new DateTime(2023, 3, 14, 19, 50, 17, 98, DateTimeKind.Utc).AddTicks(5934),
                             Description = "Administrator Role",
                             Name = "Admin"
                         },
                         new
                         {
                             Id = 2,
+                            CreatedOnUtc = new DateTime(2023, 3, 14, 19, 50, 17, 98, DateTimeKind.Utc).AddTicks(5937),
                             Description = "User Role",
                             Name = "User"
                         });
