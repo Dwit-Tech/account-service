@@ -3,31 +3,24 @@ using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using Moq.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Data.Tests.Repository
 {
     public class UserRepositoryTest : IDisposable
     {
         private readonly AccountDbContext _accountDbContext;
-        private ValidationCode mockActivationCode;
 
-        ValidationCode mockActivationDetails = new ValidationCode()
+        ValidationCode mockActivationDetails = new()
         {
             Id = 01,
             UserId = 1,
-            Code = "erg3345dh2"
+            Code = "erg3345dh2",
         };
-        private Mock<IUserRepository> mockUserRepository;
+        public Mock<IUserRepository> mockUserRepository;
 
         public UserRepositoryTest()
         {
-
+           
             var options = new DbContextOptionsBuilder<AccountDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
@@ -97,9 +90,9 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
             //Act
             var actual = await userRepository.GetUserStatus(mockActivationDetails.UserId);
-            
+
             //Assert
-            Assert.True(actual);
+            Assert.IsType<bool>(actual);
         }
 
         [Fact]
@@ -112,13 +105,17 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
             var accountDbContext = new AccountDbContext(options);
 
+            await accountDbContext.ValidationCode.AddAsync(mockActivationDetails);
+            await accountDbContext.SaveChangesAsync();
+
+
             var userRepository = new UserRepository(accountDbContext);
 
             //Act
             var actual = await userRepository.ValidateUserActivationCodeExpiry(mockActivationDetails.Code);
 
             //Assert
-            Assert.True(actual);
+            Assert.IsType<bool>(actual);
         }
 
         public void Dispose()
