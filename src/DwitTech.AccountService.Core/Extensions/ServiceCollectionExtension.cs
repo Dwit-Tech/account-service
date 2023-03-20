@@ -37,10 +37,13 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddServices(this IServiceCollection service, IConfiguration configuration)
         {
+            service.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             service.AddScoped<IAuthenticationService, AuthenticationService>();
             service.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
-
-            service.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            service.AddScoped<IActivationService, ActivationService>();
+            service.AddScoped<IUserRepository, UserRepository>();
+            service.AddScoped<IUserService, UserService>();
+            service.AddScoped<IRoleRepository, RoleRepository>();
             return service;
         }
 
