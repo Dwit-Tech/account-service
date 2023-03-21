@@ -1,13 +1,10 @@
-﻿using DwitTech.AccountService.Core.Interfaces;
-using DwitTech.AccountService.Core.Services;
+﻿using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
-using System.Net.Sockets;
-using static DwitTech.AccountService.Data.Repository.IUserRepository;
 
 namespace DwitTech.AccountService.Core.Tests.Services
 {
@@ -47,7 +44,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
         private readonly IConfiguration _configuration;
 
         [Fact]
-        public async Task ActivateUser_Returns_BooleanResult()
+        public async Task ActivateUser_ValidatesActivationCodeAndSendsWelcomeEmail_WhenCalled()
         {
             //Arrange
             var mockValidationCode = new ValidationCode

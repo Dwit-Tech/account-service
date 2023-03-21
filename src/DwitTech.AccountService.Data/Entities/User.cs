@@ -58,5 +58,6 @@ namespace DwitTech.AccountService.Data.Entities
         public UserStatus Status { get; set; }
 
         public Role Roles { get; set; }
+        
     }
 }
