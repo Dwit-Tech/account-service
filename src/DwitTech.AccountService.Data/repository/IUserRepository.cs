@@ -1,7 +1,9 @@
-﻿namespace DwitTech.AccountService.Data.Repository
+﻿using DwitTech.AccountService.Data.Entities;
+
+namespace DwitTech.AccountService.Data.Repository
 {
     public interface IUserRepository
     {
-        Task<ValidationCode> SaveUserValidationCode(string userId, string validationCode);
+        Task<ValidationCode> SaveUserValidationCode(int userId, string validationCode);
     }
 }

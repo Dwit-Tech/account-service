@@ -1,4 +1,7 @@
-﻿namespace DwitTech.AccountService.Data.Repository
+﻿using DwitTech.AccountService.Data.Context;
+using DwitTech.AccountService.Data.Entities;
+
+namespace DwitTech.AccountService.Data.Repository
 {
     
 
@@ -11,10 +14,10 @@
         {
             _accountDbContext = accountDbContext;
         }
-        public async Task<ValidationCode> SaveUserValidationCode(string userId, string validationCode)
+        public async Task<ValidationCode> SaveUserValidationCode(int userId, string validationCode)
         {
 
-           var response = await _accountDbContext.ValidationCode.AddAsync(new ValidationCode { Code= validationCode, UserId= userId });
+           var response = await _accountDbContext.ValidationCode.AddAsync(new ValidationCode { Code= validationCode, UserId = userId });
             return response.Entity;
         }
     }

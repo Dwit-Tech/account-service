@@ -28,7 +28,7 @@ namespace DwitTech.AccountService.Data.Context
 
             foreach (var configurationInstance in typesToRegister.Select(Activator.CreateInstance))
             {
-                modelBuilder.ApplyConfiguration((dynamic)configurationInstance);
+                modelBuilder.ApplyConfiguration((dynamic)configurationInstance!);
             }
         }
     }

@@ -1,4 +1,8 @@
-﻿using DwitTech.AccountService.Core.Interfaces;
+﻿using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using DwitTech.AccountService.Core.Dtos;
+using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Utilities;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
@@ -9,18 +13,15 @@ namespace DwitTech.AccountService.Core.Services
     {
         private readonly IConfiguration _configuration;
         private readonly IUserRepository _userRepository;
-        private readonly IEmailService _emailService;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _endpointUrl; // TODO
 
-
-        public ActivationService(IConfiguration configuration, IUserRepository userRepository, IEmailService emailService)
+        public ActivationService(IConfiguration configuration, IUserRepository userRepository, IHttpClientFactory httpClientFactory, string endpointUrl)
         {
             _configuration = configuration;
             _userRepository = userRepository;
-            _emailService = emailService;
-        }
-
-        public ActivationService(IConfigurationRoot configuration, IUserRepository @object)
-        {
+            _httpClientFactory = httpClientFactory;
+            _endpointUrl = endpointUrl;
         }
 
         private static string GetActivationCode()
@@ -31,10 +32,10 @@ namespace DwitTech.AccountService.Core.Services
 
         private string GetBaseUrl()
         {
-            return _configuration.GetSection("BaseUrl").Value;
+            return _configuration["BaseUrl"];
         }
 
-        private async Task<string> GetActivationUrl(string userId)
+        private async Task<string> GetActivationUrl(int userId)
         {
             string baseUrl = GetBaseUrl();
             string activationCode = GetActivationCode();
@@ -58,22 +59,33 @@ namespace DwitTech.AccountService.Core.Services
             str.Close();
             return templateText.ToString();
         }
-
-        
-        public async Task<bool> SendActivationEmail(string userId, string fromEmail, string toEmail, string templateName, string RecipientName,
-            string cc = "", string bcc = "")
+ 
+        public async Task<bool> SendActivationEmail(int userId, string templateName, string RecipientName, EmailDto emailDto)
         {
-            const string Subject = "Account Activation";
-           
-           var activationUrl = await GetActivationUrl(userId);
+            const string subject = "Account Activation";
+
+            emailDto.Subject = subject;
+            var activationUrl = await GetActivationUrl(userId);
             string templateText = GetTemplate(templateName);
             templateText = templateText.Replace("{{name}}", RecipientName);
             templateText = templateText.Replace("{{activationUrl}}", activationUrl);
-            string body = templateText;
-            var response = await _emailService.SendMailAsync(userId, fromEmail, toEmail, Subject, body, cc, bcc);
-         
+            emailDto.Body = templateText;
+            var response = await SendMailAsync(emailDto);
 
             return response;
+
+        }
+
+        public async Task<bool> SendMailAsync(EmailDto emailDto)
+        {
+            var serializedEmail = JsonSerializer.Serialize(emailDto);
+            var content = new StringContent(serializedEmail, Encoding.UTF8, "application/json");
+
+            using (var httpClient = _httpClientFactory.CreateClient())
+            {
+                var response = await httpClient.PostAsync(_endpointUrl, content);
+                return response.IsSuccessStatusCode;
+            }
         }
     }
 }

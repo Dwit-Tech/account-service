@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DwitTech.AccountService.Core.Dtos;
 
 namespace DwitTech.AccountService.Core.Interfaces
 {
     public interface IActivationService
     {
-        Task<bool> SendActivationEmail(string userId, string fromEmail, string toEmail, string templateName, string RecipientName,
-             string cc = "", string bcc = "");
+        Task<bool> SendActivationEmail(int userId, string templateName, string RecipientName, EmailDto emailDto);
         
     }
 }
