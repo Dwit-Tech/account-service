@@ -30,6 +30,12 @@ namespace DwitTech.AccountService.Data.Context
             builder.AddEntityConfigurations(assembly);
             base.OnModelCreating(builder);
 
+            #region OwnedTypeSeed
+            builder.Entity<Role>().HasData(
+                new Role { Id = 1, Name = "Admin", Description = "Administrator Role" },
+                new Role { Id = 2, Name = "User", Description = "User Role" });
+            #endregion
+
         }
     }
 }

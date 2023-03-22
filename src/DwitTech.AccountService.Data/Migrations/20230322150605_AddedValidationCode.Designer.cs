@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DwitTech.AccountService.Data.Migrations
 {
     [DbContext(typeof(AccountDbContext))]
-    [Migration("20230227152241_UpdatedMigration")]
-    partial class UpdatedMigration
+    [Migration("20230322150605_AddedValidationCode")]
+    partial class AddedValidationCode
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,6 +23,75 @@ namespace DwitTech.AccountService.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("DwitTech.AccountService.Data.Entities.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedOnUtc = new DateTime(2023, 3, 22, 15, 6, 4, 723, DateTimeKind.Utc).AddTicks(439),
+                            Description = "Administrator Role",
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedOnUtc = new DateTime(2023, 3, 22, 15, 6, 4, 723, DateTimeKind.Utc).AddTicks(443),
+                            Description = "User Role",
+                            Name = "User"
+                        });
+                });
+
+            modelBuilder.Entity("DwitTech.AccountService.Data.Entities.SessionToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SessionTokens");
+                });
 
             modelBuilder.Entity("DwitTech.AccountService.Data.Entities.User", b =>
                 {
@@ -48,6 +117,9 @@ namespace DwitTech.AccountService.Data.Migrations
                     b.Property<string>("Country")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -80,6 +152,9 @@ namespace DwitTech.AccountService.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("RolesId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("State")
                         .IsRequired()
                         .HasColumnType("text");
@@ -89,6 +164,8 @@ namespace DwitTech.AccountService.Data.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RolesId");
 
                     b.ToTable("Users");
                 });
@@ -111,16 +188,29 @@ namespace DwitTech.AccountService.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime?>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.ToTable("ValidationCode");
+                });
+
+            modelBuilder.Entity("DwitTech.AccountService.Data.Entities.User", b =>
+                {
+                    b.HasOne("DwitTech.AccountService.Data.Entities.Role", "Roles")
+                        .WithMany()
+                        .HasForeignKey("RolesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Roles");
                 });
 #pragma warning restore 612, 618
         }

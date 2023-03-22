@@ -52,14 +52,14 @@ namespace DwitTech.AccountService.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedOnUtc = new DateTime(2023, 3, 14, 19, 50, 17, 98, DateTimeKind.Utc).AddTicks(5934),
+                            CreatedOnUtc = new DateTime(2023, 3, 22, 15, 6, 4, 723, DateTimeKind.Utc).AddTicks(439),
                             Description = "Administrator Role",
                             Name = "Admin"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedOnUtc = new DateTime(2023, 3, 14, 19, 50, 17, 98, DateTimeKind.Utc).AddTicks(5937),
+                            CreatedOnUtc = new DateTime(2023, 3, 22, 15, 6, 4, 723, DateTimeKind.Utc).AddTicks(443),
                             Description = "User Role",
                             Name = "User"
                         });
@@ -186,16 +186,29 @@ namespace DwitTech.AccountService.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime?>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.ToTable("ValidationCode");
+                });
+
+            modelBuilder.Entity("DwitTech.AccountService.Data.Entities.User", b =>
+                {
+                    b.HasOne("DwitTech.AccountService.Data.Entities.Role", "Roles")
+                        .WithMany()
+                        .HasForeignKey("RolesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Roles");
                 });
 #pragma warning restore 612, 618
         }
