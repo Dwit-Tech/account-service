@@ -44,7 +44,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
         private readonly IConfiguration _configuration;
 
         [Fact]
-        public async Task ActivateUser_ValidatesActivationCodeAndSendsWelcomeEmail_WhenCalled()
+        public async Task ActivateUser_ValidatesActivationCodeSendsWelcomeEmailAndReturnsBooleanValue_WhenCalled()
         {
             //Arrange
             var mockValidationCode = new ValidationCode
@@ -86,7 +86,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             mockUserRepository.Verify(x => x.GetUserStatus(It.IsAny<int>()), Times.Once);
             mockUserRepository.Verify(x => x.ValidateUserActivationCodeExpiry(activationCode), Times.Once);
             mockUserRepository.Verify(x => x.UpdateUserStatus(It.IsAny<ValidationCode>()), Times.Once);
-
+            Assert.IsType<bool>(actual);
         }
     }
 }
