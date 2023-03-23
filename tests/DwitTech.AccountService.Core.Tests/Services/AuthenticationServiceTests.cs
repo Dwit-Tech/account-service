@@ -14,10 +14,10 @@ namespace DwitTech.AccountService.Core.Tests.Services
     public class AuthenticationServiceTests
     {
         //Setup
-        private User mockUser;
-        private IConfiguration _configuration;
-        private Mock<IAuthenticationRepository> mockAuthRepository;
-        private IAuthenticationService authService;
+        private readonly User mockUser;
+        private readonly IConfiguration _configuration;
+        private readonly Mock<IAuthenticationRepository> mockAuthRepository;
+        private readonly IAuthenticationService authService;
         private const string tokenType = "Bearer";
         private const string validJwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxIiwi" +
                 "aHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiZmlyc3RuYW1lQGdtYWlsLmNvbSIsImh0" +
@@ -131,7 +131,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
         {
             // Arrange
             var accessToken = JwtUtil.GenerateJwtToken(claims, _configuration);
-            var refreshToken = StringUtil.GenerateRandomBase64string();
+            var refreshToken = validRefreshToken;
 
             var sessionToken = new SessionToken
             {
@@ -167,7 +167,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
         {
             // Arrange
             var accessToken = JwtUtil.GenerateJwtToken(claims, _configuration);
-            var refreshToken = StringUtil.GenerateRandomBase64string();
+            var refreshToken = validRefreshToken;
 
             var sessionToken = new SessionToken
             {

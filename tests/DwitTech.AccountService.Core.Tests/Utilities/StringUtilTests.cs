@@ -7,92 +7,61 @@ namespace DwitTech.AccountService.Core.Tests.Utilities
     public class StringUtilTests
     {
         [Fact]
-        public void GenerateUniqueCode_Check_Returns_Unique_twenty_Character_Alphanum_string()
+        public void GenerateUniqueCode_GeneratesUniqueCodes()
         {
-            //Arrange
-            Dictionary<string, string> valuesDict = new();
-            int expected = 100;
+            // Arrange
+            int numberOfCodes = 100;
+            var codes = new HashSet<string>();
 
-            //Act
-            for (int i = 0; i < expected; i++)
+            // Act
+            for (int i = 0; i < numberOfCodes; i++)
             {
-                string codeValue = StringUtil.GenerateUniqueCode();
-                if (!valuesDict.ContainsKey(codeValue))
-                {
-                    valuesDict[codeValue] = i.ToString();
-                }
-            }
+                var randomCode = StringUtil.GenerateUniqueCode();
+                codes.Add(randomCode);
 
-            //Assert
-            Assert.Equal(valuesDict.Count, expected);
+                //Assert
+                Assert.False(string.IsNullOrWhiteSpace(randomCode));                
+            }
+            Assert.Equal(numberOfCodes, codes.Count);
         }
 
-        [Fact]
-        public void GenerateUniqueCode_Check_Result_Length_Always_Equals_Number_Of_Characters_Parameter_Value()
+
+        [Theory]
+        [InlineData(10)]
+        [InlineData(20)]
+        [InlineData(30)]
+        [InlineData(50)]
+        public void GenerateUniqueCode_GeneratesCodeWithCorrectLength(int numberOfCharacters)
         {
-            //Arrange
-            List<int> noOfCharactersOptions = new List<int>() { 15, 22, 30, 42, 50, 38, 6, 28, 17, 46 };
-            int expected = noOfCharactersOptions.Count();
-            int counter = 0;
+            // Act
+            string code = StringUtil.GenerateUniqueCode(numberOfCharacters);
 
-            //Act
-            foreach (int number in noOfCharactersOptions)
-            {
-                string resultValue = StringUtil.GenerateUniqueCode(number);
-                if (number == resultValue.Length)
-                {
-                    counter += 1;
-                }
-            }
-
-            //Assert
-            Assert.Equal(expected, counter);
+            // Assert
+            Assert.Equal(numberOfCharacters, code.Length);
         }
+
 
         [Theory]
         [InlineData(20, false, true, true, 10)]
         [InlineData(20, false, true, true, 5)]
         [InlineData(30, false, false, true, 10)]
         [InlineData(35, false, true, false, 10)]
-        public void GenerateUniqueCode_Check_Result_Has_No_Numbers_When_useNumbers_isFalse(int noOfCharacters, bool useNumbers, bool useAlphabets, bool useSymbols, int expected)
+        public void GenerateUniqueCode_GeneratesCodeWithoutNumbersWhenUseNumbersisFalse(int noOfCharacters, bool useNumbers, bool useAlphabets, bool useSymbols, int expected)
         {
-            //Arrange
-            List<string> resultsList = new();
-            string numbers = "1234567890";
-            int counter = 0;
+            // Arrange
+            var generatedCodes = new HashSet<string>();
 
-            //Act      
-            if (!useNumbers)
+            // Act
+            for (int i = 0; i < expected; i++)
             {
-                //loop to generate results {expected} number of times, and populate the list with the results.
-                for (int i = 0; i < expected; i++)
-                {
-                    string result = StringUtil.GenerateUniqueCode(noOfCharacters, useNumbers, useAlphabets, useSymbols);
-                    resultsList.Add(result);
-                }
-
-                //Check values in the list for characters in numbers and increment counter only if a value has no number.               
-                foreach (var value in resultsList)
-                {
-                    bool matchfound = false;
-                    foreach (char number in numbers)
-                    {
-                        if (value.Contains(number))
-                        {
-                            matchfound = true;
-                            break;
-                        }
-                    }
-
-                    if (!matchfound)
-                    {
-                        counter += 1;
-                    }
-                }
+                string code = StringUtil.GenerateUniqueCode(noOfCharacters, useNumbers, useAlphabets, useSymbols);
+                generatedCodes.Add(code);
+                Assert.False(string.IsNullOrWhiteSpace(code));
+                Assert.DoesNotMatch(@"\d", code);// regex for any digit character
             }
 
-            //Assert
-            Assert.Equal(expected, counter);
+            // Assert
+            Assert.Equal(expected, generatedCodes.Count);
         }
 
 
@@ -101,91 +70,46 @@ namespace DwitTech.AccountService.Core.Tests.Utilities
         [InlineData(20, true, false, true, 5)]
         [InlineData(30, false, false, true, 10)]
         [InlineData(35, true, false, false, 10)]
-        public void GenerateUniqueCode_Check_Result_Has_No_Alphabets_When_useAlphabets_isFalse(int noOfCharacters, bool useNumbers, bool useAlphabets, bool useSymbols, int expected)
+        public void GenerateUniqueCode_GeneratesCodeWithoutAlphabetsWhenUseAlphabetsIsFalse(int noOfCharacters, bool useNumbers, bool useAlphabets, bool useSymbols, int expected)
         {
-            //Arrange
-            List<string> resultsList = new();
-            string alphabets = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            int counter = 0;
+            // Arrange
+            var generatedCodes = new HashSet<string>();
 
-            //Act      
-            if (!useAlphabets)
+            // Act
+            for (int i = 0; i < expected; i++)
             {
-                //loop to generate results {expected} number of times, and populate the list with the results.
-                for (int i = 0; i < expected; i++)
-                {
-                    string result = StringUtil.GenerateUniqueCode(noOfCharacters, useNumbers, useAlphabets, useSymbols);
-                    resultsList.Add(result);
-                }
-
-                //Check values in the list for characters in alphabets and increment counter only if a value has no alphabet.               
-                foreach (var value in resultsList)
-                {
-                    bool matchfound = false;
-                    foreach (char alphabet in alphabets)
-                    {
-                        if (value.Contains(alphabet))
-                        {
-                            matchfound = true;
-                            break;
-                        }
-                    }
-
-                    if (!matchfound)
-                    {
-                        counter += 1;
-                    }
-                }
+                string code = StringUtil.GenerateUniqueCode(noOfCharacters, useNumbers, useAlphabets, useSymbols);
+                generatedCodes.Add(code);
+                Assert.False(string.IsNullOrWhiteSpace(code));
+                Assert.DoesNotMatch(@"[a-zA-Z]+", code);// regex for any letter character
             }
 
-            //Assert
-            Assert.Equal(expected, counter);
+            // Assert
+            Assert.Equal(expected, generatedCodes.Count);
         }
+
 
         [Theory]
         [InlineData(20, true, true, false, 10)]
         [InlineData(20, true, true, false, 5)]
         [InlineData(30, false, true, false, 10)]
         [InlineData(35, true, false, false, 10)]
-        public void GenerateUniqueCode_Check_Result_Has_No_Symbols_When_useSymbols_isFalse(int noOfCharacters, bool useNumbers, bool useAlphabets, bool useSymbols, int expected)
+        public void GenerateUniqueCode_GeneratesCodeWithoutSymbolssWhenUseSymbolsIsFalse(int noOfCharacters, bool useNumbers, bool useAlphabets, bool useSymbols, int expected)
         {
-            //Arrange
-            List<string> resultsList = new();
-            string symbols = "!#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
-            int counter = 0;
+            // Arrange
+            var generatedCodes = new HashSet<string>();
 
-            //Act      
-            if (!useSymbols)
+            // Act
+            for (int i = 0; i < expected; i++)
             {
-                //loop to generate results {expected} number of times, and populate the list with the results.
-                for (int i = 0; i < expected; i++)
-                {
-                    string result = StringUtil.GenerateUniqueCode(noOfCharacters, useNumbers, useAlphabets, useSymbols);
-                    resultsList.Add(result);
-                }
-
-                //Check values in the list for characters in symbols and increment counter only if a value has no symbol.               
-                foreach (var value in resultsList)
-                {
-                    bool matchfound = false;
-                    foreach (char symbol in symbols)
-                    {
-                        if (value.Contains(symbol))
-                        {
-                            matchfound = true;
-                            break;
-                        }
-                    }
-
-                    if (!matchfound)
-                    {
-                        counter += 1;
-                    }
-                }
+                string code = StringUtil.GenerateUniqueCode(noOfCharacters, useNumbers, useAlphabets, useSymbols);
+                generatedCodes.Add(code);
+                Assert.False(string.IsNullOrWhiteSpace(code));
+                Assert.DoesNotMatch(@"[!#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]+", code);// regex for any symbol character
             }
 
-            //Assert
-            Assert.Equal(expected, counter);
+            // Assert
+            Assert.Equal(expected, generatedCodes.Count);
         }
 
 
@@ -204,19 +128,6 @@ namespace DwitTech.AccountService.Core.Tests.Utilities
 
             //Assert
             Assert.Equal(hashString, actual);
-        }
-
-
-        [Fact]
-        public void GenerateRandomString_Returns_Valid_String_Result()
-        {
-            //Act
-            var result = StringUtil.GenerateRandomBase64string();
-
-            //Assert
-            Assert.NotEmpty(result);
-            Assert.NotNull(result);
-            Assert.IsType<string>(result);
         }
     }
 }

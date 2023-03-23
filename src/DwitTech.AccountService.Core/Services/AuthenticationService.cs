@@ -42,7 +42,7 @@ namespace DwitTech.AccountService.Core.Services
         private async Task<TokenModel> GenerateSecurityTokens(int userId, List<Claim> claims)
         {
             var accessToken = JwtUtil.GenerateJwtToken(claims, _configuration);
-            var refreshToken = StringUtil.GenerateRandomBase64string();
+            var refreshToken = Guid.NewGuid().ToString();
 
             var currentUserSession = await _repository.FindSessionByUserIdAsync(userId);
 
@@ -100,7 +100,7 @@ namespace DwitTech.AccountService.Core.Services
 
             //store tokens
             var newAccessToken = JwtUtil.GenerateJwtToken(claimsList,_configuration);
-            var newRefreshToken = StringUtil.GenerateRandomBase64string();
+            var newRefreshToken = Guid.NewGuid().ToString();
 
             //update refresh token to db in hashed format
             var currentSession = await _repository.FindSessionByUserIdAsync(userId);
