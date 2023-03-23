@@ -17,7 +17,6 @@ namespace DwitTech.AccountService.Data.Context
         public AccountDbContext(DbContextOptions<AccountDbContext> options) : base(options)
         {
         }
-
         public DbSet<ValidationCode> ValidationCode { get; set; }
 
         public DbSet<User> Users { get; set; }
@@ -35,7 +34,6 @@ namespace DwitTech.AccountService.Data.Context
                 new Role { Id = 1, Name = "Admin", Description = "Administrator Role" },
                 new Role { Id = 2, Name = "User", Description = "User Role" });
             #endregion
-
         }
     }
 }

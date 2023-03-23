@@ -4,6 +4,6 @@ namespace DwitTech.AccountService.Data.Repository
 {
     public interface IUserRepository
     {
-        Task<ValidationCode> SaveUserValidationCode(int userId, string validationCode);
+        Task<ValidationCode> SaveUserValidationCode(ValidationCode validation);
     }
 }

@@ -34,14 +34,12 @@ namespace DwitTech.AccountService.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -52,14 +50,14 @@ namespace DwitTech.AccountService.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedOnUtc = new DateTime(2023, 3, 22, 15, 6, 4, 723, DateTimeKind.Utc).AddTicks(439),
+                            CreatedOnUtc = new DateTime(2023, 3, 23, 20, 5, 43, 142, DateTimeKind.Utc).AddTicks(1551),
                             Description = "Administrator Role",
                             Name = "Admin"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedOnUtc = new DateTime(2023, 3, 22, 15, 6, 4, 723, DateTimeKind.Utc).AddTicks(443),
+                            CreatedOnUtc = new DateTime(2023, 3, 23, 20, 5, 43, 142, DateTimeKind.Utc).AddTicks(1554),
                             Description = "User Role",
                             Name = "User"
                         });
@@ -150,7 +148,7 @@ namespace DwitTech.AccountService.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("RolesId")
+                    b.Property<int?>("RolesId")
                         .HasColumnType("integer");
 
                     b.Property<string>("State")
@@ -176,21 +174,20 @@ namespace DwitTech.AccountService.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ActivationChannel")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ActivationType")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Code")
-                        .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("CodeType")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("NotificationChannel")
+                        .HasColumnType("integer");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -204,9 +201,7 @@ namespace DwitTech.AccountService.Data.Migrations
                 {
                     b.HasOne("DwitTech.AccountService.Data.Entities.Role", "Roles")
                         .WithMany()
-                        .HasForeignKey("RolesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("RolesId");
 
                     b.Navigation("Roles");
                 });

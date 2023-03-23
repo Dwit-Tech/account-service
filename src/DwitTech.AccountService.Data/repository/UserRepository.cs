@@ -3,21 +3,17 @@ using DwitTech.AccountService.Data.Entities;
 
 namespace DwitTech.AccountService.Data.Repository
 {
-    
-
-    
     public class UserRepository : IUserRepository
     {
         private readonly AccountDbContext _accountDbContext;
-
-        public UserRepository(AccountDbContext accountDbContext) 
+        public UserRepository(AccountDbContext accountDbContext)
         {
             _accountDbContext = accountDbContext;
         }
-        public async Task<ValidationCode> SaveUserValidationCode(int userId, string validationCode)
+        public async Task<ValidationCode> SaveUserValidationCode(ValidationCode validationCode)
         {
-
-           var response = await _accountDbContext.ValidationCode.AddAsync(new ValidationCode { Code= validationCode, UserId = userId });
+            var response = await _accountDbContext.ValidationCode.AddAsync(validationCode);
+            await _accountDbContext.SaveChangesAsync();
             return response.Entity;
         }
     }
