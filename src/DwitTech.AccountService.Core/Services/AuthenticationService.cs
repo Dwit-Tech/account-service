@@ -50,7 +50,7 @@ namespace DwitTech.AccountService.Core.Services
             {
                 AccessToken = accessToken,
                 TokenType = tokenType,
-                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), //convert to seconds
+                ExpiresIn = 60 * int.Parse(_configuration["JWT_TOKEN_EXPIRY_MINUTES"]), //convert to seconds
                 RefreshToken = refreshToken
             };
 
@@ -112,7 +112,7 @@ namespace DwitTech.AccountService.Core.Services
             {
                 AccessToken = newAccessToken,
                 TokenType = tokenType,
-                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), //convert to seconds
+                ExpiresIn = 60 * int.Parse(_configuration["JWT_TOKEN_EXPIRY_MINUTES"]), //convert to seconds
                 RefreshToken = newRefreshToken
             };
         }
@@ -131,11 +131,11 @@ namespace DwitTech.AccountService.Core.Services
             if (currentSession.ModifiedOnUtc.HasValue)
             {
                 return hashedrefreshToken == currentSession.RefreshToken &&
-                       DateTime.UtcNow < currentSession.ModifiedOnUtc.Value.AddHours(int.Parse(_configuration["Jwt:RefreshTokenExpiryTime"]));
+                       DateTime.UtcNow < currentSession.ModifiedOnUtc.Value.AddHours(int.Parse(_configuration["JWT_REFRESH_TOKEN_EXPIRY_HOURS"]));
             }
 
             return hashedrefreshToken == currentSession.RefreshToken &&
-                   DateTime.UtcNow < currentSession.CreatedOnUtc.AddHours(int.Parse(_configuration["Jwt:RefreshTokenExpiryTime"]));
+                   DateTime.UtcNow < currentSession.CreatedOnUtc.AddHours(int.Parse(_configuration["JWT_REFRESH_TOKEN_EXPIRY_HOURS"]));
         }
 
 
@@ -151,7 +151,7 @@ namespace DwitTech.AccountService.Core.Services
                 ValidateAudience = false,
                 ValidateIssuer = false,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT_KEY"])),
                 ValidateLifetime = false
             };
 
