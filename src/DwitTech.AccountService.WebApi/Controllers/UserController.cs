@@ -1,5 +1,7 @@
-﻿using DwitTech.AccountService.Core.Dtos;
+﻿using AutoMapper;
+using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Core.Utilities;
 using DwitTech.AccountService.Data.Entities;
@@ -14,27 +16,33 @@ namespace DwitTech.AccountService.WebApi.Controllers
         private readonly IActivationService _activationService;
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
-        public UserController(IUserService userService, IActivationService activationService, IConfiguration configuration)
+        private readonly IMapper _mapper;
+        public UserController(IUserService userService, IActivationService activationService, IConfiguration configuration, IMapper mapper)
         {
             _userService = userService;
             _activationService = activationService;
             _configuration = configuration;
+            _mapper = mapper;
         }
 
+        
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> CreateUser(UserDto user)
+        [Route("/createuser")]
+        public async Task<IActionResult> CreateUser([FromBody] UserDto user)
         {
 
            
             try
             {
-                user.Password = StringUtil.HashString(user.Password);
+                var userModel = _mapper.Map<User>(user);
+                user.PassWord  = StringUtil.HashString(user.PassWord);
                 user.Roles = _userService.CheckUserRoleState(user.Roles);
-                var recipientName = $"{user.Firstname} {user.Lastname}";
-                _activationService.SendActivationEmail(_configuration["GmailInfo:Email"], user.Email, "EmailTemplate.html", recipientName.ToUpper(), "", "", "");
-                var newUser = await _userService.CreateUser(user);
-                return Ok(newUser);
+                var emailModel = new Email { FromEmail = _configuration["GmailInfo:Email"], ToEmail = user.Email,  Subject="", Body="" };
+                var recipientName = $"{user.FirstName} {user.LastName}";
+                await _activationService.SendActivationEmail(userModel.Id,"EmailTemplate.html", recipientName.ToUpper(), emailModel);
+                await _userService.CreateUser(user);
+                return Ok("User Created Successfully");
                 
             }
             catch (Exception ex)

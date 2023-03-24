@@ -50,18 +50,20 @@ namespace DwitTech.AccountService.Core.Services
             return role;
         }
 
-        public async Task<User> CreateUser(UserDto user)
+        public async Task CreateUser(UserDto user)
         {
             try
             {
                 var userModel = _mapper.Map<User>(user);
-                var createdUser = await _userRepository.CreateUser(userModel);
-                return createdUser;
+                await _userRepository.CreateUser(userModel);
+                //return createdUser;
             }
             catch (Exception ex)
             {
                 throw new Exception($"This error is due to {ex.Message}");
             }
         }
+
+       
     }
 }

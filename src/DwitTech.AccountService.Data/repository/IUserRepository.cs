@@ -4,6 +4,6 @@ namespace DwitTech.AccountService.Data.Repository
 {
     public interface IUserRepository
     {
-        Task<User> CreateUser(User user);
+        Task CreateUser(User user);
     }
 }

@@ -1,4 +1,6 @@
-﻿using DwitTech.AccountService.Core.Interfaces;
+﻿using DwitTech.AccountService.Core.Dtos;
+using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -32,7 +34,7 @@ namespace DwitTech.AccountService.Core.Services
             return _configuration.GetSection("BaseUrl").Value;
         }
 
-        private string GetActivationUrl()
+        private string GetActivationUrl(int userId)
         {
             string baseUrl = GetBaseUrl();
             string activationCode = GetActivationCode();
@@ -50,20 +52,23 @@ namespace DwitTech.AccountService.Core.Services
             return templateText.ToString();
         }
 
-        private static bool SendMail(string fromEmail, string toEmail, string subject, string body, string cc = "", string bcc = "") //TODO
+        public async Task<bool> SendMailAsync(Email email) //TODO
         {
             return true;
         }
 
-        public bool SendActivationEmail(string fromEmail, string toEmail, string templateName, string RecipientName, string subject = "Account Activation", string cc = "", string bcc = "")
+        //public bool SendActivationEmail(string fromEmail, string toEmail, string templateName, string RecipientName, string subject = "Account Activation", string cc = "", string bcc = "")
+        public async Task<bool> SendActivationEmail(int userId, string templateName, string RecipientName, Email email )
         {
-            var baseUrl = GetBaseUrl();
-            var activationUrl = GetActivationUrl();
+      
+            string subject = "Account Activation";
+            email.Subject = subject;
+            var activationUrl = GetActivationUrl(userId);
             string templateText = GetTemplate(templateName);
             templateText = templateText.Replace("{{name}}", RecipientName) ;
             templateText = templateText.Replace("{{activationUrl}}", activationUrl);
-            string body = templateText;
-            var response = SendMail(fromEmail, toEmail, subject, body, cc, bcc);
+            email.Body = templateText;
+            var response = await SendMailAsync(email);
 
             return response;
         }

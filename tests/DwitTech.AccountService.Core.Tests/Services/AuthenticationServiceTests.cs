@@ -32,8 +32,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
             mockUser = new User
             {
                 Id = 1,
-                Firstname = "FirstName",
-                Lastname = "LastName",
+                FirstName = "FirstName",
+                LastName = "LastName",
                 Email = "firstname@gmail.com",
                 PhoneNumber = "phonenumber",
                 AddressLine1 = "addressLine1",
@@ -43,7 +43,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 City = "city",
                 PostalCode = "postalCode",
                 ZipCode = "zipcode",
-                Password = "password",
+                PassWord = "password",
                 ModifiedOnUtc = DateTime.UtcNow
             };
 
@@ -51,8 +51,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
             {
                 new Claim("UserId", mockUser.Id.ToString()),
                 new Claim(ClaimTypes.Email, mockUser.Email),
-                new Claim(ClaimTypes.GivenName, mockUser.Firstname),
-                new Claim(ClaimTypes.Surname, mockUser.Lastname),
+                new Claim(ClaimTypes.GivenName, mockUser.FirstName),
+                new Claim(ClaimTypes.Surname, mockUser.LastName),
                 new Claim(ClaimTypes.Role, "User")
             };
 
@@ -268,8 +268,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
             {
                 //Id is omitted.
                 new Claim(ClaimTypes.Email, mockUser.Email),
-                new Claim(ClaimTypes.GivenName, mockUser.Firstname),
-                new Claim(ClaimTypes.Surname, mockUser.Lastname),
+                new Claim(ClaimTypes.GivenName, mockUser.FirstName),
+                new Claim(ClaimTypes.Surname, mockUser.LastName),
                 new Claim(ClaimTypes.Role, "User")
             };
 

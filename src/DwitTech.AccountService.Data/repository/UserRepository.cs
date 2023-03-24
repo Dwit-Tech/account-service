@@ -10,11 +10,11 @@ namespace DwitTech.AccountService.Data.Repository
         {
                 _accountDbContext = accountDbContext;
         }
-        public async Task<User> CreateUser(User user)
+        public async Task CreateUser(User user)
         {
              _accountDbContext.Add(user);
            await _accountDbContext.SaveChangesAsync();
-            return user;
+            
         }
 
         
