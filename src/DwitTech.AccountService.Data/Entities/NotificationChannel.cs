@@ -12,5 +12,4 @@ namespace DwitTech.AccountService.Core.Enums
         Email,
         SMS 
     }
-
 }

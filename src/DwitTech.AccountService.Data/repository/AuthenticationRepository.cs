@@ -19,7 +19,7 @@ namespace DwitTech.AccountService.Data.Repository
         }
 
 
-        public async Task<SessionToken?> FindSessionByUserIdAsync(int userId)
+        public async Task<SessionToken> FindSessionByUserIdAsync(int userId)
         {
             return await _context.SessionTokens.Where(x => x.UserId == userId).FirstOrDefaultAsync();
         }

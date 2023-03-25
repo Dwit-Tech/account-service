@@ -1,24 +1,11 @@
-﻿using Castle.Core.Configuration;
-using DwitTech.AccountService.Core.Dtos;
-using DwitTech.AccountService.Core.Interfaces;
+﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Services;
-using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Repository;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Moq.Protected;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Tests.Services
 {
@@ -45,7 +32,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
             var _configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
             {
-                { "BaseUrl", "www.exampleurl.com" }
+                { "NOTIFICATIONSERVICE_BASEURL", "https://example.com" }
 
             }).Build();
 
