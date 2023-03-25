@@ -10,5 +10,7 @@ namespace DwitTech.AccountService.Data.Entities
     {
         public int UserId { set; get; }
         public string Code { set; get; }
+        public int CodeType { set; get; }
+        public int NotificationChannel { set; get; }
     }
 }

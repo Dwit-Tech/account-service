@@ -1,6 +1,7 @@
 ﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Utilities;
 using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
 
@@ -64,43 +65,55 @@ namespace DwitTech.AccountService.Core.Services
             return response;
         }
 
-        public bool SendWelcomeEmail(User user, string fromEmail, string toEmail, string templateName, string subject, string cc, string bcc)
+        public bool SendWelcomeEmail(User user)
         {
-            
-            string templateText = GetTemplate(templateName);
+
+            string templateText = GetTemplate("WelcomeEmail.html");
             templateText = templateText.Replace("{{Firstname}}", user.Firstname);
             templateText = templateText.Replace("{{Lastname}}", user.Lastname);
             string body = templateText;
-            var response = SendMail(fromEmail, toEmail, subject, body, cc, bcc);
+            string subject = "Welcome";
+            string fromEmail = _configuration["FROM_EMAIL"];
+            var response = SendMail(fromEmail, user.Email, subject, body);
 
             return response;
         }
 
-        public async Task<bool> ActivateUser(string activationCode, User user, string fromEmail, string toEmail, string templateName, string subject = "Account Details", string cc = "", string bcc = "")
+        private static bool IsUserActivated(User user)
         {
-            var activationResult = await _userRepository.GetUserActivationDetail(activationCode);
+            if (user.Status == Data.Enum.UserStatus.Active)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> ActivateUser(string activationCode)
+        {
+            ValidationCode activationResult = await _userRepository.GetUserValidationCode(activationCode, 1); //CodeType.Activation);
             if (activationResult == null)
             {
                 return false;
             }
         
-            var userStatus = await _userRepository.GetUserStatus(activationResult.UserId);
+            var user = await _userRepository.GetUser(activationResult.UserId);
             
-            if (!userStatus)
+            if (IsUserActivated(user))
             {
-                throw new Exception("User already Verified.");
-            } 
+                throw new Exception("User already Activated.");
+            }
 
-            var validationCode = await _userRepository.ValidateUserActivationCodeExpiry(activationCode);
+            DateTime expiredTime = activationResult.CreatedOnUtc.AddMinutes(10);
 
-            if (!validationCode)
+            if (DateTime.UtcNow > expiredTime)
             {
                 throw new InvalidOperationException("Activation Code has expired");
             }
 
-            await _userRepository.UpdateUserStatus(activationResult);
+            user.Status = Data.Enum.UserStatus.Active;
+            await _userRepository.UpdateUser(user);
             
-            var response = SendWelcomeEmail(user, fromEmail, toEmail, templateName, subject,  cc, bcc);
+            var response = SendWelcomeEmail(user);
             return response;
             
         }

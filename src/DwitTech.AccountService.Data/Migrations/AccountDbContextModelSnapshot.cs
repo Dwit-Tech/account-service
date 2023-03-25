@@ -52,14 +52,14 @@ namespace DwitTech.AccountService.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedOnUtc = new DateTime(2023, 3, 14, 19, 50, 17, 98, DateTimeKind.Utc).AddTicks(5934),
+                            CreatedOnUtc = new DateTime(2023, 3, 25, 7, 4, 26, 14, DateTimeKind.Utc).AddTicks(4804),
                             Description = "Administrator Role",
                             Name = "Admin"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedOnUtc = new DateTime(2023, 3, 14, 19, 50, 17, 98, DateTimeKind.Utc).AddTicks(5937),
+                            CreatedOnUtc = new DateTime(2023, 3, 25, 7, 4, 26, 14, DateTimeKind.Utc).AddTicks(4809),
                             Description = "User Role",
                             Name = "User"
                         });
@@ -95,6 +95,7 @@ namespace DwitTech.AccountService.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasMaxLength(25)
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
@@ -170,42 +171,17 @@ namespace DwitTech.AccountService.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("DwitTech.AccountService.Data.Entities.ValidationCode", b =>
+            modelBuilder.Entity("DwitTech.AccountService.Data.Entities.User", b =>
                 {
-                b.Property<int>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("integer");
+                    b.HasOne("DwitTech.AccountService.Data.Entities.Role", "Roles")
+                        .WithMany()
+                        .HasForeignKey("RolesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                b.Property<string>("Code")
-                    .IsRequired()
-                    .HasColumnType("text");
-
-                b.Property<DateTime>("CreatedOnUtc")
-                    .HasColumnType("timestamp with time zone");
-
-                b.Property<DateTime?>("ModifiedOnUtc")
-                    .HasColumnType("timestamp with time zone");
-
-                b.Property<int>("UserId")
-                    .HasColumnType("integer");
-
-                b.HasKey("Id");
-
-                b.ToTable("ValidationCode");
-                modelBuilder.Entity("DwitTech.AccountService.Data.Entities.User", b =>
-                    {
-                        b.HasOne("DwitTech.AccountService.Data.Entities.Role", "Roles")
-                            .WithMany()
-                            .HasForeignKey("RolesId")
-                            .OnDelete(DeleteBehavior.Cascade)
-                            .IsRequired();
-
-                        b.Navigation("Roles");
-                    });
+                    b.Navigation("Roles");
+                });
 #pragma warning restore 612, 618
-            });
         }
     }
 }

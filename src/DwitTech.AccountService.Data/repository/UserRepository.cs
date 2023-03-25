@@ -1,5 +1,6 @@
 using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Enum;
 using Microsoft.EntityFrameworkCore;
 
 namespace DwitTech.AccountService.Data.Repository
@@ -13,49 +14,22 @@ namespace DwitTech.AccountService.Data.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<ValidationCode> GetUserActivationDetail(string activationCode)
+        public async Task<ValidationCode> GetUserValidationCode(string activationCode, int codeType)
         {
-            return await _dbContext.ValidationCode.Where(x => x.Code == activationCode).FirstOrDefaultAsync();
-
+            var result = await _dbContext.ValidationCode.Where(x => x.Code == activationCode).FirstOrDefaultAsync();
+            return result;
         }
 
-        public async Task<bool> GetUserStatus(int id)
+        public async Task<User> GetUser(int id)
         {
-            var status = await _dbContext.Users.Where(x => x.Id == id).Select(x => x.Status).FirstOrDefaultAsync();
-            if (status == UserStatus.Inactive)
-            {
-                return true;
-            }
-            return false;
+            var user = await _dbContext.Users.Where(x => x.Id == id).FirstOrDefaultAsync();
+            return user;   
         }
 
-        public async Task<bool> ValidateUserActivationCodeExpiry(string activationCode)
+        public async Task UpdateUser(User user)
         {
-            var validationCode = await GetUserActivationDetail(activationCode);
-
-            DateTime expiredTime = validationCode.CreatedOnUtc.AddMinutes(10);
-
-            if (DateTime.UtcNow > expiredTime)
-            {
-                return true;
-            }
-            return false;
-        }
-
-
-        public async Task UpdateUserStatus(ValidationCode validationDetails)
-        {
-
-            var userStatus = await GetUserStatus(validationDetails.UserId);
-
-            if (userStatus)
-            {
-                var user = await _dbContext.Users.Where(x => x.Id == validationDetails.UserId).FirstOrDefaultAsync();
-                user.Status = UserStatus.Active;
-                _dbContext.Update(user);
-                await _dbContext.SaveChangesAsync();
-
-            }
+            _dbContext.Update(user);
+             await _dbContext.SaveChangesAsync();
         }
     }
 }

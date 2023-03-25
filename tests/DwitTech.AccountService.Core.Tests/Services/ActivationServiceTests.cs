@@ -1,6 +1,7 @@
 ﻿using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -47,45 +48,58 @@ namespace DwitTech.AccountService.Core.Tests.Services
         public async Task ActivateUser_ValidatesActivationCodeSendsWelcomeEmailAndReturnsBooleanValue_WhenCalled()
         {
             //Arrange
-            var mockValidationCode = new ValidationCode
+            var inMemorySettings = new Dictionary<string, string> {
+                {"FROM_EMAIL", "info@dwittech.com"}
+            };
+
+
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(inMemorySettings)
+                .Build();
+
+            ValidationCode mockValidationDetails = new()
             {
                 Id = 01,
                 UserId = 1,
-                Code = "erg3345dh2"
+                Code = "erg3345dh2",
+                CodeType = 1
+            };
+
+            User mockUser = new()
+            {
+                Id = 1,
+                Firstname = "John",
+                Lastname = "Doe",
+                Email = "info@dwittech.com",
+                PhoneNumber = "0802333337",
+                AddressLine1 = "Allen",
+                AddressLine2 = "Sonubi",
+                Country = "Nigeria",
+                State = "Lagos",
+                City = "Ogba",
+                PostalCode = "21356",
+                ZipCode = "6564536",
+                Password = "JeSusIsLord",
+                Status = Data.Enum.UserStatus.Inactive
             };
 
             var mockUserRepository = new Mock<IUserRepository>();
 
 
-            mockUserRepository.Setup(x => x.GetUserActivationDetail(It.IsAny<string>())).ReturnsAsync(mockValidationCode);
-            mockUserRepository.Setup(x => x.GetUserStatus(It.IsAny<int>())).ReturnsAsync(true);
-            mockUserRepository.Setup(x => x.ValidateUserActivationCodeExpiry(It.IsAny<string>())).ReturnsAsync(true);
-
-            var actService = new ActivationService(_configuration, mockUserRepository.Object);
+            mockUserRepository.Setup(x => x.GetUserValidationCode(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(mockValidationDetails);
+            mockUserRepository.Setup(x => x.GetUser(It.IsAny<int>())).ReturnsAsync(mockUser);
+            
+            var actService = new ActivationService(configuration, mockUserRepository.Object);
 
             string activationCode = "erg3345dh2";
-            var user = new User()
-            {
-                Firstname = "Jane",
-                Lastname = "Doe",
-                Email = "info@janedoe",
-                Password = "reddanger"
-            };
-            string fromEmail = "support@gmail";
-            string toEmail = "info@gmail.com";
-            string templateName = "WelcomeEmail.html";
-            string subject = "Account Details";
-            string cc = "";
-            string bcc = "";
 
             //Act
-            var actual = await actService.ActivateUser(activationCode,user, fromEmail, toEmail, templateName, subject, cc, bcc);
+            var actual = await actService.ActivateUser(activationCode);
 
             //Assert
-            mockUserRepository.Verify(x => x.GetUserActivationDetail(activationCode), Times.Once);
-            mockUserRepository.Verify(x => x.GetUserStatus(It.IsAny<int>()), Times.Once);
-            mockUserRepository.Verify(x => x.ValidateUserActivationCodeExpiry(activationCode), Times.Once);
-            mockUserRepository.Verify(x => x.UpdateUserStatus(It.IsAny<ValidationCode>()), Times.Once);
+            mockUserRepository.Verify(x => x.GetUserValidationCode(activationCode, mockValidationDetails.CodeType), Times.Once);
+            mockUserRepository.Verify(x => x.GetUser(It.IsAny<int>()), Times.Once);
+            mockUserRepository.Verify(x => x.UpdateUser(It.IsAny<User>()), Times.Once);
             Assert.IsType<bool>(actual);
         }
     }

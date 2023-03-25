@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Enum;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

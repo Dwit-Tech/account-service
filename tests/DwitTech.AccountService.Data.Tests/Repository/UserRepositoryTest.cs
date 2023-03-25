@@ -10,12 +10,32 @@ namespace DwitTech.AccountService.Data.Tests.Repository
     {
         private readonly AccountDbContext _accountDbContext;
 
-        ValidationCode mockActivationDetails = new()
+        ValidationCode mockValidationDetails = new()
         {
             Id = 01,
             UserId = 1,
             Code = "erg3345dh2",
+            CodeType = 1
         };
+
+        User mockUser = new()
+        {
+            Id = 1,
+            Firstname = "John",
+            Lastname = "Doe",
+            Email = "info@dwittech.com",
+            PhoneNumber = "0802333337",
+            AddressLine1 = "Allen",
+            AddressLine2 = "Sonubi",
+            Country = "Nigeria",
+            State = "Lagos",
+            City = "Ogba",
+            PostalCode = "21356",
+            ZipCode = "6564536",
+            Password = "JeSusIsLord",
+            Status = Enum.UserStatus.Inactive,
+        };
+
         public Mock<IUserRepository> mockUserRepository;
 
         public UserRepositoryTest()
@@ -35,7 +55,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
 
         [Fact]
-        public async Task GetUserActivationDetail_Returns_ActivationDetail_WhenActivationDetailExists()
+        public async Task GetUserValidationCode_Returns_ValidationCodeDetails_WhenActivationCodeExists()
         {
             //Arrange
             var options = new DbContextOptionsBuilder<AccountDbContext>()
@@ -44,17 +64,17 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
             var accountDbContext = new AccountDbContext(options);
 
-            await accountDbContext.ValidationCode.AddAsync(mockActivationDetails);
+            await accountDbContext.ValidationCode.AddAsync(mockValidationDetails);
             await accountDbContext.SaveChangesAsync();
 
             var userRepository = new UserRepository(accountDbContext);
 
             //Act
-            var result = await userRepository.GetUserActivationDetail(mockActivationDetails.Code);
+            var result = await userRepository.GetUserValidationCode(mockValidationDetails.Code, mockValidationDetails.CodeType);
 
             //Assert
             Assert.NotNull(result);
-            Assert.Equal(mockActivationDetails, result);
+            Assert.Equal(mockValidationDetails, result);
         }
 
         [Fact]
@@ -69,7 +89,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             var userRepository = new UserRepository(accountDbContext);
 
             //Act
-            var result = await userRepository.GetUserActivationDetail("erg3345dh2");
+            var result = await userRepository.GetUserValidationCode("erg3345dh2", 1);
 
             //Assert
             Assert.Null(result);
@@ -77,7 +97,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
         }
 
         [Fact]
-        public async Task GetUserStatus_ReturnsBooleanValue_WhenCalled()
+        public async Task GetUser_ReturnsUserInfo_WhenCalled()
         {
             //Arrange
             var options = new DbContextOptionsBuilder<AccountDbContext>()
@@ -86,36 +106,17 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
             var accountDbContext = new AccountDbContext(options);
 
-            var userRepository = new UserRepository(accountDbContext);
-
-            //Act
-            var actual = await userRepository.GetUserStatus(mockActivationDetails.UserId);
-
-            //Assert
-            Assert.IsType<bool>(actual);
-        }
-
-        [Fact]
-        public async Task ValidateUserActivationCodeExpiry_ReturnsBooleanValue_WhenCalled()
-        {
-            //Arrange
-            var options = new DbContextOptionsBuilder<AccountDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-
-            var accountDbContext = new AccountDbContext(options);
-
-            await accountDbContext.ValidationCode.AddAsync(mockActivationDetails);
+            await accountDbContext.Users.AddAsync(mockUser);
             await accountDbContext.SaveChangesAsync();
 
-
             var userRepository = new UserRepository(accountDbContext);
 
             //Act
-            var actual = await userRepository.ValidateUserActivationCodeExpiry(mockActivationDetails.Code);
+            var actual = await userRepository.GetUser(mockUser.Id);
 
             //Assert
-            Assert.IsType<bool>(actual);
+            Assert.NotNull(actual);
+            Assert.Equal(mockUser, actual);
         }
 
         public void Dispose()
