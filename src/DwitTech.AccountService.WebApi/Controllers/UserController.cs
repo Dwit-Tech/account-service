@@ -35,12 +35,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
            
             try
             {
-                var userModel = _mapper.Map<User>(user);
-                user.PassWord  = StringUtil.HashString(user.PassWord);
-                user.Roles = _userService.CheckUserRoleState(user.Roles);
-                var emailModel = new Email { FromEmail = _configuration["GmailInfo:Email"], ToEmail = user.Email,  Subject="", Body="" };
-                var recipientName = $"{user.FirstName} {user.LastName}";
-                await _activationService.SendActivationEmail(userModel.Id,"EmailTemplate.html", recipientName.ToUpper(), emailModel);
+            
                 await _userService.CreateUser(user);
                 return Ok("User Created Successfully");
                 

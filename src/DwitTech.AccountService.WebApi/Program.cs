@@ -1,4 +1,7 @@
+using NLog;
+using NLog.Web;
 using System.Text.Json.Serialization;
+
 
 namespace DwitTech.AccountService.WebApi
 {
@@ -6,6 +9,8 @@ namespace DwitTech.AccountService.WebApi
     {
         public static void Main(string[] args)
         {
+
+            var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.

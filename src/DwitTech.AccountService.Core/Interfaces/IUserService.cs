@@ -10,7 +10,6 @@ namespace DwitTech.AccountService.Core.Interfaces
 {
     public interface IUserService
     {
-        Role CheckUserRoleState(Role userRole);
         Task CreateUser(UserDto user);
     }
 }

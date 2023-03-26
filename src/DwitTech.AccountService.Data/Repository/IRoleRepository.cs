@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DwitTech.AccountService.Data.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +9,6 @@ namespace DwitTech.AccountService.Data.Repository
 {
     public interface IRoleRepository
     {
+        Task<IEnumerable<Role>> GetRoles();
     }
 }

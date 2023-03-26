@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DwitTech.AccountService.Core.Enums;
 using DwitTech.AccountService.Data.Entities;
 using System;
 using System.Collections.Generic;
@@ -51,7 +52,7 @@ namespace DwitTech.AccountService.Core.Dtos
         [Required]
         public string ZipCode { get; set; }
 
-        public Role Roles { get; set; }
+        public Enums.Role Roles { get; set; }
     }
 
 }
