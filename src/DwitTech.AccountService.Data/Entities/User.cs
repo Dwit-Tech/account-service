@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DwitTech.AccountService.Data.Enum;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -54,6 +55,10 @@ namespace DwitTech.AccountService.Data.Entities
         [Required]
         [Range(8,16)]
         public string Password { get; set; }
+
+        public UserStatus Status { get; set; }
+
         public Role Roles { get; set; }
+        
     }
 }

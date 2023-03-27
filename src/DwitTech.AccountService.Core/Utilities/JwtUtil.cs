@@ -14,14 +14,14 @@ namespace DwitTech.AccountService.Core.Utilities
     {
         public static string GenerateJwtToken(List<Claim> claims, IConfiguration configuration)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT_KEY"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: configuration["Jwt:Issuer"],
+                issuer: configuration["JWT_ISSUER"],
                 audience: null,
                 claims,
-                expires: DateTime.Now.AddMinutes(int.Parse(configuration["Jwt:JwtTokenExpiryTime"])),
+                expires: DateTime.Now.AddMinutes(int.Parse(configuration["JWT_TOKEN_EXPIRY_MINUTES"])),
                 signingCredentials: credentials);
 
             // Serialize the token to a string

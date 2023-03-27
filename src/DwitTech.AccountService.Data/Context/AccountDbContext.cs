@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using DwitTech.AccountService.Data.Entities;
+using static DwitTech.AccountService.Data.Repository.IUserRepository;
 
 namespace DwitTech.AccountService.Data.Context
 {
@@ -20,6 +21,7 @@ namespace DwitTech.AccountService.Data.Context
         public DbSet<ValidationCode> ValidationCode { get; set; }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<ValidationCode> ValidationCode { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<SessionToken> SessionTokens { get; set; }
 

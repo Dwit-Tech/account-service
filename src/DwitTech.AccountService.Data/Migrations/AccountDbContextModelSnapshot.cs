@@ -50,14 +50,14 @@ namespace DwitTech.AccountService.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedOnUtc = new DateTime(2023, 3, 23, 20, 5, 43, 142, DateTimeKind.Utc).AddTicks(1551),
+                            CreatedOnUtc = new DateTime(2023, 3, 25, 7, 4, 26, 14, DateTimeKind.Utc).AddTicks(4804),
                             Description = "Administrator Role",
                             Name = "Admin"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedOnUtc = new DateTime(2023, 3, 23, 20, 5, 43, 142, DateTimeKind.Utc).AddTicks(1554),
+                            CreatedOnUtc = new DateTime(2023, 3, 25, 7, 4, 26, 14, DateTimeKind.Utc).AddTicks(4809),
                             Description = "User Role",
                             Name = "User"
                         });
@@ -154,6 +154,9 @@ namespace DwitTech.AccountService.Data.Migrations
                     b.Property<string>("State")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ZipCode")
                         .IsRequired()

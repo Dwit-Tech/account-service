@@ -4,40 +4,34 @@ using System.Text;
 namespace DwitTech.AccountService.Core.Utilities
 {
     public static class StringUtil 
-
     {
-        internal static readonly string characterOptions = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
-        
         public static string GenerateUniqueCode(int numberOfCharacters=20, bool useNumbers = true, bool useAlphabets = true, bool useSymbols = false)
         {
-            string newCharacterOptions = characterOptions;
+            var newCharacterOptions = new StringBuilder();
 
-            if (!useNumbers)
+            if (useNumbers)
             {
-                string numbers = "1234567890";
-                newCharacterOptions = newCharacterOptions.Replace(numbers, "");
+                newCharacterOptions.Append("1234567890");
             }
 
-            if (!useAlphabets)
+            if (useAlphabets)
             {
-                string alphabets = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                newCharacterOptions = newCharacterOptions.Replace(alphabets, "");
+                newCharacterOptions.Append("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
             }
 
-            if (!useSymbols)
+            if (useSymbols)
             {
-                string symbols = "!#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
-                newCharacterOptions = newCharacterOptions.Replace(symbols, "");
+                newCharacterOptions.Append("!#$%&'()*+,-./:;<=>?@[\\]^_`{|}~");
             }
 
-            char[] chars = newCharacterOptions.ToCharArray();
+            char[] chars = newCharacterOptions.ToString().ToCharArray();
 
             byte[] data = new byte[4 * numberOfCharacters];
             using (var crypto = RandomNumberGenerator.Create())
             {
                 crypto.GetBytes(data);
             }
-            StringBuilder result = new StringBuilder(numberOfCharacters);
+            var result = new StringBuilder(numberOfCharacters);
 
             for (int i = 0; i < numberOfCharacters; i++)
             {
@@ -70,15 +64,6 @@ namespace DwitTech.AccountService.Core.Utilities
             var data = md5.ComputeHash(Encoding.ASCII.GetBytes(inputString));
 
             return Convert.ToHexString(data).ToLower();
-        }
-
-
-        public static string GenerateRandomBase64string()
-        {
-            var randomNumber = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
         }
     }
 }

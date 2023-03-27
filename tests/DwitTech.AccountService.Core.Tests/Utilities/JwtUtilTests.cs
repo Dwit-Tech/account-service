@@ -17,9 +17,9 @@ namespace DwitTech.AccountService.Core.Tests.Utilities
             _configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
-                    {"Jwt:Key", "oAZjokG5AONGvEX80R/ggQ=="},
-                    {"Jwt:Issuer", "testIssuer"},
-                    {"Jwt:JwtTokenExpiryTime", "15"}
+                    {"JWT_KEY", "oAZjokG5AONGvEX80R/ggQ=="},
+                    {"JWT_ISSUER", "testIssuer"},
+                    {"JWT_TOKEN_EXPIRY_MINUTES", "15"}
                 })
                 .Build();
 
@@ -53,7 +53,7 @@ namespace DwitTech.AccountService.Core.Tests.Utilities
             var decodedToken = jwtHandler.ReadJwtToken(token);
 
             // Assert
-            Assert.Equal(_configuration["Jwt:Issuer"], decodedToken.Payload["iss"]);
+            Assert.Equal(_configuration["JWT_ISSUER"], decodedToken.Payload["iss"]);
             foreach (var claim in claims)
             {
                 Assert.Contains(decodedToken.Claims, c => c.Type == claim.Type && c.Value == claim.Value);

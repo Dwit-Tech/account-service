@@ -14,10 +14,10 @@ namespace DwitTech.AccountService.Core.Tests.Services
     public class AuthenticationServiceTests
     {
         //Setup
-        private User mockUser;
-        private IConfiguration _configuration;
-        private Mock<IAuthenticationRepository> mockAuthRepository;
-        private IAuthenticationService authService;
+        private readonly User mockUser;
+        private readonly IConfiguration _configuration;
+        private readonly Mock<IAuthenticationRepository> mockAuthRepository;
+        private readonly IAuthenticationService authService;
         private const string tokenType = "Bearer";
         private const string validJwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxIiwi" +
                 "aHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiZmlyc3RuYW1lQGdtYWlsLmNvbSIsImh0" +
@@ -59,10 +59,10 @@ namespace DwitTech.AccountService.Core.Tests.Services
             _configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
-                    {"Jwt:Key", "oAZjokG5AONGvEX80R/ggQ=="},
-                    {"Jwt:Issuer", "testIssuer"},
-                    {"Jwt:JwtTokenExpiryTime", "15"},
-                    {"Jwt:RefreshTokenExpiryTime", "1"}
+                    {"JWT_KEY", "oAZjokG5AONGvEX80R/ggQ=="},
+                    {"JWT_ISSUER", "testIssuer"},
+                    {"JWT_TOKEN_EXPIRY_MINUTES", "15"},
+                    {"JWT_REFRESH_TOKEN_EXPIRY_HOURS", "1"}
                 })
                 .Build();
 
@@ -82,7 +82,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             Assert.NotNull(result);
             Assert.False(string.IsNullOrEmpty(result.AccessToken));
             Assert.False(string.IsNullOrEmpty(result.RefreshToken));
-            Assert.Equal(60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), result.ExpiresIn);
+            Assert.Equal(60 * int.Parse(_configuration["JWT_TOKEN_EXPIRY_MINUTES"]), result.ExpiresIn);
             Assert.Equal(tokenType, result.TokenType);            
         }
 
@@ -111,7 +111,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             {
                 UserId = mockUser.Id,
                 RefreshToken = StringUtil.HashString(validRefreshToken),
-                ModifiedOnUtc = DateTime.UtcNow - TimeSpan.FromHours(int.Parse(_configuration["Jwt:RefreshTokenExpiryTime"]))
+                ModifiedOnUtc = DateTime.UtcNow - TimeSpan.FromHours(int.Parse(_configuration["JWT_REFRESH_TOKEN_EXPIRY_HOURS"]))
             };
 
             mockAuthRepository.Setup(x => x.FindSessionByUserIdAsync(It.IsAny<int>())).ReturnsAsync((sessionToken));
@@ -131,7 +131,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
         {
             // Arrange
             var accessToken = JwtUtil.GenerateJwtToken(claims, _configuration);
-            var refreshToken = StringUtil.GenerateRandomBase64string();
+            var refreshToken = validRefreshToken;
 
             var sessionToken = new SessionToken
             {
@@ -146,7 +146,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             {
                 AccessToken = accessToken,
                 TokenType = tokenType,
-                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                ExpiresIn = 60 * int.Parse(_configuration["JWT_TOKEN_EXPIRY_MINUTES"]),
                 RefreshToken = refreshToken
             };
 
@@ -156,7 +156,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             // Assert
             Assert.NotNull(result);
             Assert.Equal(tokenType, result.TokenType);
-            Assert.Equal(60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), result.ExpiresIn);
+            Assert.Equal(60 * int.Parse(_configuration["JWT_TOKEN_EXPIRY_MINUTES"]), result.ExpiresIn);
             Assert.NotNull(result.AccessToken);
             Assert.NotNull(result.RefreshToken);
         }
@@ -167,7 +167,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
         {
             // Arrange
             var accessToken = JwtUtil.GenerateJwtToken(claims, _configuration);
-            var refreshToken = StringUtil.GenerateRandomBase64string();
+            var refreshToken = validRefreshToken;
 
             var sessionToken = new SessionToken
             {
@@ -181,7 +181,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             {
                 AccessToken = accessToken,
                 TokenType = tokenType,
-                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                ExpiresIn = 60 * int.Parse(_configuration["JWT_TOKEN_EXPIRY_MINUTES"]),
                 RefreshToken = refreshToken
             };
 
@@ -191,7 +191,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             // Assert
             Assert.NotNull(result);
             Assert.Equal(tokenType, result.TokenType);
-            Assert.Equal(60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]), result.ExpiresIn);
+            Assert.Equal(60 * int.Parse(_configuration["JWT_TOKEN_EXPIRY_MINUTES"]), result.ExpiresIn);
             Assert.NotNull(result.AccessToken);
             Assert.NotNull(result.RefreshToken);
         }
@@ -206,7 +206,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             {
                 AccessToken = validJwtToken,
                 TokenType = tokenType,
-                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                ExpiresIn = 60 * int.Parse(_configuration["JWT_TOKEN_EXPIRY_MINUTES"]),
                 RefreshToken = "invalid_refresh_token"
             };
 
@@ -237,7 +237,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             {
                 AccessToken = validJwtToken,
                 TokenType = tokenType,
-                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                ExpiresIn = 60 * int.Parse(_configuration["JWT_TOKEN_EXPIRY_MINUTES"]),
                 RefreshToken = validRefreshToken
             };
 
@@ -246,7 +246,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 {
                     UserId = mockUser.Id,
                     RefreshToken = StringUtil.HashString(validRefreshToken),
-                    ModifiedOnUtc = DateTime.UtcNow-TimeSpan.FromHours(int.Parse(_configuration["Jwt:RefreshTokenExpiryTime"]))
+                    ModifiedOnUtc = DateTime.UtcNow-TimeSpan.FromHours(int.Parse(_configuration["JWT_REFRESH_TOKEN_EXPIRY_HOURS"]))
                 });
 
             // Act
@@ -277,7 +277,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             {
                 AccessToken = JwtUtil.GenerateJwtToken(claims, _configuration),
                 TokenType = tokenType,
-                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                ExpiresIn = 60 * int.Parse(_configuration["JWT_TOKEN_EXPIRY_MINUTES"]),
                 RefreshToken = "invalid_refresh_token"
             };
 
@@ -300,7 +300,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             {
                 AccessToken = JwtUtil.GenerateJwtToken(claims, _configuration),
                 TokenType = tokenType,
-                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                ExpiresIn = 60 * int.Parse(_configuration["JWT_TOKEN_EXPIRY_MINUTES"]),
                 RefreshToken = "invalid_refresh_token"
             };
 
@@ -328,7 +328,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 "aWRlbnRpdHkvY2xhaW1zL2dpdmVubmFtZSI6IkZpcnN0TmFtZSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL" +
                 "3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL3N1cm5hbWUiOiJMYXN0T",
                 TokenType = tokenType,
-                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                ExpiresIn = 60 * int.Parse(_configuration["JWT_TOKEN_EXPIRY_MINUTES"]),
                 RefreshToken = validRefreshToken
             };
 
@@ -358,7 +358,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             {
                 AccessToken = "certainly_not_jwt_token",
                 TokenType = tokenType,
-                ExpiresIn = 60 * int.Parse(_configuration["Jwt:JwtTokenExpiryTime"]),
+                ExpiresIn = 60 * int.Parse(_configuration["JWT_TOKEN_EXPIRY_MINUTES"]),
                 RefreshToken = validRefreshToken
             };
 
