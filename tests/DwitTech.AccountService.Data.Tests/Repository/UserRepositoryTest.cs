@@ -15,7 +15,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Id = 01,
             UserId = 1,
             Code = "erg3345dh2",
-            CodeType = 1
+            CodeType = Enum.CodeType.Activation
         };
 
         User mockUser = new()
@@ -40,7 +40,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
         public UserRepositoryTest()
         {
-           
+
             var options = new DbContextOptionsBuilder<AccountDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
@@ -50,7 +50,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             _accountDbContext.SaveChanges();
 
             mockUserRepository = new Mock<IUserRepository>();
-            
+
         }
 
 
@@ -64,13 +64,13 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
             var accountDbContext = new AccountDbContext(options);
 
-            await accountDbContext.ValidationCode.AddAsync(mockValidationDetails);
+            await accountDbContext.ValidationCodes.AddAsync(mockValidationDetails);
             await accountDbContext.SaveChangesAsync();
 
             var userRepository = new UserRepository(accountDbContext);
 
             //Act
-            var result = await userRepository.GetUserValidationCode(mockValidationDetails.Code, mockValidationDetails.CodeType);
+            var result = await userRepository.GetUserValidationCode(mockValidationDetails.Code, mockValidationDetails.CodeType);           
 
             //Assert
             Assert.NotNull(result);
@@ -126,4 +126,3 @@ namespace DwitTech.AccountService.Data.Tests.Repository
         }
     }
 }
-

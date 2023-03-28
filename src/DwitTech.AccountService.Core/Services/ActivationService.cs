@@ -1,13 +1,10 @@
 ﻿using System.Text;
 using System.Text.Json;
-using DwitTech.AccountService.Core.Enums;
 using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Utilities;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
-using DwitTech.AccountService.Data.Repository;
-using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
 
@@ -15,20 +12,22 @@ namespace DwitTech.AccountService.Core.Services
 {
     public class ActivationService : IActivationService
     {
-        private readonly IConfiguration _configuration; //Config instance for GetBaseUrl method
-        private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
         private readonly IUserRepository _userRepository;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _endpointUrl;
 
-        public ActivationService(IConfiguration configuration, IUserRepository userRepository)
+        public ActivationService(IConfiguration configuration, 
+            IUserRepository userRepository, 
+            IHttpClientFactory httpClientFactory, string endpointUrl)
         {
             _configuration = configuration;
             _userRepository = userRepository;
+            _httpClientFactory = httpClientFactory;
+            _endpointUrl = _configuration["NOTIFICATIONSERVICE_SENDMAILENDPOINT"];
         }
 
-        private string GetActivationCode()
+        private static string GetActivationCode()
         {
             var activationCode = StringUtil.GenerateUniqueCode();
             return activationCode;
@@ -48,9 +47,9 @@ namespace DwitTech.AccountService.Core.Services
                 var validationCode = new ValidationCode
                 {
                     Code = activationCode,
-                    CodeType = CodeType.Activation,
+                    CodeType = (int)CodeType.Activation,
                     UserId = userId,
-                    NotificationChannel = NotificationChannel.Email,
+                    NotificationChannel = (int)NotificationChannel.Email,
                     ModifiedOnUtc = DateTime.UtcNow
                 };
                 var saveResponse = await _userRepository.SaveUserValidationCode(validationCode);
@@ -86,20 +85,7 @@ namespace DwitTech.AccountService.Core.Services
             return response;
         }
 
-        public async Task<bool> SendMailAsync(Email email)
-        {
-            var baseUrl = GetBaseUrl();
-            var activationUrl = GetActivationUrl();
-            string templateText = GetTemplate(templateName);
-            templateText = templateText.Replace("{{name}}", RecipientName);
-            templateText = templateText.Replace("{{activationUrl}}", activationUrl);
-            string body = templateText;
-            var response = SendMail(fromEmail, toEmail, subject, body, cc, bcc);
-
-            return response;
-        }
-
-        public bool SendWelcomeEmail(User user)
+        public async Task<bool> SendWelcomeEmail(User user)
         {
 
             string templateText = GetTemplate("WelcomeEmail.html");
@@ -108,9 +94,22 @@ namespace DwitTech.AccountService.Core.Services
             string body = templateText;
             string subject = "Welcome";
             string fromEmail = _configuration["FROM_EMAIL"];
-            var response = SendMail(fromEmail, user.Email, subject, body);
+            var response = await SendMailAsync(fromEmail, user.Email, subject, body);
 
             return response;
+        }
+
+        public async Task<bool> SendMailAsync(Email email)
+        {
+            var serializedEmail = JsonSerializer.Serialize(email);
+            var content = new StringContent(serializedEmail, Encoding.UTF8, "application/json");
+
+            using (var httpClient = _httpClientFactory.CreateClient())
+            {
+                httpClient.BaseAddress = new Uri(_configuration["NOTIFICATIONSERVICE_BASEURL"]);
+                var response = await httpClient.PostAsync(_endpointUrl, content);
+                return response.IsSuccessStatusCode;
+            }
         }
 
         private static bool IsUserActivated(User user)
@@ -129,9 +128,9 @@ namespace DwitTech.AccountService.Core.Services
             {
                 return false;
             }
-        
+
             var user = await _userRepository.GetUser(activationResult.UserId);
-            
+
             if (IsUserActivated(user))
             {
                 throw new Exception("User already Activated.");
@@ -146,10 +145,9 @@ namespace DwitTech.AccountService.Core.Services
 
             user.Status = Data.Enum.UserStatus.Active;
             await _userRepository.UpdateUser(user);
-            
+
             var response = SendWelcomeEmail(user);
             return response;
-            
         }
     }
 }
