@@ -47,9 +47,9 @@ namespace DwitTech.AccountService.Core.Services
                 var validationCode = new ValidationCode
                 {
                     Code = activationCode,
-                    CodeType = (int)CodeType.Activation,
+                    CodeType = CodeType.Activation,
                     UserId = userId,
-                    NotificationChannel = (int)NotificationChannel.Email,
+                    NotificationChannel = NotificationChannel.Email,
                     ModifiedOnUtc = DateTime.UtcNow
                 };
                 var saveResponse = await _userRepository.SaveUserValidationCode(validationCode);
@@ -87,15 +87,14 @@ namespace DwitTech.AccountService.Core.Services
 
         public async Task<bool> SendWelcomeEmail(User user)
         {
-
             string templateText = GetTemplate("WelcomeEmail.html");
             templateText = templateText.Replace("{{Firstname}}", user.Firstname);
             templateText = templateText.Replace("{{Lastname}}", user.Lastname);
             string body = templateText;
             string subject = "Welcome";
             string fromEmail = _configuration["FROM_EMAIL"];
-            var response = await SendMailAsync(fromEmail, user.Email, subject, body);
-
+            var email = new Email { FromEmail = fromEmail, ToEmail = user.Email, Subject = subject, Body = body };
+            var response = await SendMailAsync(email);
             return response;
         }
 
@@ -111,7 +110,6 @@ namespace DwitTech.AccountService.Core.Services
                 return response.IsSuccessStatusCode;
             }
         }
-
         private static bool IsUserActivated(User user)
         {
             if (user.Status == Data.Enum.UserStatus.Active)
@@ -123,21 +121,19 @@ namespace DwitTech.AccountService.Core.Services
 
         public async Task<bool> ActivateUser(string activationCode)
         {
-            ValidationCode activationResult = await _userRepository.GetUserValidationCode(activationCode, 1); //CodeType.Activation);
+            ValidationCode activationResult = await _userRepository.GetUserValidationCode(activationCode, CodeType.Activation); //CodeType.Activation);
             if (activationResult == null)
             {
                 return false;
             }
 
             var user = await _userRepository.GetUser(activationResult.UserId);
-
             if (IsUserActivated(user))
             {
                 throw new Exception("User already Activated.");
             }
 
             DateTime expiredTime = activationResult.CreatedOnUtc.AddMinutes(10);
-
             if (DateTime.UtcNow > expiredTime)
             {
                 throw new InvalidOperationException("Activation Code has expired");
@@ -146,7 +142,7 @@ namespace DwitTech.AccountService.Core.Services
             user.Status = Data.Enum.UserStatus.Active;
             await _userRepository.UpdateUser(user);
 
-            var response = SendWelcomeEmail(user);
+            var response = await SendWelcomeEmail(user);
             return response;
         }
     }

@@ -1,5 +1,6 @@
 using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Enum;
 using Microsoft.EntityFrameworkCore;
 
 namespace DwitTech.AccountService.Data.Repository
@@ -13,7 +14,7 @@ namespace DwitTech.AccountService.Data.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<ValidationCode> GetUserValidationCode(string activationCode, int codeType)
+        public async Task<ValidationCode> GetUserValidationCode(string activationCode, CodeType codeType)
         {
             var result = await _dbContext.ValidationCodes.Where(x => x.Code == activationCode).FirstOrDefaultAsync();
             return result;

@@ -1,5 +1,6 @@
 ﻿using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Enum;
 
 namespace DwitTech.AccountService.Core.Interfaces
 {

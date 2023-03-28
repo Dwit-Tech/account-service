@@ -1,5 +1,6 @@
 ﻿using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -50,9 +51,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             _accountDbContext.SaveChanges();
 
             mockUserRepository = new Mock<IUserRepository>();
-
         }
-
 
         [Fact]
         public async Task GetUserValidationCode_Returns_ValidationCodeDetails_WhenActivationCodeExists()
@@ -89,11 +88,10 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             var userRepository = new UserRepository(accountDbContext);
 
             //Act
-            var result = await userRepository.GetUserValidationCode("erg3345dh2", 1);
+            var result = await userRepository.GetUserValidationCode("erg3345dh2", CodeType.Activation);
 
             //Assert
             Assert.Null(result);
-
         }
 
         [Fact]
