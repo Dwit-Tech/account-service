@@ -62,7 +62,6 @@ namespace DwitTech.AccountService.WebApi
             app.UseSwagger();
             app.UseSwaggerUI();
 
-
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -71,11 +70,11 @@ namespace DwitTech.AccountService.WebApi
 
             app.UseAuthorization();
 
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+
 
 
             app.SetupMigrations(app.Services, app.Configuration);
