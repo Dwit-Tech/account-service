@@ -117,6 +117,30 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Assert.Equal(mockUser, actual);
         }
 
+
+        [Fact]
+        public async Task SaveUserValidationCode_AddsValidationCodeToDb_WhenValidationCodeIsValid()
+        {
+            //Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+                var userRepository = new UserRepository(accountDbContext);
+
+                //Act
+                await userRepository.SaveUserValidationCode(mockValidationDetails);
+
+                //Assert
+                var addedValidationCode = await accountDbContext.ValidationCodes.FindAsync(mockValidationDetails.Id);
+                Assert.NotNull(addedValidationCode);
+                Assert.Equal(mockValidationDetails, addedValidationCode);
+            }
+        }
+
+
         public void Dispose()
         {
             _accountDbContext.Database.EnsureDeleted();

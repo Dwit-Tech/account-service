@@ -18,7 +18,6 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var userId = 2;
             var templateName = "EmailTemplate.html";
             var recipientName = "Mike";
-            var expected = true;
 
             var mockEmail = new Email()
             {
@@ -32,8 +31,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
             var _configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
             {
-                { "NOTIFICATIONSERVICE_BASEURL", "https://example.com" }
-
+                { "BASE_URL", "https://example.com" },
+                { "NOTIFICATION_SERVICE_SENDMAIL_END_POINT", "https://jsonplaceholder.typicode.com/posts"}
             }).Build();
 
             var userRepository = new Mock<IUserRepository>();
@@ -51,8 +50,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 .Setup(x => x.CreateClient(It.IsAny<string>()))
                 .Returns(client);
 
-            var _endpointUrl = "https://jsonplaceholder.typicode.com/posts";
-            IActivationService activationService = new ActivationService(_configuration, userRepository.Object, httpClientFactoryMock.Object, _endpointUrl);
+            IActivationService activationService = new ActivationService(_configuration, userRepository.Object, httpClientFactoryMock.Object);
             var result = await activationService.SendActivationEmail(userId, templateName, recipientName, mockEmail);
             Assert.True(result);
         }

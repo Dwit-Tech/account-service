@@ -15,16 +15,14 @@ namespace DwitTech.AccountService.Core.Services
         private readonly IConfiguration _configuration;
         private readonly IUserRepository _userRepository;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly string _endpointUrl;
 
         public ActivationService(IConfiguration configuration, 
             IUserRepository userRepository, 
-            IHttpClientFactory httpClientFactory, string endpointUrl)
+            IHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;
             _userRepository = userRepository;
             _httpClientFactory = httpClientFactory;
-            _endpointUrl = _configuration["NOTIFICATIONSERVICE_SENDMAILENDPOINT"];
         }
 
         private static string GetActivationCode()
@@ -33,14 +31,10 @@ namespace DwitTech.AccountService.Core.Services
             return activationCode;
         }
 
-        private string GetBaseUrl()
-        {
-            return _configuration["BASE_URL"];
-        }
 
-        private async Task<string> GetActivationUrl(int userId)
+        private async Task<string> GetActivationUrl(int userId) //TODO
         {
-            string baseUrl = GetBaseUrl();
+            string baseUrl = _configuration["BASE_URL"];
             string activationCode = GetActivationCode();
             try
             {
@@ -85,6 +79,21 @@ namespace DwitTech.AccountService.Core.Services
             return response;
         }
 
+
+        public async Task<bool> SendMailAsync(Email email)
+        {
+            var serializedEmail = JsonSerializer.Serialize(email);
+            var content = new StringContent(serializedEmail, Encoding.UTF8, "application/json");
+
+            using (var httpClient = _httpClientFactory.CreateClient())
+            {
+                httpClient.BaseAddress = new Uri(_configuration["BASE_URL"]); //TODO
+                var response = await httpClient.PostAsync(_configuration["NOTIFICATION_SERVICE_SENDMAIL_END_POINT"], content);
+                return response.IsSuccessStatusCode;
+            }
+        }
+
+
         public async Task<bool> SendWelcomeEmail(User user)
         {
             string templateText = GetTemplate("WelcomeEmail.html");
@@ -98,18 +107,7 @@ namespace DwitTech.AccountService.Core.Services
             return response;
         }
 
-        public async Task<bool> SendMailAsync(Email email)
-        {
-            var serializedEmail = JsonSerializer.Serialize(email);
-            var content = new StringContent(serializedEmail, Encoding.UTF8, "application/json");
 
-            using (var httpClient = _httpClientFactory.CreateClient())
-            {
-                httpClient.BaseAddress = new Uri(_configuration["NOTIFICATIONSERVICE_BASEURL"]);
-                var response = await httpClient.PostAsync(_endpointUrl, content);
-                return response.IsSuccessStatusCode;
-            }
-        }
         private static bool IsUserActivated(User user)
         {
             if (user.Status == Data.Enum.UserStatus.Active)
