@@ -19,10 +19,6 @@ namespace DwitTech.AccountService.Data.Entities
         public string LastName { get; set; }
 
         [Required]
-        [MaxLength(45)]
-        public string Email { get; set; }
-
-        [Required]
         [MaxLength(11)]
         public string PhoneNumber { get; set; }
 
@@ -46,10 +42,6 @@ namespace DwitTech.AccountService.Data.Entities
 
         [Required]
         public string ZipCode { get; set; }
-
-        [Required]
-        [Range(8,16)]
-        public string PassWord { get; set; }
 
         public Role Roles { get; set; }
 

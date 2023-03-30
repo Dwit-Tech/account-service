@@ -44,6 +44,7 @@ namespace Microsoft.Extensions.DependencyInjection
             service.AddScoped<IUserRepository, UserRepository>();
             service.AddScoped<IUserService, UserService>();
             service.AddScoped<IRoleRepository, RoleRepository>();
+            service.AddScoped<IEmailService, EmailService>();
             return service;
         }
 

@@ -19,6 +19,7 @@ namespace DwitTech.AccountService.Data.Context
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<UserLogin> UsersLogin { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<SessionToken> SessionTokens { get; set; }
 

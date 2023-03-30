@@ -17,10 +17,11 @@ namespace DwitTech.AccountService.Core.Services
     public class ActivationService : IActivationService
     {
         private readonly IConfiguration _configuration; //Config instance for GetBaseUrl method
-
-        public ActivationService(IConfiguration configuration)
+        private readonly IEmailService _emailService;
+        public ActivationService(IConfiguration configuration, IEmailService emailService)
         {
             _configuration = configuration;
+            _emailService = emailService;
         }
 
         private static string GetActivationCode()
@@ -52,15 +53,8 @@ namespace DwitTech.AccountService.Core.Services
             return templateText.ToString();
         }
 
-        public async Task<bool> SendMailAsync(Email email) //TODO
-        {
-            return true;
-        }
-
-        //public bool SendActivationEmail(string fromEmail, string toEmail, string templateName, string RecipientName, string subject = "Account Activation", string cc = "", string bcc = "")
         public async Task<bool> SendActivationEmail(int userId, string templateName, string RecipientName, Email email )
         {
-      
             string subject = "Account Activation";
             email.Subject = subject;
             var activationUrl = GetActivationUrl(userId);
@@ -68,8 +62,7 @@ namespace DwitTech.AccountService.Core.Services
             templateText = templateText.Replace("{{name}}", RecipientName) ;
             templateText = templateText.Replace("{{activationUrl}}", activationUrl);
             email.Body = templateText;
-            var response = await SendMailAsync(email);
-
+            var response = await _emailService.SendMailAsync(email);
             return response;
         }
     }

@@ -13,25 +13,22 @@ namespace DwitTech.AccountService.Core.Services
     {
 
         private readonly IUserRepository _userRepository;
-        private readonly IMapper _mapper;
         private readonly IRoleRepository _roleRepository;
         private readonly ILogger<UserService> _logger;
-        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, IMapper mapper, ILogger<UserService> logger)
+        private readonly IActivationService _activationService;
+        private readonly IEmailService _emailService;
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, ILogger<UserService> logger, IActivationService activationService, IEmailService emailService)
         {
             _userRepository = userRepository;
-            _mapper = mapper;
             _roleRepository = roleRepository;
             _logger = logger;
+            _activationService = activationService;
+            _emailService = emailService;
         }
-
-
 
         private async Task<Data.Entities.Role> GetAssignedRole(UserDto user)
         {
-
             var roles = await _roleRepository.GetRoles();
-
-
             if (user.Roles.ToString() is not null)
             {
                 var assignedRole = roles.FirstOrDefault(x => x.Id == ((int)user.Roles));
@@ -58,6 +55,8 @@ namespace DwitTech.AccountService.Core.Services
                 AddressLine2 = user.AddressLine2,
                 ZipCode = user.ZipCode,
                 PostalCode = user.PostalCode,
+                PhoneNumber = user.PhoneNumber,
+                City = user.City,
                 PassWord = user.PassWord
             };
         }
@@ -66,15 +65,15 @@ namespace DwitTech.AccountService.Core.Services
         {
             try
             {
-               
                 Data.Entities.Role userRole = await GetAssignedRole(user);
                 var userModel = CustomMapper(user, userRole);
                 userModel.PassWord = StringUtil.HashString(userModel.PassWord);
+                var emailHtmlTemplate = "EmailTemplate.html";
+                var recipientName = $"{userModel.FirstName.ToLower()} {userModel.LastName.ToLower()}";
+                var emailModel = _emailService.GenerateEmail(user);
+                await _activationService.SendActivationEmail(userModel.Id, emailHtmlTemplate,recipientName, emailModel);
                 await _userRepository.CreateUser(userModel);
-
-                //return createdUser;
-                _logger.LogInformation(2, $" This is from NLogger {userRole.Id}, {userRole.Name}");
-                //return createdUser;
+                _logger.LogInformation(1, $"This is logged when the user with ID {userModel.Id} is successfully created");
             }
             catch (Exception ex)
             {
