@@ -17,5 +17,7 @@ namespace DwitTech.AccountService.Data.Entities
         [Required]
         [Range(8, 16)]
         public string PassWord { get; set; }
+
+        public User User { get; set; }
     }
 }

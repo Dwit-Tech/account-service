@@ -34,8 +34,6 @@ namespace DwitTech.AccountService.Data.Tests.Repository
                 PhoneNumber = "09023145678",
                 ZipCode = "92001",
                 PostalCode = "Andrew",
-                PassWord = "trionsx",
-                Email = "example@gmail.com",
                 Country = "Brazil",
                 State = "South Casmero",
                 Roles = role
@@ -70,8 +68,6 @@ namespace DwitTech.AccountService.Data.Tests.Repository
                 PhoneNumber = "09023145678",
                 ZipCode = "92001",
                 PostalCode = "Andrew",
-                PassWord = "trionsx",
-                Email = "example@gmail.com",
                 Country = "Brazil",
                 State = "South Casmero",
                 Roles = role

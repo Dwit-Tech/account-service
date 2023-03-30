@@ -47,7 +47,6 @@ namespace DwitTech.AccountService.Core.Services
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Email = user.Email,
                 Roles = userIdentifiedRole,
                 Country = user.Country,
                 State = user.State,
@@ -56,10 +55,22 @@ namespace DwitTech.AccountService.Core.Services
                 ZipCode = user.ZipCode,
                 PostalCode = user.PostalCode,
                 PhoneNumber = user.PhoneNumber,
-                City = user.City,
-                PassWord = user.PassWord
+                City = user.City
             };
         }
+
+
+        private UserLogin LoginCredentials(UserDto user)
+        {
+            var role = GetAssignedRole(user);
+            return new UserLogin
+            {
+                Email = user.Email,
+                PassWord = StringUtil.HashString(user.PassWord),
+                User = CustomMapper(user, role.Result)
+            };
+        }
+
 
         public async Task CreateUser(UserDto user)
         {
@@ -67,12 +78,12 @@ namespace DwitTech.AccountService.Core.Services
             {
                 Data.Entities.Role userRole = await GetAssignedRole(user);
                 var userModel = CustomMapper(user, userRole);
-                userModel.PassWord = StringUtil.HashString(userModel.PassWord);
                 var emailHtmlTemplate = "EmailTemplate.html";
                 var recipientName = $"{userModel.FirstName.ToLower()} {userModel.LastName.ToLower()}";
                 var emailModel = _emailService.GenerateEmail(user);
                 await _activationService.SendActivationEmail(userModel.Id, emailHtmlTemplate,recipientName, emailModel);
                 await _userRepository.CreateUser(userModel);
+                await _userRepository.CreateUserLoginCredentials(LoginCredentials(user));
                 _logger.LogInformation(1, $"This is logged when the user with ID {userModel.Id} is successfully created");
             }
             catch (Exception ex)
@@ -81,6 +92,6 @@ namespace DwitTech.AccountService.Core.Services
             }
         }
 
-       
+        
     }
 }
