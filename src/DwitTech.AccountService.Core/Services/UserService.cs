@@ -50,6 +50,8 @@ namespace DwitTech.AccountService.Core.Services
                 Roles = userIdentifiedRole,
                 Country = user.Country,
                 State = user.State,
+                Email = user.Email,
+                PassWord = user.PassWord,
                 AddressLine1 = user.AddressLine1,
                 AddressLine2 = user.AddressLine2,
                 ZipCode = user.ZipCode,
@@ -58,19 +60,6 @@ namespace DwitTech.AccountService.Core.Services
                 City = user.City
             };
         }
-
-
-        private UserLogin LoginCredentials(UserDto user)
-        {
-            var role = GetAssignedRole(user);
-            return new UserLogin
-            {
-                Email = user.Email,
-                PassWord = StringUtil.HashString(user.PassWord),
-                User = CustomMapper(user, role.Result)
-            };
-        }
-
 
         public async Task CreateUser(UserDto user)
         {
@@ -83,7 +72,6 @@ namespace DwitTech.AccountService.Core.Services
                 var emailModel = _emailService.GenerateEmail(user);
                 await _activationService.SendActivationEmail(userModel.Id, emailHtmlTemplate,recipientName, emailModel);
                 await _userRepository.CreateUser(userModel);
-                await _userRepository.CreateUserLoginCredentials(LoginCredentials(user));
                 _logger.LogInformation(1, $"This is logged when the user with ID {userModel.Id} is successfully created");
             }
             catch (Exception ex)

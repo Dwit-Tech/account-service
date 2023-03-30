@@ -20,11 +20,6 @@ namespace DwitTech.AccountService.Data.Repository
 
         }
 
-        public async Task CreateUserLoginCredentials(UserLogin credentials)
-        {
-            await _accountDbContext.UsersLogin.AddAsync(credentials);
-            _accountDbContext.UsersLogin.Attach(credentials);
-            await _accountDbContext.SaveChangesAsync();
-        }
+        
     }
 }
