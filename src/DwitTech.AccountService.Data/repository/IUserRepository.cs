@@ -7,7 +7,10 @@ namespace DwitTech.AccountService.Data.Repository
     {
         Task<ValidationCode> GetUserValidationCode(string activationCode, int codeType);
         Task<User> GetUser(int id);
+        Task<User> GetUserByEmail(string email);
         Task UpdateUser(User user);
+        Task<bool> ValidateLogin(string email, string hashedPassword);
+        
     }
 
 }

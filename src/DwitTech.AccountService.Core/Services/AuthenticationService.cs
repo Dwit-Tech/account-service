@@ -170,5 +170,7 @@ namespace DwitTech.AccountService.Core.Services
                 throw new SecurityTokenException("Invalid access token", ex);
             }            
         }
+
+        
     }
 }

@@ -24,6 +24,8 @@ namespace DwitTech.AccountService.Data.Context
         public DbSet<Role> Roles { get; set; }
         public DbSet<SessionToken> SessionTokens { get; set; }
 
+        public DbSet<UserLogin> UserLogin { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             var assembly = Assembly.GetExecutingAssembly();

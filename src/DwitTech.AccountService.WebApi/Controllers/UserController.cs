@@ -1,23 +1,21 @@
-﻿using DwitTech.AccountService.Data.Entities;
-using DwitTech.AccountService.Core.Utilities;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using DwitTech.AccountService.Core.Interfaces;
-
 
 namespace DwitTech.AccountService.WebApi.Controllers
 { 
     public class UserController : BaseController
     {
         private readonly IActivationService _activationService;
+        private readonly IUserService _userService;
 
-        public UserController(IActivationService activationService)
+        public UserController(IActivationService activationService, IUserService userService)
         {
-           
+
             _activationService = activationService;
+            _userService = userService;
         }
 
-        
+
         [HttpGet("/Activation/{activationCode}")]
         public async Task<IActionResult> ActivateUser(string activationCode)
         {
@@ -31,8 +29,22 @@ namespace DwitTech.AccountService.WebApi.Controllers
                 return BadRequest($"Something went wrong, due to {ex.Message}, please try again");
             }
 
-        } 
-        
+        }
+
+        [HttpPost]
+        [Route("login")]
+        public async Task<IActionResult> UserLogin([FromBody] string email, string hashedPassword)
+        {
+            try
+            {
+                var loginResult = await _userService.UserLogin(email, hashedPassword);
+                return Ok(loginResult);
+            }
+            catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
     }
 
 }
