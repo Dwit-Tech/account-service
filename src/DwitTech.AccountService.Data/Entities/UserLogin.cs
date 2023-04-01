@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,12 +13,13 @@ namespace DwitTech.AccountService.Data.Entities
 
         [Required]
         [MaxLength(45)]
-        public string Email { get; set; }
+        public string UserName { get; set; }
 
         [Required]
         [Range(8, 16)]
         public string PassWord { get; set; }
 
-        public User User { get; set; }
+        [ForeignKey("User")]
+        public int UserId { get; set; }
     }
 }
