@@ -20,6 +20,9 @@ namespace DwitTech.AccountService.Data.Repository
 
         }
 
-        
+        public Task CreateUserLoginCredentials(UserLogin credentials)
+        {
+            
+        }
     }
 }
