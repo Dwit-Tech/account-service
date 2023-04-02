@@ -13,10 +13,8 @@ namespace DwitTech.AccountService.Core.Services
     {
         private readonly IConfiguration _configuration; //Config instance for GetBaseUrl method
         private readonly IUserRepository _userRepository;
-
-        public ActivationService(IConfiguration configuration, IUserRepository userRepository)
         private readonly IEmailService _emailService;
-        public ActivationService(IConfiguration configuration, IEmailService emailService)
+        public ActivationService(IConfiguration configuration, IEmailService emailService, IUserRepository userRepository)
         {
             _configuration = configuration;
             _userRepository = userRepository;
@@ -61,21 +59,23 @@ namespace DwitTech.AccountService.Core.Services
             templateText = templateText.Replace("{{name}}", RecipientName);
             templateText = templateText.Replace("{{activationUrl}}", activationUrl);
             string body = templateText;
-            var response = SendMail(fromEmail, toEmail, subject, body, cc, bcc);
+            email.Body = body;
+            var response = await _emailService.SendMailAsync(email);
 
             return response;
         }
 
-        public bool SendWelcomeEmail(User user)
+        public async Task<bool> SendWelcomeEmail(User user)
         {
 
             string templateText = GetTemplate("WelcomeEmail.html");
-            templateText = templateText.Replace("{{Firstname}}", user.Firstname);
-            templateText = templateText.Replace("{{Lastname}}", user.Lastname);
+            templateText = templateText.Replace("{{Firstname}}", user.FirstName);
+            templateText = templateText.Replace("{{Lastname}}", user.LastName);
             string body = templateText;
             string subject = "Welcome";
             string fromEmail = _configuration["FROM_EMAIL"];
-            var response = SendMail(fromEmail, user.Email, subject, body);
+            var emailModel = new Email { FromEmail = fromEmail, ToEmail = user.Email, Body = templateText, Subject = subject, Cc = "", Bcc = "" };
+            var response = await  _emailService.SendMailAsync(emailModel);
 
             return response;
         }
@@ -115,7 +115,7 @@ namespace DwitTech.AccountService.Core.Services
             await _userRepository.UpdateUser(user);
             
             var response = SendWelcomeEmail(user);
-            return response;
+            return response.Result;
             
         }
     }

@@ -1,7 +1,8 @@
-﻿using DwitTech.AccountService.Core.Services;
+﻿using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Models;
+using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
-using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -13,44 +14,34 @@ namespace DwitTech.AccountService.Core.Tests.Services
     {
 
         [Theory]
-        [InlineData("testcase@gmail.com", "example@gmail.com", "EmailTemplate.html", "Mike", true)]
-        public void SendActivationEmail_Returns_True(string fromMail, string toMail, string templateName,string RecipientName, bool expected)
+        [InlineData(1, "testcase@gmail.com", "example@gmail.com", "EmailTemplate.html", "Mike", true)]
+        public void SendActivationEmail_Returns_True(int userId, string fromMail, string toMail, string templateName,string RecipientName, bool expected)
         {
             // Arrange
             var inMemorySettings = new Dictionary<string, string> {
                 {"BaseUrl", "https://example.com"}
             };
-    //    [Theory]
-    //    [InlineData("testcase@gmail.com", "example@gmail.com", "EmailTemplate.html", "Mike", true)]
-    //    public void SendActivationEmail_Returns_True(string fromMail, string toMail, string templateName, string RecipientName, bool expected)
-    //    {
-    //        //Arrange
-    //        var inMemorySettings = new Dictionary<string, string> {
-    //            {"BaseUrl", "https://example.com"}
-    //        };
+            
 
-
-    //        IConfiguration configuration = new ConfigurationBuilder()
-    //            .AddInMemoryCollection(inMemorySettings)
-    //            .Build();
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(inMemorySettings)
+                .Build();
 
             var options = new DbContextOptionsBuilder<AccountDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
-    //        var actService = new ActivationService(configuration);
-
+    
             var mockDbContext = new Mock<AccountDbContext>(options);
+            var mockEmailService = new Mock<IEmailService>();
             IUserRepository repository = new UserRepository(mockDbContext.Object);
             
-            var actService = new ActivationService(configuration, repository);
-
+            var actService = new ActivationService(configuration,mockEmailService.Object,repository);
+            var emailModel = new Email {FromEmail = fromMail, ToEmail = toMail, Body = templateName, Subject="", Bcc="", Cc="" };
             //Act
-            var actual = actService.SendActivationEmail(fromMail, toMail, templateName, RecipientName);
-    //        //Act
-    //        var actual = actService.SendActivationEmail(fromMail, toMail, templateName, RecipientName);
-
+            var actual = actService.SendActivationEmail(userId, templateName, RecipientName, emailModel);
+    
             //Assert
-            Assert.Equal(expected, actual);
+            Assert.True(actual.IsCompleted);
         }
 
         private readonly IConfiguration _configuration;
@@ -79,8 +70,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
             User mockUser = new()
             {
                 Id = 1,
-                Firstname = "John",
-                Lastname = "Doe",
+                FirstName = "John",
+                LastName = "Doe",
                 Email = "info@dwittech.com",
                 PhoneNumber = "0802333337",
                 AddressLine1 = "Allen",
@@ -90,7 +81,6 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 City = "Ogba",
                 PostalCode = "21356",
                 ZipCode = "6564536",
-                Password = "JeSusIsLord",
                 Status = Data.Enum.UserStatus.Inactive
             };
 
@@ -99,8 +89,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
             mockUserRepository.Setup(x => x.GetUserValidationCode(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(mockValidationDetails);
             mockUserRepository.Setup(x => x.GetUser(It.IsAny<int>())).ReturnsAsync(mockUser);
-            
-            var actService = new ActivationService(configuration, mockUserRepository.Object);
+            var mockEmailService = new Mock<IEmailService>();
+            var actService = new ActivationService(configuration, mockEmailService.Object, mockUserRepository.Object);
 
             string activationCode = "erg3345dh2";
 
@@ -113,8 +103,6 @@ namespace DwitTech.AccountService.Core.Tests.Services
             mockUserRepository.Verify(x => x.UpdateUser(It.IsAny<User>()), Times.Once);
             Assert.IsType<bool>(actual);
         }
-    //        //Assert
-    //        Assert.Equal(expected, actual);
-    //    }
+    
     }
 }

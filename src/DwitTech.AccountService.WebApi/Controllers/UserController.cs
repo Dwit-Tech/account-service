@@ -18,11 +18,13 @@ namespace DwitTech.AccountService.WebApi.Controllers
     public class UserController : BaseController
     {
         private readonly IActivationService _activationService;
+        private readonly IUserService _userService;
 
-        public UserController(IActivationService activationService)
+        public UserController(IActivationService activationService, IUserService userService)
         {
            
             _activationService = activationService;
+            _userService = userService;
         }
 
         
@@ -40,13 +42,6 @@ namespace DwitTech.AccountService.WebApi.Controllers
             }
 
         } 
-        
-        private readonly IUserService _userService;
-        public UserController(IUserService userService)
-        {
-            _userService = userService;
-        }
-
         
         [AllowAnonymous]
         [HttpPost]
