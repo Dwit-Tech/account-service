@@ -32,11 +32,10 @@ namespace DwitTech.AccountService.Data.Repository
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<ValidationCode> SaveUserValidationCode(ValidationCode validationCode)
+        public async Task SaveUserValidationCode(ValidationCode validationCode)
         {
-            var response = await _dbContext.ValidationCodes.AddAsync(validationCode);
+            await _dbContext.ValidationCodes.AddAsync(validationCode);
             await _dbContext.SaveChangesAsync();
-            return response.Entity;
         }
     }
 }

@@ -31,8 +31,7 @@ namespace DwitTech.AccountService.Core.Services
             return activationCode;
         }
 
-
-        private async Task<string> GetActivationUrl(int userId) //TODO
+        private async Task<string> GetActivationUrl(int userId)
         {
             string baseUrl = _configuration["BASE_URL"];
             string activationCode = GetActivationCode();
@@ -46,7 +45,7 @@ namespace DwitTech.AccountService.Core.Services
                     NotificationChannel = NotificationChannel.Email,
                     ModifiedOnUtc = DateTime.UtcNow
                 };
-                var saveResponse = await _userRepository.SaveUserValidationCode(validationCode);
+                await _userRepository.SaveUserValidationCode(validationCode);
                 string activationUrl = baseUrl + "/Account/Activation/" + activationCode;
                 return activationUrl;
             }
@@ -60,13 +59,13 @@ namespace DwitTech.AccountService.Core.Services
         {
             string trimmedTemplateName = templateName.Trim();
             string filePath = "Templates/" + trimmedTemplateName;
-            StreamReader str = new StreamReader(filePath);
+            var str = new StreamReader(filePath);
             var templateText = str.ReadToEnd();
             str.Close();
             return templateText.ToString();
         }
 
-        public async Task<bool> SendActivationEmail(int userId, string templateName, string RecipientName, Email email)
+        public async Task<bool> SendActivationEmail(int userId, string RecipientName, Email email, string templateName = "ActivationEmailTemplate.html")
         {
             const string subject = "Account Activation";
             email.Subject = subject;
@@ -87,9 +86,13 @@ namespace DwitTech.AccountService.Core.Services
 
             using (var httpClient = _httpClientFactory.CreateClient())
             {
-                httpClient.BaseAddress = new Uri(_configuration["BASE_URL"]); //TODO
+                if (httpClient == null)
+                {
+                    throw new NullReferenceException("httpClient has no value");
+                }
+                httpClient.BaseAddress = new Uri(_configuration["NOTIFICATION_SERVICE_BASE_URL"]);
                 var response = await httpClient.PostAsync(_configuration["NOTIFICATION_SERVICE_SENDMAIL_END_POINT"], content);
-                return response.IsSuccessStatusCode;
+                return (response != null && response.IsSuccessStatusCode);
             }
         }
 
@@ -119,7 +122,7 @@ namespace DwitTech.AccountService.Core.Services
 
         public async Task<bool> ActivateUser(string activationCode)
         {
-            ValidationCode activationResult = await _userRepository.GetUserValidationCode(activationCode, CodeType.Activation); //CodeType.Activation);
+            ValidationCode activationResult = await _userRepository.GetUserValidationCode(activationCode, CodeType.Activation);
             if (activationResult == null)
             {
                 return false;
