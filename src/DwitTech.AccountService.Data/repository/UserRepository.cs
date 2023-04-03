@@ -31,16 +31,13 @@ namespace DwitTech.AccountService.Data.Repository
             _dbContext.Update(user);
              await _dbContext.SaveChangesAsync();
         }
-        private readonly AccountDbContext _accountDbContext;
-        public UserRepository(AccountDbContext accountDbContext)
-        {
-                _accountDbContext = accountDbContext;
-        }
+       
+        
         public async Task CreateUser(User user)
         {
-             await _accountDbContext.Users.AddAsync(user);
-            _accountDbContext.Attach(user.Roles);
-            await _accountDbContext.SaveChangesAsync();
+             await _dbContext.Users.AddAsync(user);
+            _dbContext.Attach(user.Roles);
+            await _dbContext.SaveChangesAsync();
 
             
 
@@ -48,8 +45,8 @@ namespace DwitTech.AccountService.Data.Repository
 
         public async Task CreateUserLoginCredentials(UserLogin credentials)
         {
-            _accountDbContext.UsersLogin.Add(credentials);
-            await _accountDbContext.SaveChangesAsync();
+            _dbContext.UsersLogin.Add(credentials);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

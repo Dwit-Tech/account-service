@@ -32,7 +32,6 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
         }
 
-
         ValidationCode mockValidationDetails = new()
         {
             Id = 01,
@@ -59,17 +58,15 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Status = Enum.UserStatus.Inactive,
         };
 
-        
-
            [Fact]
             public void CreateNewUser_Returns_BooleanResult()
             {
 
-            var options = new DbContextOptionsBuilder<AccountDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
+                var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
 
-            var dbContext = new AccountDbContext(options);
+                var dbContext = new AccountDbContext(options);
                 var role = new Role { Id = 1, Name = "Admin", Description = "Administrative role" };
                 var userModel = new User
                 {
@@ -195,8 +192,6 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Assert.NotNull(actual);
             Assert.Equal(mockUser, actual);
         }
-
-
 
         public void Dispose()
         {

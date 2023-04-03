@@ -41,7 +41,7 @@ namespace DwitTech.AccountService.Core.Services
 
         }
 
-        private User CustomMapper(UserDto user, Data.Entities.Role userIdentifiedRole)
+        private User GetCustomMapper(UserDto user, Data.Entities.Role userIdentifiedRole)
         {
             return new User
             {
@@ -61,9 +61,7 @@ namespace DwitTech.AccountService.Core.Services
             };
         }
 
-
-
-        private UserLogin LoginCredentials(UserDto user, int id)
+        private UserLogin GenerateLoginCredentials(UserDto user, int id)
         {
 
             return new UserLogin
@@ -80,13 +78,13 @@ namespace DwitTech.AccountService.Core.Services
             try
             {
                 Data.Entities.Role userRole = await GetAssignedRole(user);
-                var userModel = CustomMapper(user, userRole);
+                var userModel = GetCustomMapper(user, userRole);
                 var emailHtmlTemplate = "EmailTemplate.html";
                 var recipientName = $"{userModel.FirstName.ToLower()} {userModel.LastName.ToLower()}";
                 var emailModel = _emailService.GenerateEmail(user);
                 await _activationService.SendActivationEmail(userModel.Id, emailHtmlTemplate, recipientName, emailModel);
                 await _userRepository.CreateUser(userModel);
-                var loginCredentials = LoginCredentials(user, userModel.Id);
+                var loginCredentials = GenerateLoginCredentials(user, userModel.Id);
                 await _userRepository.CreateUserLoginCredentials(loginCredentials);
                 _logger.LogInformation(1, $"This is logged when the user with ID {userModel.Id} is successfully created");
             }
