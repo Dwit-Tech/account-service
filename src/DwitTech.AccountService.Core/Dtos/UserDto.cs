@@ -1,12 +1,7 @@
 ﻿using AutoMapper;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Dtos
 {

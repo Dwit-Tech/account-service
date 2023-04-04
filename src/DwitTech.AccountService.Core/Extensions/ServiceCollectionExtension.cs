@@ -4,11 +4,13 @@ using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace DwitTech.AccountService.Core.Extension
+
 {
     public static class ServiceCollectionsExtension
     {
@@ -16,9 +18,12 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             string connectionString = configuration.GetConnectionString("AccountDbContext");
             connectionString = connectionString.Replace("{DBHost}", configuration["DB_HOSTNAME"]);
+            connectionString = connectionString.Replace("{DBPort}", configuration["DB_PORT"]);
             connectionString = connectionString.Replace("{DBName}", configuration["DB_NAME"]);
             connectionString = connectionString.Replace("{DBUser}", configuration["DB_USERNAME"]);
             connectionString = connectionString.Replace("{DBPassword}", configuration["DB_PASSWORD"]);
+
+
 
             service.AddDbContext<AccountDbContext>(opt =>
             {

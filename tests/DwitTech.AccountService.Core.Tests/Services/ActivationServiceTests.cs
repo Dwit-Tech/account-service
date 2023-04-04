@@ -1,106 +1,154 @@
-﻿using DwitTech.AccountService.Core.Services;
-using DwitTech.AccountService.Data.Context;
+﻿using DwitTech.AccountService.Core.Models;
+using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Entities;
-using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using Moq.Protected;
+using System.Net;
 
 namespace DwitTech.AccountService.Core.Tests.Services
 {
     public class ActivationServiceTests
     {
-
-        [Theory]
-        [InlineData("testcase@gmail.com", "example@gmail.com", "EmailTemplate.html", "Mike", true)]
-        public void SendActivationEmail_Returns_True(string fromMail, string toMail, string templateName,string RecipientName, bool expected)
-        {
-            // Arrange
-            var inMemorySettings = new Dictionary<string, string> {
-                {"BaseUrl", "https://example.com"}
-            };
-
-
-            IConfiguration configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(inMemorySettings)
-                .Build();
-
-            var options = new DbContextOptionsBuilder<AccountDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-
-            var mockDbContext = new Mock<AccountDbContext>(options);
-            IUserRepository repository = new UserRepository(mockDbContext.Object);
-            
-            var actService = new ActivationService(configuration, repository);
-
-            //Act
-            var actual = actService.SendActivationEmail(fromMail, toMail, templateName, RecipientName);
-
-            //Assert
-            Assert.Equal(expected, actual);
-        }
-
-        private readonly IConfiguration _configuration;
+        private const string activationEmailTemplateName  = "ActivationEmailTemplate.html";
 
         [Fact]
-        public async Task ActivateUser_ValidatesActivationCodeSendsWelcomeEmailAndReturnsBooleanValue_WhenCalled()
+        public async Task SendMailAsync_ShouldReturnTrue_WhenMailSendingIsSuccessful()
         {
-            //Arrange
-            var inMemorySettings = new Dictionary<string, string> {
-                {"FROM_EMAIL", "info@dwittech.com"}
-            };
+            // Arrange
+            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_BASE_URL", "http://localhost:5001");
+            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", "sendmail");
 
-
-            IConfiguration configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(inMemorySettings)
+            var _configuration = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
                 .Build();
 
-            ValidationCode mockValidationDetails = new()
-            {
-                Id = 01,
-                UserId = 1,
-                Code = "erg3345dh2",
-                CodeType = 1
-            };
+            var email = new Email();
+            var userRepository = new Mock<IUserRepository>();
+            var mockMessageHandler = new Mock<HttpMessageHandler>();
+            mockMessageHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
-            User mockUser = new()
-            {
-                Id = 1,
-                Firstname = "John",
-                Lastname = "Doe",
-                Email = "info@dwittech.com",
-                PhoneNumber = "0802333337",
-                AddressLine1 = "Allen",
-                AddressLine2 = "Sonubi",
-                Country = "Nigeria",
-                State = "Lagos",
-                City = "Ogba",
-                PostalCode = "21356",
-                ZipCode = "6564536",
-                Password = "JeSusIsLord",
-                Status = Data.Enum.UserStatus.Inactive
-            };
+            var mockHttpClient = new HttpClient(mockMessageHandler.Object);
+            var mockHttpClientFactory = new Mock<IHttpClientFactory>();
+            mockHttpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(mockHttpClient);            
 
-            var mockUserRepository = new Mock<IUserRepository>();
+            // Act
+            var activationService = new ActivationService(_configuration, userRepository.Object, mockHttpClientFactory.Object);            
+            var result = await activationService.SendMailAsync(email);
+
+            // Assert
+            Assert.True(result);
+
+            // Remove environment variables
+            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_BASE_URL", null);
+            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", null);
+        }
 
 
-            mockUserRepository.Setup(x => x.GetUserValidationCode(It.IsAny<string>(), It.IsAny<int>())).ReturnsAsync(mockValidationDetails);
-            mockUserRepository.Setup(x => x.GetUser(It.IsAny<int>())).ReturnsAsync(mockUser);
+        [Fact]
+        public async Task SendMailAsync_ShouldReturnFalse_WhenMailSendingFailed()
+        {
+            // Arrange
+            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_BASE_URL", "http://localhost:5001");
+            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", "sendmail");
+
+            var _configuration = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .Build();
+
+            var email = new Email();
+            var userRepository = new Mock<IUserRepository>();
+            var mockMessageHandler = new Mock<HttpMessageHandler>();
+            mockMessageHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.BadRequest));
+
+            var mockHttpClient = new HttpClient(mockMessageHandler.Object);
+            var mockHttpClientFactory = new Mock<IHttpClientFactory>();
+            mockHttpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(mockHttpClient);            
+
+            // Act
+            var activationService = new ActivationService(_configuration, userRepository.Object, mockHttpClientFactory.Object);            
+            var result = await activationService.SendMailAsync(email);
+
+            // Assert
+            Assert.False(result);
+
+            // Remove environment variables
+            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_BASE_URL", null);
+            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", null);
+        }
+
+
+        [Fact]
+        public async Task SendActivationEmail_ShouldCall_SendMailAsync_WithCorrectEmailParameters()
+        {
+            // Arrange
+            Environment.SetEnvironmentVariable("BASE_URL", "http://localhost:5000");
+            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_BASE_URL", "http://localhost:5001");
+            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", "sendmail");
+
+            var _configuration = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .Build();
+
+            var email = new Email();
+            var subject = "Account Activation";
+            var activationCode = "activationCode";
+            var userId = 1;
+            var recipientName = "John Doe";
+            var mockHttpClientFactory = new Mock<IHttpClientFactory>();
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+            var userRepository = new Mock<IUserRepository>();
             
-            var actService = new ActivationService(configuration, mockUserRepository.Object);
+            userRepository.Setup(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()))
+                .Verifiable();            
 
-            string activationCode = "erg3345dh2";
+            var activationService = new ActivationService(_configuration, userRepository.Object, mockHttpClientFactory.Object);
 
-            //Act
-            var actual = await actService.ActivateUser(activationCode);
+            mockHttpMessageHandler.Protected() //Mock the HTTP response
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = null
+                });
 
-            //Assert
-            mockUserRepository.Verify(x => x.GetUserValidationCode(activationCode, mockValidationDetails.CodeType), Times.Once);
-            mockUserRepository.Verify(x => x.GetUser(It.IsAny<int>()), Times.Once);
-            mockUserRepository.Verify(x => x.UpdateUser(It.IsAny<User>()), Times.Once);
-            Assert.IsType<bool>(actual);
+            var client = new HttpClient(mockHttpMessageHandler.Object)
+            {
+                BaseAddress = new Uri(_configuration["NOTIFICATION_SERVICE_BASE_URL"])
+            };
+
+            mockHttpClientFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client); 
+
+            // Act
+            var result = await activationService.SendActivationEmail(userId, recipientName, email, activationEmailTemplateName);
+
+            // Assert
+            userRepository.Verify(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()), Times.Once);
+
+            mockHttpClientFactory.Verify(_ => _.CreateClient(It.IsAny<string>()), Times.Once);
+
+            var capturedRequest = mockHttpMessageHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>(async (req, token) =>
+            {
+                // Assert
+                var body = req.Content != null ? await req.Content.ReadAsStringAsync() : null;
+                Assert.NotNull(body);
+                Assert.Contains(subject, body);
+                Assert.Contains(recipientName, body);
+                Assert.Contains(_configuration["BASE_URL"] + "/Account/Activation/" + activationCode, body);
+            });
+            Assert.True(result);
+
+            // Remove environment variables
+            Environment.SetEnvironmentVariable("BASE_URL", null);
+            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_BASE_URL", null);
+            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", null);
         }
     }
 }

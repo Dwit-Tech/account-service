@@ -1,6 +1,5 @@
 ﻿using DwitTech.AccountService.Core.Utilities;
 using Microsoft.Extensions.Configuration;
-using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
