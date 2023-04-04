@@ -1,20 +1,9 @@
-﻿using DwitTech.AccountService.Data.Entities;
-using DwitTech.AccountService.Core.Utilities;
-using Microsoft.AspNetCore.Authorization;
-using AutoMapper;
-using DwitTech.AccountService.Core.Dtos;
-using DwitTech.AccountService.Core.Interfaces;
-using DwitTech.AccountService.Core.Models;
-using DwitTech.AccountService.Core.Services;
-using DwitTech.AccountService.Core.Utilities;
-using DwitTech.AccountService.Data.Entities;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using DwitTech.AccountService.Core.Interfaces;
 
 
 namespace DwitTech.AccountService.WebApi.Controllers
-{ 
+{
     public class UserController : BaseController
     {
         private readonly IActivationService _activationService;
@@ -40,6 +29,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
             {
                 return BadRequest($"Something went wrong, due to {ex.Message}, please try again");
             }
+        }    
 
         } 
         
@@ -59,5 +49,4 @@ namespace DwitTech.AccountService.WebApi.Controllers
             }
         }
     }
-
 }

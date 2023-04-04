@@ -1,5 +1,6 @@
 ﻿using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -58,6 +59,16 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Status = Enum.UserStatus.Inactive,
         };
 
+        public Mock<IUserRepository> mockUserRepository;
+
+        public UserRepositoryTest()
+        {
+
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+            _accountDbContext = new AccountDbContext(options);
+            _accountDbContext.Database.EnsureCreated();
            [Fact]
             public void CreateNewUser_Returns_BooleanResult()
             {
@@ -88,6 +99,8 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
                 IUserRepository userRepo = new UserRepository(dbContext);
 
+            mockUserRepository = new Mock<IUserRepository>();
+        }
                 //Act
                 var actual = userRepo.CreateUser(userModel);
                 async Task act() => await userRepo.CreateUser(userModel);
@@ -95,37 +108,6 @@ namespace DwitTech.AccountService.Data.Tests.Repository
                 Assert.True(actual.IsCompletedSuccessfully);
                 Assert.ThrowsAsync<ArgumentException>(act);
             }
-
-        [Fact]
-        public void CreateUser_ThrowsException_When_Supplied_Incomplete_Details()
-        {
-            var options = new DbContextOptionsBuilder<AccountDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-            var dbContext = new AccountDbContext(options);
-            var role = new Role { Id = 1, Name = "Admin", Description = "Administrative role" };
-            var userModel = new User
-            {
-                Id = 1,
-                FirstName = "John",
-                LastName = "Okpo",
-                AddressLine1 = "",
-                PhoneNumber = "09023145678",
-                ZipCode = "92001",
-                PostalCode = "Andrew",
-                PassWord = "trionsx",
-                Email = "example@gmail.com",
-                Country = "Brazil",
-                State = "South Casmero",
-                Roles = role
-            };
-
-            IUserRepository userRepo = new UserRepository(dbContext);
-
-            //Act
-            async Task act() => await userRepo.CreateUser(userModel);
-            Assert.ThrowsAsync<ArgumentException>(act);
-        }
 
         [Fact]
         public async Task GetUserValidationCode_Returns_ValidationCodeDetails_WhenActivationCodeExists()
@@ -137,13 +119,13 @@ namespace DwitTech.AccountService.Data.Tests.Repository
                 .Options;
             var accountDbContext = new AccountDbContext(options);
 
-            await accountDbContext.ValidationCode.AddAsync(mockValidationDetails);
+            await accountDbContext.ValidationCodes.AddAsync(mockValidationDetails);
             await accountDbContext.SaveChangesAsync();
 
             var userRepository = new UserRepository(accountDbContext);
 
             //Act
-            var result = await userRepository.GetUserValidationCode(mockValidationDetails.Code, mockValidationDetails.CodeType);
+            var result = await userRepository.GetUserValidationCode(mockValidationDetails.Code, mockValidationDetails.CodeType);           
 
             //Assert
             Assert.NotNull(result);
@@ -163,11 +145,10 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             var userRepository = new UserRepository(accountDbContext);
 
             //Act
-            var result = await userRepository.GetUserValidationCode("erg3345dh2", 1);
+            var result = await userRepository.GetUserValidationCode("erg3345dh2", CodeType.Activation);
 
             //Assert
             Assert.Null(result);
-
         }
 
         [Fact]
@@ -193,6 +174,30 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Assert.Equal(mockUser, actual);
         }
 
+
+        [Fact]
+        public async Task SaveUserValidationCode_AddsValidationCodeToDb_WhenValidationCodeIsValid()
+        {
+            //Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+                var userRepository = new UserRepository(accountDbContext);
+
+                //Act
+                await userRepository.SaveUserValidationCode(mockValidationDetails);
+
+                //Assert
+                var addedValidationCode = await accountDbContext.ValidationCodes.FindAsync(mockValidationDetails.Id);
+                Assert.NotNull(addedValidationCode);
+                Assert.Equal(mockValidationDetails, addedValidationCode);
+            }
+        }
+
+
         public void Dispose()
         {
             _accountDbContext.Database.EnsureDeleted();
@@ -201,4 +206,3 @@ namespace DwitTech.AccountService.Data.Tests.Repository
         }
     }
 }
-

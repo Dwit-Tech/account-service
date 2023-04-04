@@ -1,6 +1,7 @@
 using NLog;
 using NLog.Web;
 using System.Text.Json.Serialization;
+using DwitTech.AccountService.Core.Extension;
 
 
 namespace DwitTech.AccountService.WebApi
@@ -66,7 +67,6 @@ namespace DwitTech.AccountService.WebApi
             app.UseSwagger();
             app.UseSwaggerUI();
 
-
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -75,11 +75,11 @@ namespace DwitTech.AccountService.WebApi
 
             app.UseAuthorization();
 
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+
 
 
             app.SetupMigrations(app.Services, app.Configuration);

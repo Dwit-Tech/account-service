@@ -11,9 +11,6 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 {
     public class UserControllerTest
     {
-        private readonly Mock<IActivationService> _mockActService;
-        private readonly UserController _controller;
-
         [Fact]
         public void ActivateUser_ShouldReturn_HTTP200()
         {
@@ -23,13 +20,21 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             var mockDbContext = new Mock<AccountDbContext>(options);
             var userRepository = new Mock<UserRepository>(mockDbContext.Object);
+            var _configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
+            {
+                { "FROM_EMAIL","example@gmail.com" },
+                { "NOTIFICATION_SERVICE_SENDMAIL_END_POINT", "https://jsonplaceholder.typicode.com/posts"}
             var iConfig = new Mock<IConfiguration>();
             var iUserService = new Mock<IUserService>();
 
             var _mockService = new Mock<ActivationService>(iConfig.Object, userRepository.Object);
 
+            }).Build();
             var userController = new UserController(_mockActService.Object,iUserService.Object);
 
+            var iHttpClientFactory = new Mock<IHttpClientFactory>();
+            var _mockService = new ActivationService(_configuration, userRepository.Object, iHttpClientFactory.Object);
+            var userController = new UserController(_mockService);
             string activationCode = "erg3345dh2";
 
             //act
