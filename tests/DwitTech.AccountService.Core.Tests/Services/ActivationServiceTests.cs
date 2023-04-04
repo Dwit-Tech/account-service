@@ -38,7 +38,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var actService = new ActivationService(configuration,mockEmailService.Object,repository);
             var emailModel = new Email {FromEmail = fromMail, ToEmail = toMail, Body = templateName, Subject="", Bcc="", Cc="" };
             //Act
-            var actual = actService.SendActivationEmail(userId, templateName, RecipientName, emailModel);
+            var actual = actService.SendActivationEmail(userId,RecipientName, emailModel, templateName);
     
             //Assert
             Assert.True(actual.IsCompleted);

@@ -50,7 +50,7 @@ namespace DwitTech.AccountService.Core.Services
             return templateText.ToString();
         }
 
-        public async Task<bool> SendActivationEmail(int userId, string templateName, string RecipientName, Email email )
+        public async Task<bool> SendActivationEmail(int userId,string RecipientName, Email email, string templateName = "ActivationEmailTemplate.html")
         {
             string subject = "Account Activation";
             email.Subject = subject;
@@ -74,7 +74,7 @@ namespace DwitTech.AccountService.Core.Services
             string body = templateText;
             string subject = "Welcome";
             string fromEmail = _configuration["FROM_EMAIL"];
-            var emailModel = new Email { FromEmail = fromEmail, ToEmail = user.Email, Body = templateText, Subject = subject, Cc = "", Bcc = "" };
+            var emailModel = new Email { FromEmail = fromEmail, ToEmail = user.Email, Body = templateText, Subject = subject, Cc="", Bcc="" };
             var response = await  _emailService.SendMailAsync(emailModel);
 
             return response;

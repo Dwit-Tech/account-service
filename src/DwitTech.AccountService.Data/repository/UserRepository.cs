@@ -45,7 +45,7 @@ namespace DwitTech.AccountService.Data.Repository
 
         public async Task CreateUserLoginCredentials(UserLogin credentials)
         {
-            _dbContext.UsersLogin.Add(credentials);
+            _dbContext.UserLogins.Add(credentials);
             await _dbContext.SaveChangesAsync();
         }
     }

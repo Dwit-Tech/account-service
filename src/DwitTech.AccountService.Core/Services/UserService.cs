@@ -79,10 +79,10 @@ namespace DwitTech.AccountService.Core.Services
             {
                 Data.Entities.Role userRole = await GetAssignedRole(user);
                 var userModel = GetCustomMapper(user, userRole);
-                var emailHtmlTemplate = "EmailTemplate.html";
+                var activationEmailHtmlTemplate = "ActivationEmailTemplate.html";
                 var recipientName = $"{userModel.FirstName.ToLower()} {userModel.LastName.ToLower()}";
                 var emailModel = _emailService.GenerateEmail(user);
-                await _activationService.SendActivationEmail(userModel.Id, emailHtmlTemplate, recipientName, emailModel);
+                await _activationService.SendActivationEmail(userModel.Id,recipientName, emailModel, activationEmailHtmlTemplate);
                 await _userRepository.CreateUser(userModel);
                 var loginCredentials = GenerateLoginCredentials(user, userModel.Id);
                 await _userRepository.CreateUserLoginCredentials(loginCredentials);

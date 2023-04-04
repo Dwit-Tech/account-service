@@ -24,10 +24,11 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             var mockDbContext = new Mock<AccountDbContext>(options);
             var userRepository = new Mock<UserRepository>(mockDbContext.Object);
             var iConfig = new Mock<IConfiguration>();
+            var iUserService = new Mock<IUserService>();
 
             var _mockService = new Mock<ActivationService>(iConfig.Object, userRepository.Object);
 
-            var userController = new UserController(_mockService.Object);
+            var userController = new UserController(_mockActService.Object,iUserService.Object);
 
             string activationCode = "erg3345dh2";
 

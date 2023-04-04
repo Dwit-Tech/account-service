@@ -48,7 +48,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controller
                     PhoneNumber = "1234567890"
              };
 
-             var userController = new UserController(userService.Object);
+             var userController = new UserController(_activationService.Object, userService.Object);
              var result = userController.CreateUser(userDto);
              Assert.True(result.IsCompleted);
         }
