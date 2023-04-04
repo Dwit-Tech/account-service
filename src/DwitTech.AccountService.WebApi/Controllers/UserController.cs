@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using DwitTech.AccountService.Core.Interfaces;
-
+using Microsoft.AspNetCore.Authorization;
+using DwitTech.AccountService.Core.Dtos;
 
 namespace DwitTech.AccountService.WebApi.Controllers
 {
@@ -29,10 +30,8 @@ namespace DwitTech.AccountService.WebApi.Controllers
             {
                 return BadRequest($"Something went wrong, due to {ex.Message}, please try again");
             }
-        }    
+        }
 
-        } 
-        
         [AllowAnonymous]
         [HttpPost]
         [Route("/createuser")]
@@ -48,5 +47,8 @@ namespace DwitTech.AccountService.WebApi.Controllers
                 throw new Exception(ex.Message.ToString());
             }
         }
-    }
+
+    } 
+        
+        
 }

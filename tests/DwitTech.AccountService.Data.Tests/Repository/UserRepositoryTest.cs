@@ -29,7 +29,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
             _accountDbContext.SaveChanges();
 
-            mockUserRepository = new Mock<IUserRepository>();
+           
 
         }
 
@@ -38,7 +38,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Id = 01,
             UserId = 1,
             Code = "erg3345dh2",
-            CodeType = 1
+            CodeType = CodeType.Activation
         };
 
 
@@ -59,16 +59,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Status = Enum.UserStatus.Inactive,
         };
 
-        public Mock<IUserRepository> mockUserRepository;
-
-        public UserRepositoryTest()
-        {
-
-            var options = new DbContextOptionsBuilder<AccountDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-            _accountDbContext = new AccountDbContext(options);
-            _accountDbContext.Database.EnsureCreated();
+       
            [Fact]
             public void CreateNewUser_Returns_BooleanResult()
             {
@@ -90,17 +81,15 @@ namespace DwitTech.AccountService.Data.Tests.Repository
                     PhoneNumber = "09023145678",
                     ZipCode = "92001",
                     PostalCode = "Andrew",
-                    PassWord = "trionsx",
                     Email = "example@gmail.com",
                     Country = "Brazil",
                     State = "South Casmero",
-                    Roles = role
+                    Role = role
                 };
 
                 IUserRepository userRepo = new UserRepository(dbContext);
 
-            mockUserRepository = new Mock<IUserRepository>();
-        }
+            
                 //Act
                 var actual = userRepo.CreateUser(userModel);
                 async Task act() => await userRepo.CreateUser(userModel);

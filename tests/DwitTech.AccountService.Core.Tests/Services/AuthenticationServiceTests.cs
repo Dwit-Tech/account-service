@@ -1,3 +1,4 @@
+
 ﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Services;
@@ -43,7 +44,6 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 City = "city",
                 PostalCode = "postalCode",
                 ZipCode = "zipcode",
-                PassWord = "password",
                 ModifiedOnUtc = DateTime.UtcNow
             };
 
@@ -380,3 +380,6 @@ namespace DwitTech.AccountService.Core.Tests.Services
         }
     }
 }
+    
+
+

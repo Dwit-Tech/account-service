@@ -1,4 +1,4 @@
-﻿using DwitTech.AccountService.Core.Dtos;
+using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Utilities;
@@ -6,36 +6,41 @@ using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
+using System.Net.Http;
 
 namespace DwitTech.AccountService.Core.Services
 {
     public class ActivationService : IActivationService
     {
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration _configuration; //Config instance for GetBaseUrl method
         private readonly IUserRepository _userRepository;
+        private readonly IEmailService _emailService;
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public ActivationService(IConfiguration configuration, 
-            IUserRepository userRepository, 
-            IHttpClientFactory httpClientFactory)
-        private readonly IEmailService _emailService;
-        public ActivationService(IConfiguration configuration, IEmailService emailService, IUserRepository userRepository)
-        {
+        public ActivationService(IConfiguration configuration, IUserRepository userRepository, IHttpClientFactory httpClientFactory, IEmailService emailService)
+       {
             _configuration = configuration;
             _userRepository = userRepository;
             _httpClientFactory = httpClientFactory;
             _emailService = emailService;
         }
 
-        private static string GetActivationCode()
+
+        public ActivationService(IConfiguration configuration, IEmailService emailService, IUserRepository userRepository)
+        {
+            _configuration = configuration;
+            _userRepository = userRepository;
+            _emailService = emailService;
+        }
+
+        private string GetActivationCode()
         {
             var activationCode = StringUtil.GenerateUniqueCode();
             return activationCode;
         }
 
-        private async Task<string> GetActivationUrl(int userId)
+        private string GetBaseUrl()
         {
-            string baseUrl = _configuration["BASE_URL"];
             return _configuration.GetSection("BaseUrl").Value;
         }
 
@@ -43,37 +48,21 @@ namespace DwitTech.AccountService.Core.Services
         {
             string baseUrl = GetBaseUrl();
             string activationCode = GetActivationCode();
-            try
-            {
-                var validationCode = new ValidationCode
-                {
-                    Code = activationCode,
-                    CodeType = CodeType.Activation,
-                    UserId = userId,
-                    NotificationChannel = NotificationChannel.Email,
-                    ModifiedOnUtc = DateTime.UtcNow
-                };
-                await _userRepository.SaveUserValidationCode(validationCode);
-                string activationUrl = baseUrl + "/Account/Activation/" + activationCode;
-                return activationUrl;
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException($"{ex.Message}");
-            }
+            string activationUrl = baseUrl + "/Account/Activation/" + activationCode;
+            return activationUrl;
         }
 
         private string GetTemplate(string templateName)
         {
             string trimmedTemplateName = templateName.Trim();
             string filePath = "Templates/" + trimmedTemplateName;
-            var str = new StreamReader(filePath);
+            StreamReader str = new StreamReader(filePath);
             var templateText = str.ReadToEnd();
             str.Close();
             return templateText.ToString();
         }
 
-        public async Task<bool> SendActivationEmail(int userId,string RecipientName, Email email, string templateName = "ActivationEmailTemplate.html")
+        public async Task<bool> SendActivationEmail(int userId, string RecipientName, Email email, string templateName = "ActivationEmailTemplate.html")
         {
             string subject = "Account Activation";
             email.Subject = subject;
@@ -97,12 +86,11 @@ namespace DwitTech.AccountService.Core.Services
             string body = templateText;
             string subject = "Welcome";
             string fromEmail = _configuration["FROM_EMAIL"];
-            var emailModel = new Email { FromEmail = fromEmail, ToEmail = user.Email, Body = templateText, Subject = subject, Cc="", Bcc="" };
-            var response = await  _emailService.SendMailAsync(emailModel);
+            var emailModel = new Email { FromEmail = fromEmail, ToEmail = user.Email, Body = templateText, Subject = subject, Cc = "", Bcc = "" };
+            var response = await _emailService.SendMailAsync(emailModel);
 
             return response;
         }
-
 
         private static bool IsUserActivated(User user)
         {
@@ -115,19 +103,21 @@ namespace DwitTech.AccountService.Core.Services
 
         public async Task<bool> ActivateUser(string activationCode)
         {
-            ValidationCode activationResult = await _userRepository.GetUserValidationCode(activationCode, CodeType.Activation);
+            ValidationCode activationResult = await _userRepository.GetUserValidationCode(activationCode, CodeType.Activation); //CodeType.Activation);
             if (activationResult == null)
             {
                 return false;
             }
 
             var user = await _userRepository.GetUser(activationResult.UserId);
+
             if (IsUserActivated(user))
             {
                 throw new Exception("User already Activated.");
             }
 
             DateTime expiredTime = activationResult.CreatedOnUtc.AddMinutes(10);
+
             if (DateTime.UtcNow > expiredTime)
             {
                 throw new InvalidOperationException("Activation Code has expired");
@@ -135,10 +125,10 @@ namespace DwitTech.AccountService.Core.Services
 
             user.Status = Data.Enum.UserStatus.Active;
             await _userRepository.UpdateUser(user);
-            
+
             var response = SendWelcomeEmail(user);
             return response.Result;
-            
+
         }
     }
 }

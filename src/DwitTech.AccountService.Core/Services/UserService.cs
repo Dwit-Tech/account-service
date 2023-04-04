@@ -47,11 +47,10 @@ namespace DwitTech.AccountService.Core.Services
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Roles = userIdentifiedRole,
+                Role = userIdentifiedRole,
                 Country = user.Country,
                 State = user.State,
                 Email = user.Email,
-                PassWord = user.PassWord,
                 AddressLine1 = user.AddressLine1,
                 AddressLine2 = user.AddressLine2,
                 ZipCode = user.ZipCode,

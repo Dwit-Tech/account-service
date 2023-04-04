@@ -43,10 +43,6 @@ namespace DwitTech.AccountService.Data.Entities
         [Required]
         public string ZipCode { get; set; }
 
-        [Required]
-        [Range(8,16)]
-        public string Password { get; set; }
-
         public UserStatus Status { get; set; }
 
         public Role Role { get; set; }
