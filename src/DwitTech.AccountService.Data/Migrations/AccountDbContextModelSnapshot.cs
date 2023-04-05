@@ -34,14 +34,12 @@ namespace DwitTech.AccountService.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -149,7 +147,7 @@ namespace DwitTech.AccountService.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("RolesId")
+                    b.Property<int?>("RoleId")
                         .HasColumnType("integer");
 
                     b.Property<string>("State")
@@ -162,7 +160,7 @@ namespace DwitTech.AccountService.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RolesId");
+                    b.HasIndex("RoleId");
 
                     b.ToTable("Users");
                 });
@@ -200,13 +198,11 @@ namespace DwitTech.AccountService.Data.Migrations
 
             modelBuilder.Entity("DwitTech.AccountService.Data.Entities.User", b =>
                 {
-                    b.HasOne("DwitTech.AccountService.Data.Entities.Role", "Roles")
+                    b.HasOne("DwitTech.AccountService.Data.Entities.Role", "Role")
                         .WithMany()
-                        .HasForeignKey("RolesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("RoleId");
 
-                    b.Navigation("Roles");
+                    b.Navigation("Role");
                 });
 #pragma warning restore 612, 618
         }

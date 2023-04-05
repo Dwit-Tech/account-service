@@ -1,10 +1,5 @@
 ﻿using DwitTech.AccountService.Data.Enum;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Data.Entities
 {
@@ -54,7 +49,7 @@ namespace DwitTech.AccountService.Data.Entities
 
         public UserStatus Status { get; set; }
 
-        public Role Roles { get; set; }
+        public Role Role { get; set; }
         
     }
 }

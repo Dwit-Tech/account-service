@@ -1,5 +1,6 @@
 ﻿using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -37,7 +38,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Id = 01,
             UserId = 1,
             Code = "erg3345dh2",
-            CodeType = 1
+            CodeType = Enum.CodeType.Activation
         };
 
 
@@ -137,13 +138,13 @@ namespace DwitTech.AccountService.Data.Tests.Repository
                 .Options;
             var accountDbContext = new AccountDbContext(options);
 
-            await accountDbContext.ValidationCode.AddAsync(mockValidationDetails);
+            await accountDbContext.ValidationCodes.AddAsync(mockValidationDetails);
             await accountDbContext.SaveChangesAsync();
 
             var userRepository = new UserRepository(accountDbContext);
 
             //Act
-            var result = await userRepository.GetUserValidationCode(mockValidationDetails.Code, mockValidationDetails.CodeType);
+            var result = await userRepository.GetUserValidationCode(mockValidationDetails.Code, mockValidationDetails.CodeType);           
 
             //Assert
             Assert.NotNull(result);
@@ -163,11 +164,10 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             var userRepository = new UserRepository(accountDbContext);
 
             //Act
-            var result = await userRepository.GetUserValidationCode("erg3345dh2", 1);
+            var result = await userRepository.GetUserValidationCode("erg3345dh2", CodeType.Activation);
 
             //Assert
             Assert.Null(result);
-
         }
 
         [Fact]
@@ -193,6 +193,30 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Assert.Equal(mockUser, actual);
         }
 
+
+        [Fact]
+        public async Task SaveUserValidationCode_AddsValidationCodeToDb_WhenValidationCodeIsValid()
+        {
+            //Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+                var userRepository = new UserRepository(accountDbContext);
+
+                //Act
+                await userRepository.SaveUserValidationCode(mockValidationDetails);
+
+                //Assert
+                var addedValidationCode = await accountDbContext.ValidationCodes.FindAsync(mockValidationDetails.Id);
+                Assert.NotNull(addedValidationCode);
+                Assert.Equal(mockValidationDetails, addedValidationCode);
+            }
+        }
+
+
         public void Dispose()
         {
             _accountDbContext.Database.EnsureDeleted();
@@ -201,4 +225,3 @@ namespace DwitTech.AccountService.Data.Tests.Repository
         }
     }
 }
-

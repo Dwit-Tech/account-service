@@ -14,7 +14,7 @@ using DwitTech.AccountService.Core.Interfaces;
 
 
 namespace DwitTech.AccountService.WebApi.Controllers
-{ 
+{
     public class UserController : BaseController
     {
         private readonly IActivationService _activationService;
@@ -40,6 +40,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
             {
                 return BadRequest($"Something went wrong, due to {ex.Message}, please try again");
             }
+        }    
 
         } 
         
@@ -59,5 +60,4 @@ namespace DwitTech.AccountService.WebApi.Controllers
             }
         }
     }
-
 }
