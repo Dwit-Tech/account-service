@@ -42,7 +42,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Templates\EmailTemplate.html">
+    
+      <None Update="Templates\ActivationEmailTemplate.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

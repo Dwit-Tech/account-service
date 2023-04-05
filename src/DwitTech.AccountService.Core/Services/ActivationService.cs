@@ -7,13 +7,15 @@ using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
+using System.Net.Http;
 
 namespace DwitTech.AccountService.Core.Services
 {
     public class ActivationService : IActivationService
     {
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration _configuration; //Config instance for GetBaseUrl method
         private readonly IUserRepository _userRepository;
+        private readonly IEmailService _emailService;
         private readonly IHttpClientFactory _httpClientFactory;
 
         public ActivationService(IConfiguration configuration,

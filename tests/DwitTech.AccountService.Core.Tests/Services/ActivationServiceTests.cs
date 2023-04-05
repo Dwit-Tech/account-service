@@ -1,8 +1,10 @@
 ﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Services;
+using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Repository;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Moq.Protected;
@@ -12,7 +14,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 {
     public class ActivationServiceTests
     {
-        private const string activationEmailTemplateName  = "ActivationEmailTemplate.html";
+        private const string activationEmailTemplateName = "ActivationEmailTemplate.html";
 
         [Fact]
         public async Task SendMailAsync_ShouldReturnTrue_WhenMailSendingIsSuccessful()
@@ -105,7 +107,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var mockHttpClientFactory = new Mock<IHttpClientFactory>();
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             var userRepository = new Mock<IUserRepository>();
-            
+            var mockEmailService = new Mock<IEmailService>();
+
             userRepository.Setup(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()))
                 .Verifiable();
             var iEmailMock = new Mock<IEmailService>();

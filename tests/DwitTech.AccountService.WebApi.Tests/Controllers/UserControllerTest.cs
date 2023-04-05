@@ -11,6 +11,8 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 {
     public class UserControllerTest
     {
+
+
         [Fact]
         public void ActivateUser_ShouldReturn_HTTP200()
         {
@@ -24,7 +26,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             {
                 { "FROM_EMAIL","example@gmail.com" },
                 { "NOTIFICATION_SERVICE_SENDMAIL_END_POINT", "https://jsonplaceholder.typicode.com/posts"}
-
+            
             }).Build();
 
             var iHttpClientFactory = new Mock<IHttpClientFactory>();

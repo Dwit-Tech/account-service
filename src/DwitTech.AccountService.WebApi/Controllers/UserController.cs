@@ -1,17 +1,7 @@
 ﻿using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Core.Utilities;
 using Microsoft.AspNetCore.Authorization;
-using AutoMapper;
 using DwitTech.AccountService.Core.Dtos;
-using DwitTech.AccountService.Core.Interfaces;
-using DwitTech.AccountService.Core.Models;
-using DwitTech.AccountService.Core.Services;
-using DwitTech.AccountService.Core.Utilities;
-using DwitTech.AccountService.Data.Entities;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using DwitTech.AccountService.Core.Interfaces;
-
 
 namespace DwitTech.AccountService.WebApi.Controllers
 {

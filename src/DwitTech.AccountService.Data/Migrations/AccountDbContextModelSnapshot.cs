@@ -165,6 +165,37 @@ namespace DwitTech.AccountService.Data.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("DwitTech.AccountService.Data.Entities.ValidationCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
+                    b.Property<int>("CodeType")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("NotificationChannel")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ValidationCodes");
+                });
+
             modelBuilder.Entity("DwitTech.AccountService.Data.Entities.UserLogin", b =>
                 {
                     b.Property<int>("Id")

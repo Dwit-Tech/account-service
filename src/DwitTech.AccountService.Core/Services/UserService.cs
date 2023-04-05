@@ -51,7 +51,6 @@ namespace DwitTech.AccountService.Core.Services
                 Country = user.Country,
                 State = user.State,
                 Email = user.Email,
-                PassWord = user.PassWord,
                 AddressLine1 = user.AddressLine1,
                 AddressLine2 = user.AddressLine2,
                 ZipCode = user.ZipCode,

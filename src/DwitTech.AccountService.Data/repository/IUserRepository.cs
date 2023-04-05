@@ -12,7 +12,6 @@ namespace DwitTech.AccountService.Data.Repository
         Task<User> GetUser(int id);
         Task UpdateUser(User user);
         Task CreateUser(User user);
-
         Task CreateUserLoginCredentials(UserLogin credentials);
     }
 }

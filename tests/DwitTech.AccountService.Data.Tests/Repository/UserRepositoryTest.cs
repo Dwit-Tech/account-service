@@ -59,6 +59,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Status = Enum.UserStatus.Inactive,
         };
 
+       
            [Fact]
             public void CreateNewUser_Returns_BooleanResult()
             {
@@ -80,7 +81,6 @@ namespace DwitTech.AccountService.Data.Tests.Repository
                     PhoneNumber = "09023145678",
                     ZipCode = "92001",
                     PostalCode = "Andrew",
-                    PassWord = "trionsx",
                     Email = "example@gmail.com",
                     Country = "Brazil",
                     State = "South Casmero",
@@ -89,6 +89,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
                 IUserRepository userRepo = new UserRepository(dbContext);
 
+            
                 //Act
                 var actual = userRepo.CreateUser(userModel);
                 async Task act() => await userRepo.CreateUser(userModel);

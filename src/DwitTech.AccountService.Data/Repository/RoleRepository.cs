@@ -17,7 +17,7 @@ namespace DwitTech.AccountService.Data.Repository
             _accountDbContext = accountDbContext;   
 
         }
-        public async Task<IEnumerable<Role>> GetRoles()
+        public async Task<IEnumerable<Role>>GetRoles()
         {
             return _accountDbContext.Roles.ToList();
         }
