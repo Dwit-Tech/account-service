@@ -84,7 +84,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
                     Email = "example@gmail.com",
                     Country = "Brazil",
                     State = "South Casmero",
-                    Roles = role
+                    Role = role
                 };
 
                 IUserRepository userRepo = new UserRepository(dbContext);
@@ -118,7 +118,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
                 Email = "example@gmail.com",
                 Country = "Brazil",
                 State = "South Casmero",
-                Roles = role
+                Role = role
             };
 
             IUserRepository userRepo = new UserRepository(dbContext);

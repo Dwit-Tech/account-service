@@ -40,10 +40,8 @@ namespace DwitTech.AccountService.WebApi.Controllers
             {
                 return BadRequest($"Something went wrong, due to {ex.Message}, please try again");
             }
-        }    
+        }
 
-        } 
-        
         [AllowAnonymous]
         [HttpPost]
         [Route("/createuser")]
@@ -59,5 +57,9 @@ namespace DwitTech.AccountService.WebApi.Controllers
                 throw new Exception(ex.Message.ToString());
             }
         }
+
+    } 
+        
+        
     }
-}
+

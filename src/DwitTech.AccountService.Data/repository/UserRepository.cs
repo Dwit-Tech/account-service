@@ -42,7 +42,7 @@ namespace DwitTech.AccountService.Data.Repository
         public async Task CreateUser(User user)
         {
              await _dbContext.Users.AddAsync(user);
-            _dbContext.Attach(user.Roles);
+            _dbContext.Attach(user.Role);
             await _dbContext.SaveChangesAsync();
 
             

@@ -28,9 +28,10 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             }).Build();
 
             var iHttpClientFactory = new Mock<IHttpClientFactory>();
-            var _mockService = new ActivationService(_configuration, userRepository.Object, iHttpClientFactory.Object);
-            var userRepository = new Mock<UserRepository>(mockDbContext.Object);
-            var userController = new UserController(_mockService, userRepository.Object);
+            var iEmailService = new Mock<IEmailService>();
+            var _mockService = new ActivationService(_configuration, iEmailService.Object ,userRepository.Object, iHttpClientFactory.Object);
+            var userService = new Mock<UserService>(mockDbContext.Object);
+            var userController = new UserController(_mockService, userService.Object);
 
             string activationCode = "erg3345dh2";
 

@@ -10,9 +10,7 @@ namespace DwitTech.AccountService.Data.Context
         {
         }
         public DbSet<ValidationCode> ValidationCodes { get; set; }
-
         public DbSet<User> Users { get; set; }
-        public DbSet<ValidationCode> ValidationCode { get; set; }
         public DbSet<UserLogin> UserLogins { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<SessionToken> SessionTokens { get; set; }

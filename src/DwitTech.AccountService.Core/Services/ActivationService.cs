@@ -15,17 +15,14 @@ namespace DwitTech.AccountService.Core.Services
         private readonly IConfiguration _configuration;
         private readonly IUserRepository _userRepository;
         private readonly IHttpClientFactory _httpClientFactory;
-
-        public ActivationService(IConfiguration configuration, 
-            IUserRepository userRepository, 
-            IHttpClientFactory httpClientFactory)
         private readonly IEmailService _emailService;
-        public ActivationService(IConfiguration configuration, IEmailService emailService, IUserRepository userRepository)
+        
+        public ActivationService(IConfiguration configuration, IEmailService emailService, IUserRepository userRepository, IHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;
             _userRepository = userRepository;
-            _httpClientFactory = httpClientFactory;
             _emailService = emailService;
+            _httpClientFactory = httpClientFactory;
         }
 
         private static string GetActivationCode()

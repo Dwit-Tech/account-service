@@ -47,7 +47,7 @@ namespace DwitTech.AccountService.Core.Services
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Roles = userIdentifiedRole,
+                Role = userIdentifiedRole,
                 Country = user.Country,
                 State = user.State,
                 Email = user.Email,
