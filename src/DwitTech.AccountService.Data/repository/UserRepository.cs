@@ -40,7 +40,7 @@ namespace DwitTech.AccountService.Data.Repository
 
         public async Task<bool> ValidateLogin(string email, string hashedPassword)
         {
-            return await _dbContext.UserLogin.AnyAsync(u => u.Username == email && u.Password == hashedPassword);
+            return await _dbContext.UsersLogin.AnyAsync(u => u.Username == email && u.Password == hashedPassword);
         }
     }
 }

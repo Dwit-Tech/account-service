@@ -1,4 +1,4 @@
-using DwitTech.AccountService.Core.Services;
+using DwitTech.AccountService.Core.Middleware;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Text.Json.Serialization;
 
@@ -74,7 +74,7 @@ namespace DwitTech.AccountService.WebApi
 
             app.UseRouting();
 
-            app.UseMiddleware<UserService>();
+            app.UseMiddleware<AuthorizationMiddleware>();
 
             app.UseAuthentication();
 

@@ -38,7 +38,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
             try
             {
                 var loginResult = await _userService.UserLogin(email, hashedPassword);
-                return Ok(loginResult);
+                return Ok(new { message = "Login successful." });
             }
             catch(Exception e)
             {

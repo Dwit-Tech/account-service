@@ -134,7 +134,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
             var accountDbContext = new AccountDbContext(options);
 
-            await accountDbContext.UserLogin.AddAsync(mockLogin);
+            await accountDbContext.UsersLogin.AddAsync(mockLogin);
             await accountDbContext.SaveChangesAsync();
 
             var userRepository = new UserRepository(accountDbContext);
