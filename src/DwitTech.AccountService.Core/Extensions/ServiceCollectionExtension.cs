@@ -50,6 +50,7 @@ namespace DwitTech.AccountService.Core.Extension
             service.AddScoped<IUserService, UserService>();
             service.AddScoped<IRoleRepository, RoleRepository>();
             service.AddScoped<IEmailService, EmailService>();
+            service.AddHttpClient();
             return service;
         }
 
