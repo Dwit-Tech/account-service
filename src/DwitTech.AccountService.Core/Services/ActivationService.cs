@@ -67,13 +67,13 @@ namespace DwitTech.AccountService.Core.Services
             return templateText.ToString();
         }
 
-        public async Task<bool> SendActivationEmail(int userId, string RecipientName, Email email, string templateName = "ActivationEmailTemplate.html")
+        public async Task<bool> SendActivationEmail(int userId, string recipientName, Email email, string templateName = "ActivationEmailTemplate.html")
         {
             const string subject = "Account Activation";
             email.Subject = subject;
             var activationUrl = await GetActivationUrl(userId);
             string templateText = GetTemplate(templateName);
-            templateText = templateText.Replace("{{name}}", RecipientName);
+            templateText = templateText.Replace("{{name}}", recipientName);
             templateText = templateText.Replace("{{activationUrl}}", activationUrl);
             email.Body = templateText;
             var response = await SendMailAsync(email);
