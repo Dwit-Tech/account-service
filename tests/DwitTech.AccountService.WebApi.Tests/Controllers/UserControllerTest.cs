@@ -1,10 +1,12 @@
-﻿using DwitTech.AccountService.Core.Interfaces;
+﻿using DwitTech.AccountService.Core.Dtos;
+using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Repository;
 using DwitTech.AccountService.WebApi.Controllers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace DwitTech.AccountService.WebApi.Tests.Controllers
@@ -29,10 +31,16 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             
             }).Build();
 
+            var _userRepository = new Mock<IUserRepository>();
+            var _roleRepository = new Mock<IRoleRepository>();
+            var _logger = new Mock<ILogger<UserService>>();
+            var _activationService = new Mock<IActivationService>();
+            var _emailService = new Mock<IEmailService>();
+
             var iHttpClientFactory = new Mock<IHttpClientFactory>();
             var iEmailService = new Mock<IEmailService>();
-            var _mockService = new ActivationService(_configuration, iEmailService.Object ,userRepository.Object, iHttpClientFactory.Object);
-            var userService = new Mock<UserService>(mockDbContext.Object);
+            var _mockService = new ActivationService(_configuration,userRepository.Object, iHttpClientFactory.Object);
+            var userService = new Mock<UserService>(_userRepository.Object, _roleRepository.Object, _logger.Object, _activationService.Object, _emailService.Object);
             var userController = new UserController(_mockService, userService.Object);
 
             string activationCode = "erg3345dh2";
@@ -42,6 +50,41 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             //assert
             Assert.True(actual.IsCompletedSuccessfully);
+        }
+
+
+        [Fact]
+        public async Task CreateUser_Should_Return_True_If_TaskCompletes_Successfully()
+        {
+
+            var _userRepository = new Mock<IUserRepository>();
+            var _roleRepository = new Mock<IRoleRepository>();
+            var _logger = new Mock<ILogger<UserService>>();
+            var _activationService = new Mock<IActivationService>();
+            var _emailService = new Mock<IEmailService>();
+
+            var userService = new Mock<UserService>(_userRepository.Object, _roleRepository.Object, _logger.Object, _activationService.Object, _emailService.Object);
+
+            var userDto = new UserDto
+            {
+                FirstName = "james",
+                LastName = "kim",
+                Email = "test@gmail.com",
+                AddressLine1 = "add1",
+                AddressLine2 = "add2",
+                City = "Bida",
+                State = "Niger",
+                ZipCode = "910001",
+                Roles = Core.Enums.Role.User,
+                Country = "Nigeria",
+                PostalCode = "90001",
+                PassWord = "securedpassword",
+                PhoneNumber = "1234567890"
+            };
+
+            var userController = new UserController(_activationService.Object, userService.Object);
+            var result = userController.CreateUser(userDto);
+            Assert.True(result.IsCompleted);
         }
     }
 }
