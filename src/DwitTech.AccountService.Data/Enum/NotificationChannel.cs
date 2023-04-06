@@ -1,8 +1,8 @@
 ﻿namespace DwitTech.AccountService.Data.Enum
 {
-    public enum UserStatus
+    public enum NotificationChannel
     {
-        Active,
-        Inactive
+        Email,
+        SMS
     }
 }

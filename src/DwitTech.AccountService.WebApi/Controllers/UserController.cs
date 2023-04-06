@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using DwitTech.AccountService.Core.Interfaces;
 
 namespace DwitTech.AccountService.WebApi.Controllers

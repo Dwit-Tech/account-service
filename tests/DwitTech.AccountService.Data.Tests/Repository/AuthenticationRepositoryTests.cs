@@ -2,7 +2,6 @@
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 
 namespace DwitTech.AccountService.Data.Tests.Repository
 {

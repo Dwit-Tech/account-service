@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data;
@@ -20,7 +20,7 @@ namespace DwitTech.AccountService.Data.Context
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<ValidationCode> ValidationCode { get; set; }
+        public DbSet<ValidationCode> ValidationCodes { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<SessionToken> SessionTokens { get; set; }
 

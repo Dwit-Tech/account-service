@@ -1,4 +1,4 @@
-﻿using DwitTech.AccountService.Core.Dtos;
+using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Data.Entities;
 using Microsoft.AspNetCore.Http;
@@ -15,3 +15,4 @@ namespace DwitTech.AccountService.Core.Interfaces
         Task<TokenModel> UserLogin(string email, string hashedPassword);
     }
 }
+

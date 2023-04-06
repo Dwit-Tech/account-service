@@ -14,9 +14,9 @@ namespace DwitTech.AccountService.Data.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<ValidationCode> GetUserValidationCode(string activationCode, int codeType)
+        public async Task<ValidationCode> GetUserValidationCode(string activationCode, CodeType codeType)
         {
-            var result = await _dbContext.ValidationCode.Where(x => x.Code == activationCode).FirstOrDefaultAsync();
+            var result = await _dbContext.ValidationCodes.Where(x => x.Code == activationCode).FirstOrDefaultAsync();
             return result;
         }
 
@@ -37,6 +37,12 @@ namespace DwitTech.AccountService.Data.Repository
             _dbContext.Update(user);
              await _dbContext.SaveChangesAsync();
         }
+        
+        public async Task SaveUserValidationCode(ValidationCode validationCode)
+        {
+            await _dbContext.ValidationCodes.AddAsync(validationCode);
+            await _dbContext.SaveChangesAsync();
+        }
 
         public async Task<bool> ValidateLogin(string email, string hashedPassword)
         {
@@ -44,3 +50,4 @@ namespace DwitTech.AccountService.Data.Repository
         }
     }
 }
+

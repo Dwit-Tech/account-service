@@ -1,4 +1,4 @@
-﻿using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Middleware;
 using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Context;
@@ -18,7 +18,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
         private readonly Mock<IUserService> _userService;
         private readonly Mock<string> _apiKey;
         private readonly Mock<string[]> _allowedIpAddresses;
-
+      
         [Fact]
         public void ActivateUser_ShouldReturn_HTTP200()
         {
@@ -28,16 +28,16 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             var mockDbContext = new Mock<AccountDbContext>(options);
             var userRepository = new Mock<UserRepository>(mockDbContext.Object);
-            var iConfig = new Mock<IConfiguration>();
-            var authenticationService = new Mock<IAuthenticationService>();
-            var mockNext = new Mock<RequestDelegate>();
-            var authorizationMiddleware = new Mock<AuthorizationMiddleware>(mockNext.Object, _apiKey, _allowedIpAddresses);
-            var httpContextAccessor = new Mock<IHttpContextAccessor>();
-            var _mockService = new Mock<ActivationService>(iConfig.Object, userRepository.Object);
-            var _userService = new Mock<UserService>(userRepository.Object, iConfig.Object, authenticationService.Object, authorizationMiddleware.Object, httpContextAccessor.Object);
+            var _configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
+            {
+                { "FROM_EMAIL","example@gmail.com" },
+                { "NOTIFICATION_SERVICE_SENDMAIL_END_POINT", "https://jsonplaceholder.typicode.com/posts"}
 
-            var userController = new UserController(_mockService.Object, _userService.Object);
+            }).Build();
 
+            var iHttpClientFactory = new Mock<IHttpClientFactory>();
+            var _mockService = new ActivationService(_configuration, userRepository.Object, iHttpClientFactory.Object);
+            var userController = new UserController(_mockService);
             string activationCode = "erg3345dh2";
 
             //act
@@ -46,7 +46,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             //assert
             Assert.True(actual.IsCompletedSuccessfully);
         }
-
+      
         [Fact]
         public void UserLogin_ShouldReturn_Ok()
         {

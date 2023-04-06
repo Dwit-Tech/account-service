@@ -1,4 +1,4 @@
-﻿using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Middleware;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Utilities;

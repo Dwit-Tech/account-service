@@ -1,4 +1,4 @@
-﻿using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Core.Models;
 using Microsoft.Extensions.Configuration;
@@ -170,7 +170,5 @@ namespace DwitTech.AccountService.Core.Services
                 throw new SecurityTokenException("Invalid access token", ex);
             }            
         }
-
-        
     }
 }
