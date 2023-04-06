@@ -123,6 +123,27 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Assert.Equal(mockUser, actual);
         }
 
+        [Fact]
+        public async Task ValidateLogin_Returns_BooleanResult()
+        {
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            var accountDbContext = new AccountDbContext(options);
+
+            await accountDbContext.UsersLogin.AddAsync(mockLogin);
+            await accountDbContext.SaveChangesAsync();
+
+            var userRepository = new UserRepository(accountDbContext);
+
+            //Act
+            var result = await userRepository.ValidateLogin(mockLogin.Username, mockLogin.Password);
+
+            //Assert
+            Assert.IsType<bool>(result);
+
+        }
 
         [Fact]
         public async Task SaveUserValidationCode_AddsValidationCodeToDb_WhenValidationCodeIsValid()
@@ -143,28 +164,6 @@ namespace DwitTech.AccountService.Data.Tests.Repository
                 var addedValidationCode = await accountDbContext.ValidationCodes.FindAsync(mockValidationDetails.Id);
                 Assert.NotNull(addedValidationCode);
                 Assert.Equal(mockValidationDetails, addedValidationCode);
-            }
-            
-           [Fact]
-            public async Task ValidateLogin_Returns_BooleanResult()
-            {
-                var options = new DbContextOptionsBuilder<AccountDbContext>()
-                    .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                    .Options;
-
-                var accountDbContext = new AccountDbContext(options);
-
-                await accountDbContext.UsersLogin.AddAsync(mockLogin);
-                await accountDbContext.SaveChangesAsync();
-
-                var userRepository = new UserRepository(accountDbContext);
-
-                //Act
-                var result = await userRepository.ValidateLogin(mockLogin.Username, mockLogin.Password);
-
-                //Assert
-                Assert.IsType<bool>(result);
-
             }
         }
 

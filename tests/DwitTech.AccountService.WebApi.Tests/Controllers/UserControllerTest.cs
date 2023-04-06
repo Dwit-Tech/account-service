@@ -37,7 +37,12 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             var iHttpClientFactory = new Mock<IHttpClientFactory>();
             var _mockService = new ActivationService(_configuration, userRepository.Object, iHttpClientFactory.Object);
-            var userController = new UserController(_mockService);
+            var authenticationService = new Mock<IAuthenticationService>();
+            var mockNext = new Mock<RequestDelegate>();
+            var authorizationMiddleware = new Mock<AuthorizationMiddleware>(mockNext.Object, _apiKey, _allowedIpAddresses);
+            var httpContextAccessor = new Mock<IHttpContextAccessor>();
+            var _userService = new Mock<UserService>(userRepository.Object, _configuration, authenticationService.Object, authorizationMiddleware.Object, httpContextAccessor.Object);
+            var userController = new UserController(_mockService, _userService.Object);
             string activationCode = "erg3345dh2";
 
             //act
@@ -57,11 +62,12 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             var mockDbContext = new Mock<AccountDbContext>(options);
             var userRepository = new Mock<UserRepository>(mockDbContext.Object);
             var iConfig = new Mock<IConfiguration>();
+            var iHttpClientFactory = new Mock<IHttpClientFactory>();
             var authenticationService = new Mock<IAuthenticationService>();
             var mockNext = new Mock<RequestDelegate>();
             var authorizationMiddleware = new Mock<AuthorizationMiddleware>(mockNext.Object, _apiKey, _allowedIpAddresses);
             var httpContextAccessor = new Mock<IHttpContextAccessor>();
-            var _mockService = new Mock<ActivationService>(iConfig.Object, userRepository.Object);
+            var _mockService = new Mock<ActivationService>(iConfig.Object, userRepository.Object, iHttpClientFactory.Object);
             var _userService = new Mock<UserService>(userRepository.Object, iConfig.Object, authenticationService.Object, authorizationMiddleware.Object, httpContextAccessor.Object);
 
             var userController = new UserController(_mockService.Object, _userService.Object);
