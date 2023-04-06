@@ -33,11 +33,11 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> UserLogin([FromBody] string email, string hashedPassword)
+        public async Task<IActionResult> AuthenticateUserLogin([FromBody] string email, string hashedPassword)
         {
             try
             {
-                var loginResult = await _userService.UserLogin(email, hashedPassword);
+                var loginResult = await _userService.AuthenticateUserLogin(email, hashedPassword);
                 return Ok(new { message = "Login successful." });
             }
             catch(Exception e)

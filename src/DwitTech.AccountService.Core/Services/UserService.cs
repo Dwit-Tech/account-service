@@ -36,7 +36,7 @@ namespace DwitTech.AccountService.Core.Services
             }
             return false;
         }
-        public async Task<TokenModel> UserLogin (string email, string hashedPassword)
+        public async Task<TokenModel> AuthenticateUserLogin (string email, string hashedPassword)
         {
             var context = _httpContextAccessor.HttpContext;
 

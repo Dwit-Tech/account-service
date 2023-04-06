@@ -30,7 +30,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
 
         [Fact]
-        public async Task UserLogin_ShouldValidateUser_AndReturnAccessToken()
+        public async Task AuthenticateUserLogin_ShouldValidateUser_AndReturnAccessToken()
         {
             //Arrange
             var configuration = new ConfigurationBuilder()
@@ -80,7 +80,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var userService = new UserService(mockUserRepository.Object, configuration, mockAuthenticationService.Object, mockAuthorizationMiddleware.Object, mockHttpContextAccessor.Object);
 
             // Act
-            var token = await userService.UserLogin(email, hashedPassword);
+            var token = await userService.AuthenticateUserLogin(email, hashedPassword);
 
             // Assert
             Assert.Equal(expectedToken, token);

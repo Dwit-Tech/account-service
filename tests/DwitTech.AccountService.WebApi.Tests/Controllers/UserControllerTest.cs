@@ -57,7 +57,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
         }
       
         [Fact]
-        public void UserLogin_ShouldReturn_Ok()
+        public void AuthenticateUserLogin_ShouldReturn_Ok()
         {
             var options = new DbContextOptionsBuilder<AccountDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
@@ -79,7 +79,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             string hashedPassword = "whgwygy37t63t36shhcxvw";
 
             //act
-            var actual = userController.UserLogin(email, hashedPassword);
+            var actual = userController.AuthenticateUserLogin(email, hashedPassword);
 
             //assert
             Assert.True(actual.IsCompletedSuccessfully);

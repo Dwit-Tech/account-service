@@ -12,7 +12,7 @@ namespace DwitTech.AccountService.Core.Interfaces
 {
     public interface IUserService
     {
-        Task<TokenModel> UserLogin(string email, string hashedPassword);
+        Task<TokenModel> AuthenticateUserLogin(string email, string hashedPassword);
     }
 }
 
