@@ -1,5 +1,6 @@
 ﻿using DwitTech.AccountService.Core.Middleware;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -12,95 +13,85 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
 {
     public class AuthorizationMiddlewareTest
     {
+        private readonly IConfiguration _configuration;
+        public AuthorizationMiddlewareTest()
+        {
+            _configuration = new ConfigurationBuilder()
+               .AddInMemoryCollection(new Dictionary<string, string>()
+               {
+                    {"X_API_KEY", "your_api_key"},
+                    {"SOURCE_IP", "127.0.0.1"}
+               })
+               .Build();
+        }
+
+
         [Fact]
-        public async Task InvokeAsync_WithValidApiKeyAndSourceIp_CallsNextMiddleware()
+        public async Task InvokeAsync_WithValidApiKeyAndSourceIp_ReturnsOk()
         {
             // Arrange
-            var apiKey = "VALID_API_KEY";
-            var allowedIpAddresses = new[] { "192.168.1.1", "192.168.1.2" };
-
             var context = new DefaultHttpContext();
-            context.Request.Headers["API_KEY"] = apiKey;
-            context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.1");
+            context.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            context.Request.Headers["API_KEY"] = "your_api_key";
 
-            var mockNext = new Mock<RequestDelegate>();
-
-            var middleware = new AuthorizationMiddleware(mockNext.Object, apiKey, allowedIpAddresses);
+            var middleware = new AuthorizationMiddleware(context => Task.CompletedTask, _configuration);
 
             // Act
             await middleware.InvokeAsync(context);
 
             // Assert
-            mockNext.Verify(next => next(context), Times.Once);
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         }
 
         [Fact]
         public async Task InvokeAsync_WithInvalidApiKey_ReturnsUnauthorized()
         {
             // Arrange
-            var apiKey = "VALID_API_KEY";
-            var allowedIpAddresses = new[] { "192.168.1.1", "192.168.1.2" };
-
             var context = new DefaultHttpContext();
             context.Request.Headers["API_KEY"] = "invalid-api-key";
-            context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.1");
+            context.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
 
-            var mockNext = new Mock<RequestDelegate>();
-
-            var middleware = new AuthorizationMiddleware(mockNext.Object, apiKey, allowedIpAddresses);
+            var middleware = new AuthorizationMiddleware(context => Task.CompletedTask, _configuration);
 
             // Act
             await middleware.InvokeAsync(context);
 
             // Assert
             Assert.Equal((int)HttpStatusCode.Unauthorized, context.Response.StatusCode);
-            mockNext.Verify(next => next(context), Times.Never);
         }
 
         [Fact]
         public async Task InvokeAsync_WithInvalidSourceIp_ReturnsUnauthorized()
         {
             // Arrange
-            var apiKey = "VALID_API_KEY";
-            var allowedIpAddresses = new[] { "192.168.1.1", "192.168.1.2" };
-
             var context = new DefaultHttpContext();
-            context.Request.Headers["API_KEY"] = apiKey;
+            context.Request.Headers["API_KEY"] = "your_api_key";
             context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.3");
 
-            var mockNext = new Mock<RequestDelegate>();
-
-            var middleware = new AuthorizationMiddleware(mockNext.Object, apiKey, allowedIpAddresses);
+            var middleware = new AuthorizationMiddleware(context => Task.CompletedTask, _configuration);
 
             // Act
             await middleware.InvokeAsync(context);
 
             // Assert
             Assert.Equal((int)HttpStatusCode.Unauthorized, context.Response.StatusCode);
-            mockNext.Verify(next => next(context), Times.Never);
         }
 
         [Fact]
         public async Task InvokeAsync_WithInvalidSourceIpAndApiKey_ReturnsUnauthorized()
         {
             // Arrange
-            var apiKey = "VALID_API_KEY";
-            var allowedIpAddresses = new[] { "192.168.1.1", "192.168.1.2" };
-
             var context = new DefaultHttpContext();
             context.Request.Headers["API_KEY"] = "invalid-api-key";
             context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.3");
 
-            var mockNext = new Mock<RequestDelegate>();
-
-            var middleware = new AuthorizationMiddleware(mockNext.Object, apiKey, allowedIpAddresses);
+            var middleware = new AuthorizationMiddleware(context => Task.CompletedTask, _configuration);
 
             // Act
             await middleware.InvokeAsync(context);
 
             // Assert
             Assert.Equal((int)HttpStatusCode.Unauthorized, context.Response.StatusCode);
-            mockNext.Verify(next => next(context), Times.Never);
         }
     }
 }

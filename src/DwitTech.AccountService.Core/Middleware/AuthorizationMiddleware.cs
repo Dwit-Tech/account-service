@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,35 +12,32 @@ namespace DwitTech.AccountService.Core.Middleware
     public class AuthorizationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly string _apiKey;
-        private readonly string[] _allowedIpAddresses;
+        private readonly IConfiguration _configuration;
 
-        public AuthorizationMiddleware(RequestDelegate next, string apiKey, string[] allowedIpAddresses)
+        public AuthorizationMiddleware(RequestDelegate next, IConfiguration configuration)
         {
             _next = next;
-            _apiKey = apiKey;
-            _allowedIpAddresses = allowedIpAddresses;
+            _configuration = configuration;
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
-            //validates api key
-            var apiKey = context.Request.Headers["API_KEY"];
+            string apiKey = _configuration["X_API_KEY"];
+            string sourceIP = _configuration["SOURCE_IP"];
 
-            if (apiKey != _apiKey)
+            // validate source IP
+            if (context.Connection.RemoteIpAddress.ToString() != sourceIP)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                await context.Response.WriteAsync("Invalid API key.");
+                await context.Response.WriteAsync("Unauthorized access");
                 return;
             }
 
-            //validates sourceIp
-            var remoteIpAddress = context.Connection.RemoteIpAddress;
-
-            if (!Array.Exists(_allowedIpAddresses, ip => ip == remoteIpAddress.ToString()))
+            // validate API key
+            if (!context.Request.Headers.ContainsKey("API_KEY") || context.Request.Headers["API_KEY"] != apiKey)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                await context.Response.WriteAsync("Source IP not allowed.");
+                await context.Response.WriteAsync("Invalid API key");
                 return;
             }
 

@@ -16,17 +16,13 @@ namespace DwitTech.AccountService.Core.Tests.Services
     public class UserServiceTest
     {
         private readonly Mock<IUserRepository> _userRepository;
-        private readonly Mock<IConfiguration> _configuration;
         private readonly Mock<IAuthenticationService> _authenticationService;
         private readonly Mock<AuthorizationMiddleware> _middleware;
         private readonly Mock<IHttpContextAccessor> _httpContextAccessor;
-        private readonly Mock<string> _apiKey;
-        private readonly Mock<string[]> _allowedIpAddresses;
 
         public UserServiceTest()
         {
             _userRepository = new Mock<IUserRepository>();
-            _configuration = new Mock<IConfiguration>();
             _authenticationService = new Mock<IAuthenticationService>();
             _middleware = new Mock<AuthorizationMiddleware>();
             _httpContextAccessor = new Mock<IHttpContextAccessor>();
@@ -37,6 +33,14 @@ namespace DwitTech.AccountService.Core.Tests.Services
         public async Task UserLogin_ShouldValidateUser_AndReturnAccessToken()
         {
             //Arrange
+            var configuration = new ConfigurationBuilder()
+               .AddInMemoryCollection(new Dictionary<string, string>()
+               {
+                    {"X_API_KEY", "your_api_key"},
+                    {"SOURCE_IP", "127.0.0.1"}
+               })
+               .Build();
+
             User mockUser = new()
             {
                 Id = 1,
@@ -58,24 +62,22 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var email = "john.doe@example.com";
             var hashedPassword = "hashed_password";
             var expectedToken = new TokenModel { AccessToken = "access_token" };
-            var apiKey = "VALID_API_KEY";
-            var allowedIpAddresses = new[] { "192.168.1.1", "192.168.1.2" };
             var context = new DefaultHttpContext();
-            context.Request.Headers["API_KEY"] = apiKey;
-            context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.1");
+            context.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            context.Request.Headers["API_KEY"] = "your_api_key";
 
             var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
             var mockUserRepository = new Mock<IUserRepository>();
             var mockAuthenticationService = new Mock<IAuthenticationService>();
             var mockNext = new Mock<RequestDelegate>();
-            var mockAuthorizationMiddleware = new Mock<AuthorizationMiddleware>(mockNext.Object, _apiKey, _allowedIpAddresses);
+            var mockAuthorizationMiddleware = new Mock<AuthorizationMiddleware>(mockNext.Object, configuration);
 
             mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(context);
             mockUserRepository.Setup(x => x.ValidateLogin(email, hashedPassword)).ReturnsAsync(true);
             mockUserRepository.Setup(x => x.GetUserByEmail(email)).ReturnsAsync(mockUser);
             mockAuthenticationService.Setup(x => x.GenerateAccessToken(It.IsAny<User>())).ReturnsAsync(expectedToken);
 
-            var userService = new UserService(mockUserRepository.Object, _configuration.Object, mockAuthenticationService.Object, mockAuthorizationMiddleware.Object, mockHttpContextAccessor.Object);
+            var userService = new UserService(mockUserRepository.Object, configuration, mockAuthenticationService.Object, mockAuthorizationMiddleware.Object, mockHttpContextAccessor.Object);
 
             // Act
             var token = await userService.UserLogin(email, hashedPassword);

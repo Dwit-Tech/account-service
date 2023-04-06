@@ -16,8 +16,19 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
         private readonly Mock<IActivationService> _mockActService;
         private readonly UserController _controller;
         private readonly Mock<IUserService> _userService;
-        private readonly Mock<string> _apiKey;
-        private readonly Mock<string[]> _allowedIpAddresses;
+        private readonly IConfiguration _configuration;
+
+        public UserControllerTest()
+        {
+            _configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
+            {
+                { "FROM_EMAIL","example@gmail.com" },
+                { "NOTIFICATION_SERVICE_SENDMAIL_END_POINT", "https://jsonplaceholder.typicode.com/posts"},
+                {"X_API_KEY", "your_api_key"},
+                {"SOURCE_IP", "127.0.0.1"}
+
+            }).Build();
+        }
       
         [Fact]
         public void ActivateUser_ShouldReturn_HTTP200()
@@ -28,18 +39,11 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             var mockDbContext = new Mock<AccountDbContext>(options);
             var userRepository = new Mock<UserRepository>(mockDbContext.Object);
-            var _configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
-            {
-                { "FROM_EMAIL","example@gmail.com" },
-                { "NOTIFICATION_SERVICE_SENDMAIL_END_POINT", "https://jsonplaceholder.typicode.com/posts"}
-
-            }).Build();
-
             var iHttpClientFactory = new Mock<IHttpClientFactory>();
             var _mockService = new ActivationService(_configuration, userRepository.Object, iHttpClientFactory.Object);
             var authenticationService = new Mock<IAuthenticationService>();
             var mockNext = new Mock<RequestDelegate>();
-            var authorizationMiddleware = new Mock<AuthorizationMiddleware>(mockNext.Object, _apiKey, _allowedIpAddresses);
+            var authorizationMiddleware = new Mock<AuthorizationMiddleware>(mockNext.Object, _configuration);
             var httpContextAccessor = new Mock<IHttpContextAccessor>();
             var _userService = new Mock<UserService>(userRepository.Object, _configuration, authenticationService.Object, authorizationMiddleware.Object, httpContextAccessor.Object);
             var userController = new UserController(_mockService, _userService.Object);
@@ -61,14 +65,13 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             var mockDbContext = new Mock<AccountDbContext>(options);
             var userRepository = new Mock<UserRepository>(mockDbContext.Object);
-            var iConfig = new Mock<IConfiguration>();
             var iHttpClientFactory = new Mock<IHttpClientFactory>();
             var authenticationService = new Mock<IAuthenticationService>();
             var mockNext = new Mock<RequestDelegate>();
-            var authorizationMiddleware = new Mock<AuthorizationMiddleware>(mockNext.Object, _apiKey, _allowedIpAddresses);
+            var authorizationMiddleware = new Mock<AuthorizationMiddleware>(mockNext.Object, _configuration);
             var httpContextAccessor = new Mock<IHttpContextAccessor>();
-            var _mockService = new Mock<ActivationService>(iConfig.Object, userRepository.Object, iHttpClientFactory.Object);
-            var _userService = new Mock<UserService>(userRepository.Object, iConfig.Object, authenticationService.Object, authorizationMiddleware.Object, httpContextAccessor.Object);
+            var _mockService = new Mock<ActivationService>(_configuration, userRepository.Object, iHttpClientFactory.Object);
+            var _userService = new Mock<UserService>(userRepository.Object, _configuration, authenticationService.Object, authorizationMiddleware.Object, httpContextAccessor.Object);
 
             var userController = new UserController(_mockService.Object, _userService.Object);
 
