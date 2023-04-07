@@ -13,7 +13,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
         private readonly IAuthenticationService _authenticationService;
         private readonly IUserService _userService;
 
-        public UserController(IActivationService activationService, IAuthenticationService authenticationService)
+        public UserController(IActivationService activationService, IAuthenticationService authenticationService, IUserService userService)
         {
 
             _activationService = activationService;
@@ -51,10 +51,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
                 return BadRequest(e.Message);
             }
         }
-    }
 
-}
-        }
 
         [AllowAnonymous]
         [HttpPost]
@@ -72,8 +69,8 @@ namespace DwitTech.AccountService.WebApi.Controllers
             }
         }
 
-    } 
-        
-        
     }
+
+}
+   
 
