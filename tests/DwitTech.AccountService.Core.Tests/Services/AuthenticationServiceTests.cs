@@ -43,7 +43,9 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 City = "city",
                 PostalCode = "postalCode",
                 ZipCode = "zipcode",
-                ModifiedOnUtc = DateTime.UtcNow
+                Password = "password",
+                ModifiedOnUtc = DateTime.UtcNow,
+                Status = Data.Enum.UserStatus.Active
             };
 
             claims = new List<Claim>
@@ -376,6 +378,25 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var ex = await Assert.ThrowsAsync<SecurityTokenException>(act);
 
             Assert.Equal(expectedExceptionMessage, ex.Message);
+        }
+
+        [Fact]
+        public async Task AuthenticateUserLogin_ShouldValidateUser_AndReturnAccessToken()
+        {
+            //Arrange
+            var email = "john.doe@example.com";
+            var hashedPassword = "hashed_password";
+            
+            mockAuthRepository.Setup(x => x.ValidateLogin(email, hashedPassword)).ReturnsAsync(true);
+            mockAuthRepository.Setup(x => x.GetUserByEmail(email)).ReturnsAsync(mockUser);
+
+            // Act
+            var result = await authService.AuthenticateUserLogin(email, hashedPassword);
+
+            // Assert
+            mockAuthRepository.Verify(x => x.ValidateLogin(email, hashedPassword), Times.Once);
+            mockAuthRepository.Verify(x => x.GetUserByEmail(email), Times.Once);
+            Assert.Equal(tokenType, result.TokenType);
         }
     }
 }

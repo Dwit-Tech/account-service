@@ -64,8 +64,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
             catch(Exception ex)
             {
                 throw new Exception(ex.Message);
-            }
-        }
+    }
+}
 
     }
 }

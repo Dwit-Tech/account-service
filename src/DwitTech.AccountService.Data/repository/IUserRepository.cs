@@ -1,4 +1,4 @@
-﻿using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 
 using DwitTech.AccountService.Data.Entities;
@@ -14,4 +14,5 @@ namespace DwitTech.AccountService.Data.Repository
         Task<int> CreateUser(User user);
         Task CreateUserLogin(UserLogin credentials);
     }
+
 }
