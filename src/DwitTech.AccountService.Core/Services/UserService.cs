@@ -106,7 +106,7 @@ namespace DwitTech.AccountService.Core.Services
                 await _activationService.SendActivationEmail(userModel.Id,recipientName, emailModel, activationEmailHtmlTemplate);
                 var newUserId = await _userRepository.CreateUser(userModel);
                 var loginCredentials = GenerateLoginCredentials(user, newUserId);
-                await _userRepository.CreateUserLoginCredentials(loginCredentials);
+                await _userRepository.CreateUserLogin(loginCredentials);
                 _logger.LogInformation(1, $"Login Credentials for the user with ID {userModel.Id} is successfully created");
                 return true;
             }
