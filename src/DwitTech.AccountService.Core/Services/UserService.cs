@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Utilities;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Repository;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
@@ -17,13 +19,20 @@ namespace DwitTech.AccountService.Core.Services
         private readonly ILogger<UserService> _logger;
         private readonly IActivationService _activationService;
         private readonly IEmailService _emailService;
-        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, ILogger<UserService> logger, IActivationService activationService, IEmailService emailService)
+        private readonly IConfiguration _configuration;
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, 
+            ILogger<UserService> logger, 
+            IActivationService activationService, 
+            IEmailService emailService,
+            IConfiguration configuration
+            )
         {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
             _logger = logger;
             _activationService = activationService;
             _emailService = emailService;
+            _configuration = configuration;
         }
 
         private async Task<Data.Entities.Role> GetAssignedRole(UserDto user)
@@ -41,7 +50,20 @@ namespace DwitTech.AccountService.Core.Services
 
         }
 
-        private User GetCustomMapper(UserDto user, Data.Entities.Role userIdentifiedRole)
+
+        private Email GenerateEmail(UserDto user)
+        {
+            return new Email
+            {
+                FromEmail = _configuration["GMAIL_INFO:EMAIL"],
+                ToEmail = user.Email,
+                Body = "",
+                Subject = "User Activation Email"
+            };
+        }
+
+
+        private User GetUserEntity(UserDto user, Data.Entities.Role userIdentifiedRole)
         {
             return new User
             {
@@ -72,20 +94,21 @@ namespace DwitTech.AccountService.Core.Services
         }
 
 
-        public async Task CreateUser(UserDto user)
+        public async Task<bool> CreateUser(UserDto user)
         {
             try
             {
                 Data.Entities.Role userRole = await GetAssignedRole(user);
-                var userModel = GetCustomMapper(user, userRole);
+                var userModel = GetUserEntity(user, userRole);
                 var activationEmailHtmlTemplate = "ActivationEmailTemplate.html";
                 var recipientName = $"{userModel.FirstName.ToLower()} {userModel.LastName.ToLower()}";
-                var emailModel = _emailService.GenerateEmail(user);
+                var emailModel = GenerateEmail(user);
                 await _activationService.SendActivationEmail(userModel.Id,recipientName, emailModel, activationEmailHtmlTemplate);
-                await _userRepository.CreateUser(userModel);
-                var loginCredentials = GenerateLoginCredentials(user, userModel.Id);
+                var newUserId = await _userRepository.CreateUser(userModel);
+                var loginCredentials = GenerateLoginCredentials(user, newUserId);
                 await _userRepository.CreateUserLoginCredentials(loginCredentials);
-                _logger.LogInformation(1, $"This is logged when the user with ID {userModel.Id} is successfully created");
+                _logger.LogInformation(1, $"Login Credentials for the user with ID {userModel.Id} is successfully created");
+                return true;
             }
             catch (Exception ex)
             {

@@ -41,8 +41,8 @@ namespace DwitTech.AccountService.WebApi.Controllers
         {
             try
             {
-                await _userService.CreateUser(user);
-                return Ok("User Created Successfully");
+                var createUserResult = await _userService.CreateUser(user);
+                return Ok(createUserResult);
             }
             catch (Exception ex)
             {

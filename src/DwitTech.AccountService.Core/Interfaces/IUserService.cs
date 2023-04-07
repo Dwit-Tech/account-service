@@ -5,6 +5,6 @@ namespace DwitTech.AccountService.Core.Interfaces
     public interface IUserService
     {
       
-        Task CreateUser(UserDto user);
+        Task<bool>CreateUser(UserDto user);
     }
 }

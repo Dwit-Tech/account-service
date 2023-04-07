@@ -37,7 +37,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var iRoleRepoMock = new Mock<IRoleRepository>();
             var iActivationServiceMock = new Mock<IActivationService>();
             var iEmailServiceMock = new Mock<IEmailService>();
-            IUserService userServiceUnderTest = new UserService(iUserRepoMock.Object,iRoleRepoMock.Object, iLoggerMock.Object, iActivationServiceMock.Object, iEmailServiceMock.Object);
+            var iConfigurationMock = new Mock<IConfiguration>();
+            IUserService userServiceUnderTest = new UserService(iUserRepoMock.Object,iRoleRepoMock.Object, iLoggerMock.Object, iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object);
             var userDto = new UserDto { 
                     FirstName = "james", 
                     LastName = "kim",

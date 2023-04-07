@@ -11,6 +11,5 @@ namespace DwitTech.AccountService.Core.Interfaces
     public interface IEmailService
     {
         Task<bool> SendMailAsync(Email email);
-        Email GenerateEmail(UserDto user);
     }
 }

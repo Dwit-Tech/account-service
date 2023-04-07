@@ -39,7 +39,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             var iHttpClientFactory = new Mock<IHttpClientFactory>();
             var iEmailService = new Mock<IEmailService>();
-            var _mockService = new ActivationService(_configuration,userRepository.Object, iHttpClientFactory.Object);
+            var _mockService = new ActivationService(_configuration,userRepository.Object, iEmailService.Object,iHttpClientFactory.Object);
             var userService = new Mock<UserService>(_userRepository.Object, _roleRepository.Object, _logger.Object, _activationService.Object, _emailService.Object);
             var userController = new UserController(_mockService, userService.Object);
 

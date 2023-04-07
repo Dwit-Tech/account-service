@@ -19,11 +19,13 @@ namespace DwitTech.AccountService.Core.Services
         private readonly IHttpClientFactory _httpClientFactory;
 
         public ActivationService(IConfiguration configuration,
-            IUserRepository userRepository,
+            IUserRepository userRepository, 
+            IEmailService emailService,
             IHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;
             _userRepository = userRepository;
+            _emailService = emailService;
             _httpClientFactory = httpClientFactory;
         }
 
@@ -76,29 +78,9 @@ namespace DwitTech.AccountService.Core.Services
             templateText = templateText.Replace("{{name}}", recipientName);
             templateText = templateText.Replace("{{activationUrl}}", activationUrl);
             email.Body = templateText;
-            var response = await SendMailAsync(email);
+            var response = await _emailService.SendMailAsync(email);
             return response;
         }
-
-
-        public async Task<bool> SendMailAsync(Email email)
-        {
-            var serializedEmail = JsonSerializer.Serialize(email);
-            var content = new StringContent(serializedEmail, Encoding.UTF8, "application/json");
-
-            using (var httpClient = _httpClientFactory.CreateClient())
-            {
-                if (httpClient == null)
-                {
-                    throw new NullReferenceException("httpClient has no value");
-                }
-                httpClient.BaseAddress = new Uri(_configuration["NOTIFICATION_SERVICE_BASE_URL"]);
-                var response = await httpClient.PostAsync(_configuration["NOTIFICATION_SERVICE_SENDMAIL_END_POINT"], content);
-                return (response != null && response.IsSuccessStatusCode);
-            }
-        }
-
-
         public async Task<bool> SendWelcomeEmail(User user)
         {
             string templateText = GetTemplate("WelcomeEmail.html");
@@ -108,11 +90,9 @@ namespace DwitTech.AccountService.Core.Services
             string subject = "Welcome";
             string fromEmail = _configuration["FROM_EMAIL"];
             var email = new Email { FromEmail = fromEmail, ToEmail = user.Email, Subject = subject, Body = body };
-            var response = await SendMailAsync(email);
+            var response = await _emailService.SendMailAsync(email);
             return response;
         }
-
-
         private static bool IsUserActivated(User user)
         {
             if (user.Status == Data.Enum.UserStatus.Active)

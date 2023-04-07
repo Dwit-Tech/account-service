@@ -16,7 +16,6 @@ namespace DwitTech.AccountService.Data.Entities
         public string UserName { get; set; }
 
         [Required]
-        [Range(8, 16)]
         public string PassWord { get; set; }
 
         [ForeignKey("User")]
