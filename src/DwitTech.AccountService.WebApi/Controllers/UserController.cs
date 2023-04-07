@@ -6,13 +6,13 @@ namespace DwitTech.AccountService.WebApi.Controllers
     public class UserController : BaseController
     {
         private readonly IActivationService _activationService;
-        private readonly IUserService _userService;
+        private readonly IAuthenticationService _authenticationService;
 
-        public UserController(IActivationService activationService, IUserService userService)
+        public UserController(IActivationService activationService, IAuthenticationService authenticationService)
         {
 
             _activationService = activationService;
-            _userService = userService;
+            _authenticationService = authenticationService;
         }
 
 
@@ -37,10 +37,10 @@ namespace DwitTech.AccountService.WebApi.Controllers
         {
             try
             {
-                var loginResult = await _userService.AuthenticateUserLogin(email, hashedPassword);
-                return Ok(new { message = "Login successful." });
+                var loginResult = await _authenticationService.AuthenticateUserLogin(email, hashedPassword);
+                return Ok(loginResult);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return BadRequest(e.Message);
             }

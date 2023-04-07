@@ -36,12 +36,6 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Password = "JeSusIsLord",
             Status = Enum.UserStatus.Inactive,
         };
-        
-        UserLogin mockLogin = new()
-        {
-            Username = "hello@support.com",
-            Password = "shwy736"
-        };
 
         public Mock<IUserRepository> mockUserRepository;
 
@@ -121,28 +115,6 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             //Assert
             Assert.NotNull(actual);
             Assert.Equal(mockUser, actual);
-        }
-
-        [Fact]
-        public async Task ValidateLogin_Returns_BooleanResult()
-        {
-            var options = new DbContextOptionsBuilder<AccountDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-
-            var accountDbContext = new AccountDbContext(options);
-
-            await accountDbContext.UsersLogin.AddAsync(mockLogin);
-            await accountDbContext.SaveChangesAsync();
-
-            var userRepository = new UserRepository(accountDbContext);
-
-            //Act
-            var result = await userRepository.ValidateLogin(mockLogin.Username, mockLogin.Password);
-
-            //Assert
-            Assert.IsType<bool>(result);
-
         }
 
         [Fact]

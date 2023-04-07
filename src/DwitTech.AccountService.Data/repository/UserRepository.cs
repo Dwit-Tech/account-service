@@ -26,12 +26,6 @@ namespace DwitTech.AccountService.Data.Repository
             return user;   
         }
 
-        public async Task<User> GetUserByEmail(string email)
-        {
-            var user = await _dbContext.Users.Where(x => x.Email == email).FirstOrDefaultAsync();
-            return user;
-        }
-
         public async Task UpdateUser(User user)
         {
             _dbContext.Update(user);
@@ -42,11 +36,6 @@ namespace DwitTech.AccountService.Data.Repository
         {
             await _dbContext.ValidationCodes.AddAsync(validationCode);
             await _dbContext.SaveChangesAsync();
-        }
-
-        public async Task<bool> ValidateLogin(string email, string hashedPassword)
-        {
-            return await _dbContext.UsersLogin.AnyAsync(u => u.Username == email && u.Password == hashedPassword);
         }
     }
 }

@@ -170,5 +170,36 @@ namespace DwitTech.AccountService.Core.Services
                 throw new SecurityTokenException("Invalid access token", ex);
             }            
         }
+        private static bool IsUserActivated(User user)
+        {
+            if (user.Status == Data.Enum.UserStatus.Active)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<TokenModel> AuthenticateUserLogin(string email, string hashedPassword)
+        {
+
+            //validate email and password combination
+            var dbUser = _repository.ValidateLogin(email, hashedPassword);
+            hashedPassword = StringUtil.HashString(hashedPassword);
+            if (dbUser == null)
+            {
+                throw new Exception("Email or Password is incorrect.");
+            }
+
+            //check user status
+            var user = await _repository.GetUserByEmail(email);
+            if (!IsUserActivated(user))
+            {
+                throw new Exception("User is inactive.");
+            }
+
+            // create authentication token
+            var token = await GenerateAccessToken(user);
+            return token;
+        }
     }
 }

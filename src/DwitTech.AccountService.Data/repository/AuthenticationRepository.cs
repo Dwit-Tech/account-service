@@ -25,11 +25,21 @@ namespace DwitTech.AccountService.Data.Repository
             await _context.SaveChangesAsync();
         }
 
-
         public async Task AddSessionAsync(SessionToken sessionDetails)
         {
             await _context.SessionTokens.AddAsync(sessionDetails);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<User> GetUserByEmail(string email)
+        {
+            var user = await _context.Users.Where(x => x.Email == email).FirstOrDefaultAsync();
+            return user;
+        }
+
+        public async Task<bool> ValidateLogin(string email, string hashedPassword)
+        {
+            return await _context.UserLogins.AnyAsync(u => u.Username == email && u.Password == hashedPassword);
         }
     }
 }
