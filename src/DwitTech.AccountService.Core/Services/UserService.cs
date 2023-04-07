@@ -92,8 +92,8 @@ namespace DwitTech.AccountService.Core.Services
 
             return new UserLogin
             {
-                UserName = user.Email,
-                PassWord = StringUtil.HashString(user.PassWord),
+                Username = user.Email,
+                Password = StringUtil.HashString(user.PassWord),
                 UserId = id
             };
         }

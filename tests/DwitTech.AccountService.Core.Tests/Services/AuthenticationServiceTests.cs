@@ -43,7 +43,6 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 City = "city",
                 PostalCode = "postalCode",
                 ZipCode = "zipcode",
-                Password = "password",
                 ModifiedOnUtc = DateTime.UtcNow,
                 Status = Data.Enum.UserStatus.Active
             };
