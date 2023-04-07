@@ -1,5 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
+using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Core.Utilities;
+using Microsoft.AspNetCore.Authorization;
+using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DwitTech.AccountService.WebApi.Controllers
 { 
@@ -7,12 +11,14 @@ namespace DwitTech.AccountService.WebApi.Controllers
     {
         private readonly IActivationService _activationService;
         private readonly IAuthenticationService _authenticationService;
+        private readonly IUserService _userService;
 
-        public UserController(IActivationService activationService, IAuthenticationService authenticationService)
+        public UserController(IActivationService activationService, IAuthenticationService authenticationService, IUserService userService)
         {
 
             _activationService = activationService;
             _authenticationService = authenticationService;
+            _userService = userService;
         }
 
 
@@ -45,6 +51,26 @@ namespace DwitTech.AccountService.WebApi.Controllers
                 return BadRequest(e.Message);
             }
         }
+
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("/createuser")]
+        public async Task<IActionResult> CreateUser([FromBody] UserDto user)
+        {
+            try
+            {
+                var createUserResult = await _userService.CreateUser(user);
+                return Ok(createUserResult);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message.ToString());
+            }
+        }
+
     }
 
 }
+   
+

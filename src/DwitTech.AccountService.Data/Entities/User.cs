@@ -5,13 +5,14 @@ namespace DwitTech.AccountService.Data.Entities
 {
     public class User : BaseEntity
     {
-        [Required]
-        [MaxLength(25)]
-        public string Firstname { get; set; }
 
         [Required]
         [MaxLength(25)]
-        public string Lastname { get; set; }
+        public string FirstName { get; set; }
+
+        [Required]
+        [MaxLength(25)]
+        public string LastName { get; set; }
 
         [Required]
         [MaxLength(45)]
@@ -41,10 +42,6 @@ namespace DwitTech.AccountService.Data.Entities
 
         [Required]
         public string ZipCode { get; set; }
-
-        [Required]
-        [Range(8,16)]
-        public string Password { get; set; }
 
         public UserStatus Status { get; set; }
 

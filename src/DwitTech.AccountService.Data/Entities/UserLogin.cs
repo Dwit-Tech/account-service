@@ -10,6 +10,7 @@ namespace DwitTech.AccountService.Data.Entities
 {
     public class UserLogin : BaseEntity
     {
+
         [Required]
         [MaxLength(45)]
         public string Username { get; set; }

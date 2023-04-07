@@ -42,10 +42,15 @@ namespace DwitTech.AccountService.Core.Extension
 
         public static IServiceCollection AddServices(this IServiceCollection service, IConfiguration configuration)
         {
+            service.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             service.AddScoped<IAuthenticationService, AuthenticationService>();
             service.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
-
-            service.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            service.AddScoped<IActivationService, ActivationService>();
+            service.AddScoped<IUserRepository, UserRepository>();
+            service.AddScoped<IUserService, UserService>();
+            service.AddScoped<IRoleRepository, RoleRepository>();
+            service.AddScoped<IEmailService, EmailService>();
+            service.AddHttpClient();
             return service;
         }
 

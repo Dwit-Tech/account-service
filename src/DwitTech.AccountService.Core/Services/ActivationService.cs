@@ -7,21 +7,25 @@ using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
+using System.Net.Http;
 
 namespace DwitTech.AccountService.Core.Services
 {
     public class ActivationService : IActivationService
     {
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration _configuration; //Config instance for GetBaseUrl method
         private readonly IUserRepository _userRepository;
+        private readonly IEmailService _emailService;
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public ActivationService(IConfiguration configuration, 
+        public ActivationService(IConfiguration configuration,
             IUserRepository userRepository, 
+            IEmailService emailService,
             IHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;
             _userRepository = userRepository;
+            _emailService = emailService;
             _httpClientFactory = httpClientFactory;
         }
 
@@ -65,52 +69,30 @@ namespace DwitTech.AccountService.Core.Services
             return templateText.ToString();
         }
 
-        public async Task<bool> SendActivationEmail(int userId, string RecipientName, Email email, string templateName = "ActivationEmailTemplate.html")
+        public async Task<bool> SendActivationEmail(int userId, string recipientName, Email email, string templateName = "ActivationEmailTemplate.html")
         {
             const string subject = "Account Activation";
             email.Subject = subject;
             var activationUrl = await GetActivationUrl(userId);
             string templateText = GetTemplate(templateName);
-            templateText = templateText.Replace("{{name}}", RecipientName);
+            templateText = templateText.Replace("{{name}}", recipientName);
             templateText = templateText.Replace("{{activationUrl}}", activationUrl);
             email.Body = templateText;
-            var response = await SendMailAsync(email);
+            var response = await _emailService.SendMailAsync(email);
             return response;
         }
-
-
-        public async Task<bool> SendMailAsync(Email email)
-        {
-            var serializedEmail = JsonSerializer.Serialize(email);
-            var content = new StringContent(serializedEmail, Encoding.UTF8, "application/json");
-
-            using (var httpClient = _httpClientFactory.CreateClient())
-            {
-                if (httpClient == null)
-                {
-                    throw new NullReferenceException("httpClient has no value");
-                }
-                httpClient.BaseAddress = new Uri(_configuration["NOTIFICATION_SERVICE_BASE_URL"]);
-                var response = await httpClient.PostAsync(_configuration["NOTIFICATION_SERVICE_SENDMAIL_END_POINT"], content);
-                return (response != null && response.IsSuccessStatusCode);
-            }
-        }
-
-
         public async Task<bool> SendWelcomeEmail(User user)
         {
             string templateText = GetTemplate("WelcomeEmail.html");
-            templateText = templateText.Replace("{{Firstname}}", user.Firstname);
-            templateText = templateText.Replace("{{Lastname}}", user.Lastname);
+            templateText = templateText.Replace("{{Firstname}}", user.FirstName);
+            templateText = templateText.Replace("{{Lastname}}", user.LastName);
             string body = templateText;
             string subject = "Welcome";
             string fromEmail = _configuration["FROM_EMAIL"];
             var email = new Email { FromEmail = fromEmail, ToEmail = user.Email, Subject = subject, Body = body };
-            var response = await SendMailAsync(email);
+            var response = await _emailService.SendMailAsync(email);
             return response;
         }
-
-
         private static bool IsUserActivated(User user)
         {
             if (user.Status == Data.Enum.UserStatus.Active)

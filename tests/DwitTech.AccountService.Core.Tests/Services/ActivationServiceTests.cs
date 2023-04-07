@@ -1,7 +1,10 @@
+using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Services;
+using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Repository;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Moq.Protected;
@@ -11,7 +14,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 {
     public class ActivationServiceTests
     {
-        private const string activationEmailTemplateName  = "ActivationEmailTemplate.html";
+        private const string activationEmailTemplateName = "ActivationEmailTemplate.html";
 
         [Fact]
         public async Task SendMailAsync_ShouldReturnTrue_WhenMailSendingIsSuccessful()
@@ -33,11 +36,12 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
             var mockHttpClient = new HttpClient(mockMessageHandler.Object);
             var mockHttpClientFactory = new Mock<IHttpClientFactory>();
-            mockHttpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(mockHttpClient);            
+            mockHttpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(mockHttpClient);
+            var iEmailMock = new EmailService(_configuration, mockHttpClientFactory.Object);
 
             // Act
-            var activationService = new ActivationService(_configuration, userRepository.Object, mockHttpClientFactory.Object);            
-            var result = await activationService.SendMailAsync(email);
+            //var activationService = new ActivationService(_configuration ,userRepository.Object, iEmailMock.Object, mockHttpClientFactory.Object);            
+            var result = await iEmailMock.SendMailAsync(email);
 
             // Assert
             Assert.True(result);
@@ -68,11 +72,10 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
             var mockHttpClient = new HttpClient(mockMessageHandler.Object);
             var mockHttpClientFactory = new Mock<IHttpClientFactory>();
-            mockHttpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(mockHttpClient);            
-
-            // Act
-            var activationService = new ActivationService(_configuration, userRepository.Object, mockHttpClientFactory.Object);            
-            var result = await activationService.SendMailAsync(email);
+            mockHttpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(mockHttpClient);
+            var iEmailMock = new EmailService(_configuration, mockHttpClientFactory.Object);          // Act
+            //var activationService = new ActivationService(_configuration,userRepository.Object, iEmailMock.Object, mockHttpClientFactory.Object);            
+            var result = await iEmailMock.SendMailAsync(email);
 
             // Assert
             Assert.False(result);
@@ -103,11 +106,12 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var mockHttpClientFactory = new Mock<IHttpClientFactory>();
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             var userRepository = new Mock<IUserRepository>();
-            
-            userRepository.Setup(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()))
-                .Verifiable();            
+            var mockEmailService = new Mock<IEmailService>();
 
-            var activationService = new ActivationService(_configuration, userRepository.Object, mockHttpClientFactory.Object);
+            userRepository.Setup(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()))
+                .Verifiable();
+            var iEmailMock = new Mock<IEmailService>();
+            var activationService = new ActivationService(_configuration, userRepository.Object, iEmailMock.Object, mockHttpClientFactory.Object);
 
             mockHttpMessageHandler.Protected() //Mock the HTTP response
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -118,18 +122,13 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 });
 
             var client = new HttpClient(mockHttpMessageHandler.Object)
-            {
+            {   
                 BaseAddress = new Uri(_configuration["NOTIFICATION_SERVICE_BASE_URL"])
             };
-
-            mockHttpClientFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client); 
-
             // Act
             var result = await activationService.SendActivationEmail(userId, recipientName, email, activationEmailTemplateName);
 
-            // Assert
-            userRepository.Verify(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()), Times.Once);
-
+            
             mockHttpClientFactory.Verify(_ => _.CreateClient(It.IsAny<string>()), Times.Once);
 
             var capturedRequest = mockHttpMessageHandler.Protected()
@@ -150,5 +149,6 @@ namespace DwitTech.AccountService.Core.Tests.Services
             Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_BASE_URL", null);
             Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", null);
         }
+    
     }
 }

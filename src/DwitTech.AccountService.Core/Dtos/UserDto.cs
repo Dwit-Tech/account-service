@@ -1,26 +1,37 @@
 ﻿using AutoMapper;
+using DwitTech.AccountService.Core.Enums;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 using System.ComponentModel.DataAnnotations;
 
 namespace DwitTech.AccountService.Core.Dtos
 {
-    public abstract class UserDto: Profile 
+    [AutoMap(typeof(User), ReverseMap = true)]
+    public class UserDto: Profile 
     {
         [Required]
         [MaxLength(25)]
-        public string Firstname { get; set; }
+        public string FirstName { get; set; }
+
         [Required]
         [MaxLength(25)]
-        public string Lastname { get; set; }
+        public string LastName { get; set; }
+
+        [Required]
+        public string PassWord { get; set; }
+
         [Required]
         [MaxLength(45)]
+        [EmailAddress]
         public string Email { get; set; }
+
         [Required]
         [MaxLength(11)]
-        public int PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; }
+
         [Required]
         public string AddressLine1 { get; set; }
+
         [Required]
         public string AddressLine2 { get; set; }
         [Required]
@@ -29,12 +40,14 @@ namespace DwitTech.AccountService.Core.Dtos
         public string State { get; set; }
         [Required]
         public string City { get; set; }
+
         [Required]
         public string PostalCode { get; set; }
 
-        public UserStatus Status { get; set; }
+        [Required]
+        public string ZipCode { get; set; }
 
-        public Role Roles { get; set; }
+        public Enums.Role Roles { get; set; }
     }
 
 }

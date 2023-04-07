@@ -1,6 +1,8 @@
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 
+using DwitTech.AccountService.Data.Entities;
+
 namespace DwitTech.AccountService.Data.Repository
 {
     public interface IUserRepository
@@ -9,6 +11,8 @@ namespace DwitTech.AccountService.Data.Repository
         Task<ValidationCode> GetUserValidationCode(string activationCode, CodeType codeType);
         Task<User> GetUser(int id);
         Task UpdateUser(User user);
+        Task<int> CreateUser(User user);
+        Task CreateUserLogin(UserLogin credentials);
     }
 
 }
