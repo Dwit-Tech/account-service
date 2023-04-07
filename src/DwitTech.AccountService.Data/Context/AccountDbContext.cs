@@ -1,6 +1,15 @@
-﻿using System.Reflection;
+using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Data;
+using System.Linq;
+using System.Reflection.Emit;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using DwitTech.AccountService.Data.Entities;
+using static DwitTech.AccountService.Data.Repository.IUserRepository;
 
 namespace DwitTech.AccountService.Data.Context
 {
@@ -9,11 +18,13 @@ namespace DwitTech.AccountService.Data.Context
         public AccountDbContext(DbContextOptions<AccountDbContext> options) : base(options)
         {
         }
-        public DbSet<ValidationCode> ValidationCodes { get; set; }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<ValidationCode> ValidationCodes { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<SessionToken> SessionTokens { get; set; }
+
+        public DbSet<UserLogin> UserLogins { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -29,4 +40,3 @@ namespace DwitTech.AccountService.Data.Context
         }
     }
 }
-

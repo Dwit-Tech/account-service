@@ -1,4 +1,4 @@
-﻿using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 
 namespace DwitTech.AccountService.Data.Repository
@@ -10,4 +10,5 @@ namespace DwitTech.AccountService.Data.Repository
         Task<User> GetUser(int id);
         Task UpdateUser(User user);
     }
+
 }

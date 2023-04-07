@@ -135,6 +135,35 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             }
         }
 
+        [Fact]
+        public async Task ValidateLogin_Returns_BooleanResult()
+        {
+            //Arrange
+            UserLogin mockLogin = new()
+            {
+                Username = "hello@support.com",
+                Password = "shwy736"
+            };
+
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            var accountDbContext = new AccountDbContext(options);
+
+            await accountDbContext.UserLogins.AddAsync(mockLogin);
+            await accountDbContext.SaveChangesAsync();
+
+            var authRepo = new AuthenticationRepository(accountDbContext);
+
+            //Act
+            var result = await authRepo.ValidateLogin(mockLogin.Username, mockLogin.Password);
+
+            //Assert
+            Assert.IsType<bool>(result);
+
+        }
+
         public void Dispose()
         {
         }

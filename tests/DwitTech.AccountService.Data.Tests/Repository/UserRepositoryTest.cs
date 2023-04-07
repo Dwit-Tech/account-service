@@ -1,4 +1,4 @@
-﻿using DwitTech.AccountService.Data.Context;
+using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
@@ -116,7 +116,6 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Assert.NotNull(actual);
             Assert.Equal(mockUser, actual);
         }
-
 
         [Fact]
         public async Task SaveUserValidationCode_AddsValidationCodeToDb_WhenValidationCodeIsValid()

@@ -1,5 +1,7 @@
-using System.Text.Json.Serialization;
 using DwitTech.AccountService.Core.Extension;
+using DwitTech.AccountService.Core.Middleware;
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Text.Json.Serialization;
 
 namespace DwitTech.AccountService.WebApi
 {
@@ -50,6 +52,11 @@ namespace DwitTech.AccountService.WebApi
             builder.Services.AddAuthorization();
             builder.Services.AddMvc();
             builder.Services.AddControllers();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            });
 
             var app = builder.Build();
 
@@ -62,19 +69,23 @@ namespace DwitTech.AccountService.WebApi
             app.UseSwagger();
             app.UseSwaggerUI();
 
+            app.UseForwardedHeaders();
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseMiddleware<AuthorizationMiddleware>();
 
             app.UseAuthentication();
 
             app.UseAuthorization();
 
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
-
 
 
             app.SetupMigrations(app.Services, app.Configuration);
