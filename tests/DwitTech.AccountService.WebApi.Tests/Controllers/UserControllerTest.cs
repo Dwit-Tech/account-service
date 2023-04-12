@@ -36,7 +36,6 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
                 .Options;
 
             var mockDbContext = new Mock<AccountDbContext>(options);
-            var userRepository = new Mock<UserRepository>(mockDbContext.Object);
             var _configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
             {
                 { "FROM_EMAIL","example@gmail.com" },
@@ -44,24 +43,12 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             
             }).Build();
 
-            var _userRepository = new Mock<IUserRepository>();
-            var _roleRepository = new Mock<IRoleRepository>();
-            var _logger = new Mock<ILogger<UserService>>();
             var _activationService = new Mock<IActivationService>();
-            var _emailService = new Mock<IEmailService>();
-
-            var iHttpClientFactory = new Mock<IHttpClientFactory>();
-            var iEmailService = new Mock<IEmailService>();
+            var _mockUserService = new Mock<IUserService>();
             var authRepository = new Mock<AuthenticationRepository>(mockDbContext.Object);
-            var _mockService = new ActivationService(_configuration,userRepository.Object, iEmailService.Object,iHttpClientFactory.Object);
             var _mockAuthService = new Mock<AuthenticationService>(_configuration, authRepository.Object);
-            var userService = new Mock<UserService>(_userRepository.Object, _roleRepository.Object, _logger.Object, _activationService.Object, _emailService.Object);
-            var userController = new UserController(_mockService, _mockAuthService.Object, userService.Object);
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object);
 
-            
-            //var _mockService = new ActivationService(_configuration, userRepository.Object, iHttpClientFactory.Object);
-            
-            //var userController = new UserController(_mockService, _mockAuthService);
             string activationCode = "erg3345dh2";
 
             //act
@@ -79,14 +66,12 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
                 .Options;
 
             var mockDbContext = new Mock<AccountDbContext>(options);
-            var userRepository = new Mock<UserRepository>(mockDbContext.Object);
-            var iHttpClientFactory = new Mock<IHttpClientFactory>();
+            var _activationService = new Mock<IActivationService>();
             var authRepository = new Mock<AuthenticationRepository>(mockDbContext.Object);
             var _mockUserService = new Mock<IUserService>(); 
-            var _mockService = new Mock<ActivationService>(_configuration, userRepository.Object, iHttpClientFactory.Object);
             var _mockAuthService = new Mock<AuthenticationService>(_configuration, authRepository.Object);
 
-            var userController = new UserController(_mockService.Object, _mockAuthService.Object,_mockUserService.Object);
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object);
 
             string email = "hello@support.com";
             string hashedPassword = "whgwygy37t63t36shhcxvw";
@@ -107,17 +92,10 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
                 .Options;
 
             var mockDbContext = new Mock<AccountDbContext>(options);
-            var _userRepository = new Mock<IUserRepository>();
-            var _roleRepository = new Mock<IRoleRepository>();
-            var _logger = new Mock<ILogger<UserService>>();
             var _activationService = new Mock<IActivationService>();
-            var _emailService = new Mock<IEmailService>();
             var _mockUserService = new Mock<IUserService>();
             var authRepository = new Mock<AuthenticationRepository>(mockDbContext.Object);
             var _mockAuthService = new Mock<AuthenticationService>(_configuration, authRepository.Object);
-
-
-            var userService = new Mock<UserService>(_userRepository.Object, _roleRepository.Object, _logger.Object, _activationService.Object, _emailService.Object);
 
             var userDto = new UserDto
             {

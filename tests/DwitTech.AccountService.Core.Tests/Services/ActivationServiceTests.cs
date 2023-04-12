@@ -40,7 +40,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var iEmailMock = new EmailService(_configuration, mockHttpClientFactory.Object);
 
             // Act
-            //var activationService = new ActivationService(_configuration ,userRepository.Object, iEmailMock.Object, mockHttpClientFactory.Object);            
+            
             var result = await iEmailMock.SendMailAsync(email);
 
             // Assert
@@ -73,8 +73,9 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var mockHttpClient = new HttpClient(mockMessageHandler.Object);
             var mockHttpClientFactory = new Mock<IHttpClientFactory>();
             mockHttpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(mockHttpClient);
-            var iEmailMock = new EmailService(_configuration, mockHttpClientFactory.Object);          // Act
-            //var activationService = new ActivationService(_configuration,userRepository.Object, iEmailMock.Object, mockHttpClientFactory.Object);            
+            var iEmailMock = new EmailService(_configuration, mockHttpClientFactory.Object);          
+            
+            // Act
             var result = await iEmailMock.SendMailAsync(email);
 
             // Assert
