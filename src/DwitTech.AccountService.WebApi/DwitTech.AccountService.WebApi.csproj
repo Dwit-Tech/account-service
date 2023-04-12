@@ -41,11 +41,4 @@
     <ProjectReference Include="..\DwitTech.AccountService.Core\DwitTech.AccountService.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    
-      <None Update="Templates\ActivationEmailTemplate.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
