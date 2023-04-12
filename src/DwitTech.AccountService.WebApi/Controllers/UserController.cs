@@ -69,6 +69,20 @@ namespace DwitTech.AccountService.WebApi.Controllers
             }
         }
 
+
+        [HttpPost("/changepassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] string currentPassword, [FromBody] string newPassword)
+        {
+            try
+            {
+                await _userService.ChangePasswordAsync(currentPassword, newPassword);
+                return Ok("Password has been changed successfully.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Something went wrong, due to {ex.Message}, please try again");
+            }
+        }
     }
 
 }

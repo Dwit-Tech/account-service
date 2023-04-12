@@ -2,6 +2,7 @@
 using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Repository;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -35,25 +36,29 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var iUserRepoMock = new Mock<IUserRepository>();
             var iLoggerMock = new Mock<ILogger<UserService>>();
             var iRoleRepoMock = new Mock<IRoleRepository>();
+            var mockAuthRepo = new Mock<IAuthenticationRepository>();
             var iActivationServiceMock = new Mock<IActivationService>();
             var iEmailServiceMock = new Mock<IEmailService>();
             var iConfigurationMock = new Mock<IConfiguration>();
-            IUserService userServiceUnderTest = new UserService(iUserRepoMock.Object,iRoleRepoMock.Object, iLoggerMock.Object, iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object);
-            var userDto = new UserDto { 
-                    FirstName = "james", 
-                    LastName = "kim",
-                    Email = "test@gmail.com",
-                    AddressLine1 = "add1",  
-                    AddressLine2 = "add2",
-                    City = "Bida",
-                    State = "Niger",
-                    ZipCode ="910001",
-                    Roles = Enums.Role.User,
-                    Country = "Nigeria",
-                    PostalCode = "90001",
-                    PassWord = "securedpassword",
-                    PhoneNumber = "1234567890"
-                   };
+            var contextMock = new Mock<IHttpContextAccessor>();
+            IUserService userServiceUnderTest = new UserService(iUserRepoMock.Object,iRoleRepoMock.Object, mockAuthRepo.Object, iLoggerMock.Object, 
+                iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object, contextMock.Object);
+            var userDto = new UserDto 
+            { 
+            FirstName = "james", 
+            LastName = "kim",
+            Email = "test@gmail.com",
+            AddressLine1 = "add1",  
+            AddressLine2 = "add2",
+            City = "Bida",
+            State = "Niger",
+            ZipCode ="910001",
+            Roles = Enums.Role.User,
+            Country = "Nigeria",
+            PostalCode = "90001",
+            PassWord = "securedpassword",
+            PhoneNumber = "1234567890"
+            };
 
 
             try

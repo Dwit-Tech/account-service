@@ -29,7 +29,7 @@ namespace DwitTech.AccountService.Data.Repository
         public async Task UpdateUser(User user)
         {
             _dbContext.Update(user);
-             await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
         }
         
         public async Task SaveUserValidationCode(ValidationCode validationCode)
@@ -41,16 +41,25 @@ namespace DwitTech.AccountService.Data.Repository
         
         public async Task<int> CreateUser(User user)
         {
-             await _dbContext.Users.AddAsync(user);
+            await _dbContext.Users.AddAsync(user);
             _dbContext.Attach(user.Role);
             await _dbContext.SaveChangesAsync();
-            return user.Id;
-            
+            return user.Id;            
         }
 
         public async Task CreateUserLogin(UserLogin credentials)
         {
             _dbContext.UserLogins.Add(credentials);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateUserLoginAsync(string userName, string newPasswordHash)
+        {
+            var login = new UserLogin { Username = userName };
+            _dbContext.UserLogins.Attach(login);
+            var entry = _dbContext.Entry(login);
+            entry.Property(x => x.Password).CurrentValue = newPasswordHash;
+            entry.Property(x => x.Password).IsModified = true;
             await _dbContext.SaveChangesAsync();
         }
     }
