@@ -45,5 +45,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <PropertyGroup>
+    <NoWarn>CS8632</NoWarn>
+  </PropertyGroup>
 
 </Project>

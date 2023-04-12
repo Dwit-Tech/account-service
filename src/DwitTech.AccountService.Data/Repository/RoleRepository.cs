@@ -1,10 +1,6 @@
 ﻿using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace DwitTech.AccountService.Data.Repository
 {
@@ -19,7 +15,7 @@ namespace DwitTech.AccountService.Data.Repository
         }
         public async Task<IEnumerable<Role>>GetRoles()
         {
-            return _accountDbContext.Roles.ToList();
+            return await _accountDbContext.Roles.ToListAsync();
         }
     }
 }
