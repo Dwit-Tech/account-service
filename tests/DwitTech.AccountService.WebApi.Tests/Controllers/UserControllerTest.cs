@@ -86,11 +86,14 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             var userController = new UserController(_mockService.Object, _mockAuthService.Object,_mockUserService.Object);
 
-            string email = "hello@support.com";
-            string hashedPassword = "whgwygy37t63t36shhcxvw";
+            var requestLoginDto = new LoginRequestDto
+            {
+                Email = "hello@support.com",
+                Password = "whgwygy37t63t36shhcxvw"
+            };
 
             //act
-            var actual = userController.AuthenticateUserLogin(email, hashedPassword);
+            var actual = userController.AuthenticateUserLogin(requestLoginDto);
 
             //assert
             Assert.True(actual.IsCompletedSuccessfully);
