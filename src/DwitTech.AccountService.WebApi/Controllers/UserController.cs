@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using DwitTech.AccountService.Core.Models;
 
 namespace DwitTech.AccountService.WebApi.Controllers
 { 
@@ -39,11 +40,11 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> AuthenticateUserLogin([FromBody] string email, string hashedPassword)
+        public async Task<IActionResult> AuthenticateUserLogin([FromBody] LoginRequestModel loginDetails)
         {
             try
             {
-                var loginResult = await _authenticationService.AuthenticateUserLogin(email, hashedPassword);
+                var loginResult = await _authenticationService.AuthenticateUserLogin(loginDetails.Email, loginDetails.Password);
                 return Ok(loginResult);
             }
             catch (Exception e)

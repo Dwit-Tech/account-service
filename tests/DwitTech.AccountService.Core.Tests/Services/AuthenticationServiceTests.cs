@@ -384,13 +384,14 @@ namespace DwitTech.AccountService.Core.Tests.Services
         {
             //Arrange
             var email = "john.doe@example.com";
-            var hashedPassword = "hashed_password";
+            var password = "test_password";
+            var hashedPassword = "16ec1ebb01fe02ded9b7d5447d3dfc65";
             
             mockAuthRepository.Setup(x => x.ValidateLogin(email, hashedPassword)).ReturnsAsync(true);
             mockAuthRepository.Setup(x => x.GetUserByEmail(email)).ReturnsAsync(mockUser);
 
             // Act
-            var result = await authService.AuthenticateUserLogin(email, hashedPassword);
+            var result = await authService.AuthenticateUserLogin(email, password);
 
             // Assert
             mockAuthRepository.Verify(x => x.ValidateLogin(email, hashedPassword), Times.Once);
