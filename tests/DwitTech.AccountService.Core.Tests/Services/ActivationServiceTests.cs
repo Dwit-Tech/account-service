@@ -86,7 +86,6 @@ namespace DwitTech.AccountService.Core.Tests.Services
             Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", null);
         }
 
-
         [Fact]
         public async Task SendActivationEmail_ShouldCall_SendMailAsync_WithCorrectEmailParameters()
         {
@@ -107,12 +106,12 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var mockHttpClientFactory = new Mock<IHttpClientFactory>();
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             var userRepository = new Mock<IUserRepository>();
-            var mockEmailService = new Mock<IEmailService>();
+            var iEmailMock = new EmailService(_configuration, mockHttpClientFactory.Object);
+
 
             userRepository.Setup(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()))
                 .Verifiable();
-            var iEmailMock = new Mock<IEmailService>();
-            var activationService = new ActivationService(_configuration, userRepository.Object, iEmailMock.Object, mockHttpClientFactory.Object);
+            var activationService = new ActivationService(_configuration, userRepository.Object, iEmailMock);
 
             mockHttpMessageHandler.Protected() //Mock the HTTP response
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -123,13 +122,17 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 });
 
             var client = new HttpClient(mockHttpMessageHandler.Object)
-            {   
+            {
                 BaseAddress = new Uri(_configuration["NOTIFICATION_SERVICE_BASE_URL"])
             };
+
+            mockHttpClientFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+
             // Act
             var result = await activationService.SendActivationEmail(userId, recipientName, email, activationEmailTemplateName);
 
-            
+            userRepository.Verify(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()), Times.Once);
+
             mockHttpClientFactory.Verify(_ => _.CreateClient(It.IsAny<string>()), Times.Once);
 
             var capturedRequest = mockHttpMessageHandler.Protected()

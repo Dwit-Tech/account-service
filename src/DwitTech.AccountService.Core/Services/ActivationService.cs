@@ -16,17 +16,15 @@ namespace DwitTech.AccountService.Core.Services
         private readonly IConfiguration _configuration; //Config instance for GetBaseUrl method
         private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
-        private readonly IHttpClientFactory _httpClientFactory;
+        
 
         public ActivationService(IConfiguration configuration,
             IUserRepository userRepository, 
-            IEmailService emailService,
-            IHttpClientFactory httpClientFactory)
+            IEmailService emailService)
         {
             _configuration = configuration;
             _userRepository = userRepository;
             _emailService = emailService;
-            _httpClientFactory = httpClientFactory;
         }
 
         private static string GetActivationCode()
