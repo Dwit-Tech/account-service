@@ -61,7 +61,9 @@ namespace DwitTech.AccountService.WebApi.Controllers
             try
             {
                 var createUserResult = await _userService.CreateUser(user);
-                return Ok(createUserResult);
+                if (createUserResult)
+                    return Ok(createUserResult);
+                return BadRequest("Unable to create user. Please try again later");
             }
             catch (Exception ex)
             {

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DwitTech.AccountService.Data.Migrations
 {
     [DbContext(typeof(AccountDbContext))]
-    [Migration("20230328173725_AddedValidationCode")]
-    partial class AddedValidationCode
+    [Migration("20230412182911_AddedValidationCodeEntity")]
+    partial class AddedValidationCodeEntity
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -52,14 +52,14 @@ namespace DwitTech.AccountService.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedOnUtc = new DateTime(2023, 3, 28, 17, 37, 24, 857, DateTimeKind.Utc).AddTicks(20),
+                            CreatedOnUtc = new DateTime(2023, 4, 12, 18, 29, 10, 756, DateTimeKind.Utc).AddTicks(4355),
                             Description = "Administrator Role",
                             Name = "Admin"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedOnUtc = new DateTime(2023, 3, 28, 17, 37, 24, 857, DateTimeKind.Utc).AddTicks(24),
+                            CreatedOnUtc = new DateTime(2023, 4, 12, 18, 29, 10, 756, DateTimeKind.Utc).AddTicks(4359),
                             Description = "User Role",
                             Name = "User"
                         });
@@ -123,22 +123,18 @@ namespace DwitTech.AccountService.Data.Migrations
                         .HasMaxLength(45)
                         .HasColumnType("character varying(45)");
 
-                    b.Property<string>("Firstname")
+                    b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(25)
                         .HasColumnType("character varying(25)");
 
-                    b.Property<string>("Lastname")
+                    b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(25)
                         .HasColumnType("character varying(25)");
 
                     b.Property<DateTime?>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
@@ -168,6 +164,37 @@ namespace DwitTech.AccountService.Data.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("DwitTech.AccountService.Data.Entities.UserLogin", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserLogins");
                 });
 
             modelBuilder.Entity("DwitTech.AccountService.Data.Entities.ValidationCode", b =>

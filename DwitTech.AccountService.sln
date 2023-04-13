@@ -22,6 +22,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{CB78509F-6DEE-444F-A377-5034A23D9F61}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\dwittechaccountservicewebapi-app-AutoDeployTrigger-d9f98994-c38d-48c2-95f6-db53b7c2a064.yml = .github\workflows\dwittechaccountservicewebapi-app-AutoDeployTrigger-d9f98994-c38d-48c2-95f6-db53b7c2a064.yml
+		.github\workflows\RunTests.yml = .github\workflows\RunTests.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2CD127B7-8FA1-4D44-847B-D86EA93801F8}"
