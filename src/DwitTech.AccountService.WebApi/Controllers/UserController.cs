@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using DwitTech.AccountService.Core.Models;
 
 namespace DwitTech.AccountService.WebApi.Controllers
 { 
@@ -72,17 +73,20 @@ namespace DwitTech.AccountService.WebApi.Controllers
         }
 
 
-        [HttpPost("/changepassword")]
-        public async Task<IActionResult> ChangePassword([FromBody] string currentPassword, [FromBody] string newPassword)
+        [HttpPost]
+        [Route("/changepassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel passwordDetails)
         {
             try
             {
-                await _userService.ChangePasswordAsync(currentPassword, newPassword);
-                return Ok("Password has been changed successfully.");
+                var result = await _userService.ChangePasswordAsync(passwordDetails.CurrentPassword, passwordDetails.NewPassword);
+                if (result)
+                    return Ok("Password has been changed successfully.");
+                return BadRequest("Unable to Change password. Please try again later");                
             }
             catch (Exception ex)
             {
-                return BadRequest($"Something went wrong, due to {ex.Message}, please try again");
+                throw new Exception(ex.Message.ToString());
             }
         }
     }

@@ -11,7 +11,7 @@ namespace DwitTech.AccountService.Core.Interfaces
     public interface IUserService
     {
         Task<bool>CreateUser(UserDto user);
-        Task ChangePasswordAsync(string currentPassword, string newPassword);
+        Task<bool> ChangePasswordAsync(string currentPassword, string newPassword);
     }
 }
 

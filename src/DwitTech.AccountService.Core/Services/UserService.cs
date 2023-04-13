@@ -124,7 +124,7 @@ namespace DwitTech.AccountService.Core.Services
         }
 
 
-        public async Task ChangePasswordAsync(string currentPassword, string newPassword)
+        public async Task<bool> ChangePasswordAsync(string currentPassword, string newPassword)
         {
             if(string.IsNullOrEmpty(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
             {
@@ -154,6 +154,7 @@ namespace DwitTech.AccountService.Core.Services
 
             await _userRepository.UpdateUserLoginAsync(userEmail, newPasswordHash);
             _logger.LogInformation(1, $"Password for the user with ID {user.Id} was changed successfully");//TODO
+            return true;
         }
     }
 }
