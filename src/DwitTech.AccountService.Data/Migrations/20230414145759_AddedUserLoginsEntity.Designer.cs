@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DwitTech.AccountService.Data.Migrations
 {
     [DbContext(typeof(AccountDbContext))]
-    [Migration("20230406141844_UpdatedUsersLoginToUserLogins")]
-    partial class UpdatedUsersLoginToUserLogins
+    [Migration("20230414145759_AddedUserLoginsEntity")]
+    partial class AddedUserLoginsEntity
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -52,14 +52,14 @@ namespace DwitTech.AccountService.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedOnUtc = new DateTime(2023, 4, 6, 14, 18, 43, 295, DateTimeKind.Utc).AddTicks(3469),
+                            CreatedOnUtc = new DateTime(2023, 4, 14, 14, 57, 57, 405, DateTimeKind.Utc).AddTicks(3102),
                             Description = "Administrator Role",
                             Name = "Admin"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedOnUtc = new DateTime(2023, 4, 6, 14, 18, 43, 295, DateTimeKind.Utc).AddTicks(3473),
+                            CreatedOnUtc = new DateTime(2023, 4, 14, 14, 57, 57, 405, DateTimeKind.Utc).AddTicks(3108),
                             Description = "User Role",
                             Name = "User"
                         });
@@ -180,14 +180,14 @@ namespace DwitTech.AccountService.Data.Migrations
                     b.Property<DateTime?>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("PassWord")
+                    b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("UserName")
+                    b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(45)
                         .HasColumnType("character varying(45)");
