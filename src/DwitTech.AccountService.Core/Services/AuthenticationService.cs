@@ -181,13 +181,12 @@ namespace DwitTech.AccountService.Core.Services
             return false;
         }
 
-
-        public async Task<TokenModel> AuthenticateUserLogin(string email, string hashedPassword)
+        public async Task<TokenModel> AuthenticateUserLogin(string email, string password)
         {
 
             //validate email and password combination
+            var hashedPassword = StringUtil.HashString(password);
             var dbUser = _repository.ValidateLogin(email, hashedPassword);
-            hashedPassword = StringUtil.HashString(hashedPassword);
             if (dbUser == null)
             {
                 throw new Exception("Email or Password is incorrect.");

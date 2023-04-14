@@ -1,5 +1,3 @@
-using DwitTech.AccountService.Data.Entities;
-using DwitTech.AccountService.Core.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Interfaces;
@@ -40,11 +38,11 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> AuthenticateUserLogin([FromBody] string email, string hashedPassword)
+        public async Task<IActionResult> AuthenticateUserLogin([FromBody] LoginRequestDto loginDetails)
         {
             try
             {
-                var loginResult = await _authenticationService.AuthenticateUserLogin(email, hashedPassword);
+                var loginResult = await _authenticationService.AuthenticateUserLogin(loginDetails.Email, loginDetails.Password);
                 return Ok(loginResult);
             }
             catch (Exception e)
