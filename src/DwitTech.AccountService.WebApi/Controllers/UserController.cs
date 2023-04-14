@@ -36,8 +36,9 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
         }
 
+        [AllowAnonymous]
         [HttpPost]
-        [Route("login")]
+        [Route("/login")]
         public async Task<IActionResult> AuthenticateUserLogin([FromBody] LoginRequestDto loginDetails)
         {
             try
