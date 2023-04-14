@@ -154,12 +154,6 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
         [Fact]
         public async Task CreateUser_Should_Throw_Exception_If_CreateUserThrows()
         {
-            var _activationService = new Mock<IActivationService>();
-            var _mockAuthService = new Mock<IAuthenticationService>();
-
-            var _mockUserService = new Mock<IUserService>();
-            _mockUserService.Setup(x => x.CreateUser(It.IsAny<UserDto>())).Throws(new DbUpdateException());
-
             var userDto = new UserDto
             {
                 FirstName = "james",
@@ -177,11 +171,16 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
                 PhoneNumber = "1234567890"
             };
 
-            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object);
-            var result = ()=> userController.CreateUser(userDto);
+            var _activationService = new Mock<IActivationService>();
+            var _mockAuthService = new Mock<IAuthenticationService>();
 
-            _mockUserService.Verify(x => x.CreateUser(It.IsAny<UserDto>()), Times.Once);
-            await Assert.ThrowsAsync<Exception>(result);
+            var _mockUserService = new Mock<IUserService>();
+            _mockUserService.Setup(x => x.CreateUser(userDto)).Throws(new Exception("Test exception"));
+            
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object);
+            
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(() => userController.CreateUser(userDto));
         }
     }
 }
