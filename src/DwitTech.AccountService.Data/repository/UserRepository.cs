@@ -41,11 +41,10 @@ namespace DwitTech.AccountService.Data.Repository
         
         public async Task<int> CreateUser(User user)
         {
-             await _dbContext.Users.AddAsync(user);
+            await _dbContext.Users.AddAsync(user);
             _dbContext.Attach(user.Role);
             await _dbContext.SaveChangesAsync();
             return user.Id;
-            
         }
 
         public async Task CreateUserLogin(UserLogin credentials)

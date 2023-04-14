@@ -34,7 +34,7 @@ namespace DwitTech.AccountService.Core.Middleware
             }
 
             // validate API key
-            if (!context.Request.Headers.ContainsKey("API_KEY") || context.Request.Headers["API_KEY"] != apiKey)
+            if (!context.Request.Headers.ContainsKey("X_API_KEY") || context.Request.Headers["X_API_KEY"] != apiKey)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                 await context.Response.WriteAsync("Invalid API key");

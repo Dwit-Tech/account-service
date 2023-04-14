@@ -1,15 +1,8 @@
-﻿using DwitTech.AccountService.Core.Dtos;
-using DwitTech.AccountService.Core.Interfaces;
+﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
-using DwitTech.AccountService.Data.Entities;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -25,6 +18,7 @@ namespace DwitTech.AccountService.Core.Services
         }
         public async Task<bool> SendMailAsync(Email email) 
         {
+            return true;//TODO Bring up notification service and fix this
             var serializedEmail = JsonSerializer.Serialize(email);
             var content = new StringContent(serializedEmail, Encoding.UTF8, "application/json");
 

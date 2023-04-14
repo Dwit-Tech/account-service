@@ -101,24 +101,25 @@ namespace DwitTech.AccountService.Core.Services
 
         public async Task<bool> CreateUser(UserDto user)
         {
-            try
-            {
                 Data.Entities.Role userRole = await GetAssignedRole(user);
                 var userModel = GetUserEntity(user, userRole);
+
                 var activationEmailHtmlTemplate = "ActivationEmailTemplate.html";
                 var recipientName = $"{userModel.FirstName.ToLower()} {userModel.LastName.ToLower()}";
                 var emailModel = GenerateEmail(user);
+
                 await _activationService.SendActivationEmail(userModel.Id,recipientName, emailModel, activationEmailHtmlTemplate);
+
                 var newUserId = await _userRepository.CreateUser(userModel);
+
                 var loginCredentials = GenerateLoginCredentials(user, newUserId);
+
                 await _userRepository.CreateUserLogin(loginCredentials);
+
                 _logger.LogInformation(1, $"Login Credentials for the user with ID {userModel.Id} is successfully created");
+
                 return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"This error is due to {ex.Message}");
-            }
+
         }
 
         
