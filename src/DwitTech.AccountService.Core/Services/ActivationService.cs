@@ -1,13 +1,10 @@
-﻿using System.Text;
-using System.Text.Json;
-using DwitTech.AccountService.Core.Interfaces;
+﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Utilities;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
-using System.Net.Http;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -17,7 +14,6 @@ namespace DwitTech.AccountService.Core.Services
         private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
         
-
         public ActivationService(IConfiguration configuration,
             IUserRepository userRepository, 
             IEmailService emailService)

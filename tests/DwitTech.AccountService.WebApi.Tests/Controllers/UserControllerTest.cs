@@ -7,7 +7,6 @@ using DwitTech.AccountService.WebApi.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace DwitTech.AccountService.WebApi.Tests.Controllers
@@ -45,6 +44,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             var _mockUserService = new Mock<IUserService>();
             var authRepository = new Mock<AuthenticationRepository>(mockDbContext.Object);
             var _mockAuthService = new Mock<AuthenticationService>(_configuration, authRepository.Object);
+
             var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object);
 
             string activationCode = "erg3345dh2";
@@ -55,11 +55,11 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             //assert
             Assert.True(actual.IsCompletedSuccessfully);
         }
-      
+
         [Fact]
-        public void AuthenticateUserLogin_ShouldReturn_Ok()
+        public async Task AuthenticateUserLogin_ReturnsOk_WhenLoginSuccessful()
         {
-            var options = new DbContextOptionsBuilder<AccountDbContext>()
+             var options = new DbContextOptionsBuilder<AccountDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
 
@@ -82,6 +82,31 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             //assert
             Assert.True(actual.IsCompletedSuccessfully);
+        }
+
+        [Fact]
+        public async Task AuthenticateUserLogin_ReturnsBadRequestResult_WhenLoginUnsuccessful()
+        {
+            // Arrange
+            var requestLoginDto = new LoginRequestDto
+            {
+                Email = "hello@support.com",
+                Password = "incorrectpassword"
+            };
+
+            var _activationService = new Mock<IActivationService>();
+            var _mockAuthService = new Mock<IAuthenticationService>();
+            var _mockUserService = new Mock<IUserService>();
+
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object);
+
+            // Act
+            var result = await userController.AuthenticateUserLogin(requestLoginDto);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+            var badRequestResult = result as BadRequestObjectResult;
+            Assert.Equal("Invalid email or password.", badRequestResult.Value);
         }
 
         [Fact]
@@ -176,7 +201,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             var _mockUserService = new Mock<IUserService>();
             _mockUserService.Setup(x => x.CreateUser(userDto)).Throws(new Exception("Test exception"));
-            
+
             var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object);
             
             // Act & Assert

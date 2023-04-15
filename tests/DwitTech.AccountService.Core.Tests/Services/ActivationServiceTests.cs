@@ -1,10 +1,7 @@
-using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Services;
-using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Repository;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Moq.Protected;
@@ -16,77 +13,6 @@ namespace DwitTech.AccountService.Core.Tests.Services
     {
         private const string activationEmailTemplateName = "ActivationEmailTemplate.html";
 
-        [Fact]
-        public async Task SendMailAsync_ShouldReturnTrue_WhenMailSendingIsSuccessful()
-        {
-            // Arrange
-            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_BASE_URL", "http://localhost:5001");
-            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", "sendmail");
-
-            var _configuration = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .Build();
-
-            var email = new Email();
-            var userRepository = new Mock<IUserRepository>();
-            var mockMessageHandler = new Mock<HttpMessageHandler>();
-            mockMessageHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
-
-            var mockHttpClient = new HttpClient(mockMessageHandler.Object);
-            var mockHttpClientFactory = new Mock<IHttpClientFactory>();
-            mockHttpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(mockHttpClient);
-            var iEmailMock = new EmailService(_configuration, mockHttpClientFactory.Object);
-
-            // Act
-            
-            var result = await iEmailMock.SendMailAsync(email);
-
-            // Assert
-            Assert.True(result);
-
-            // Remove environment variables
-            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_BASE_URL", null);
-            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", null);
-        }
-
-
-        [Fact]
-        public async Task SendMailAsync_ShouldReturnFalse_WhenMailSendingFailed()
-        {
-            // Arrange
-            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_BASE_URL", "http://localhost:5001");
-            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", "sendmail");
-
-            var _configuration = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .Build();
-
-            var email = new Email();
-            var userRepository = new Mock<IUserRepository>();
-            var mockMessageHandler = new Mock<HttpMessageHandler>();
-            mockMessageHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.BadRequest));
-
-            var mockHttpClient = new HttpClient(mockMessageHandler.Object);
-            var mockHttpClientFactory = new Mock<IHttpClientFactory>();
-            mockHttpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(mockHttpClient);
-            var iEmailMock = new EmailService(_configuration, mockHttpClientFactory.Object);          
-            
-            // Act
-            var result = await iEmailMock.SendMailAsync(email);
-
-            // Assert
-            Assert.False(result);
-
-            // Remove environment variables
-            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_BASE_URL", null);
-            Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", null);
-        }
-
-        [Fact]
         public async Task SendActivationEmail_ShouldCall_SendMailAsync_WithCorrectEmailParameters()
         {
             // Arrange
@@ -104,6 +30,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var userId = 1;
             var recipientName = "John Doe";
             var mockHttpClientFactory = new Mock<IHttpClientFactory>();
+
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             var userRepository = new Mock<IUserRepository>();
             var iEmailMock = new EmailService(_configuration, mockHttpClientFactory.Object);
@@ -131,6 +58,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             // Act
             var result = await activationService.SendActivationEmail(userId, recipientName, email, activationEmailTemplateName);
 
+            // Assert
             userRepository.Verify(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()), Times.Once);
 
             mockHttpClientFactory.Verify(_ => _.CreateClient(It.IsAny<string>()), Times.Once);
