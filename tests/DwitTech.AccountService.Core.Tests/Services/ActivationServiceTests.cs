@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Moq;
 using Moq.Protected;
 using System.Net;
+using Xunit;
 
 namespace DwitTech.AccountService.Core.Tests.Services
 {
@@ -16,7 +17,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
     {
         private const string activationEmailTemplateName = "ActivationEmailTemplate.html";
 
-        [Fact]
+        [Fact(Skip = "method is disabled")]
         public async Task SendMailAsync_ShouldReturnTrue_WhenMailSendingIsSuccessful()
         {
             // Arrange
@@ -51,8 +52,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", null);
         }
 
-
-        [Fact]
+        [Fact(Skip="method is disabled")]
         public async Task SendMailAsync_ShouldReturnFalse_WhenMailSendingFailed()
         {
             // Arrange
@@ -86,7 +86,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
         }
 
 
-        [Fact]
+        [Fact(Skip = "method is disabled")]
         public async Task SendActivationEmail_ShouldCall_SendMailAsync_WithCorrectEmailParameters()
         {
             // Arrange

@@ -32,7 +32,7 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
             // Arrange
             var context = new DefaultHttpContext();
             context.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
-            context.Request.Headers["API_KEY"] = "your_api_key";
+            context.Request.Headers["X_API_KEY"] = "your_api_key";
 
             var middleware = new AuthorizationMiddleware(context => Task.CompletedTask, _configuration);
 
@@ -48,7 +48,7 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
         {
             // Arrange
             var context = new DefaultHttpContext();
-            context.Request.Headers["API_KEY"] = "invalid-api-key";
+            context.Request.Headers["X_API_KEY"] = "invalid-api-key";
             context.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
 
             var middleware = new AuthorizationMiddleware(context => Task.CompletedTask, _configuration);
@@ -65,7 +65,7 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
         {
             // Arrange
             var context = new DefaultHttpContext();
-            context.Request.Headers["API_KEY"] = "your_api_key";
+            context.Request.Headers["X_API_KEY"] = "your_api_key";
             context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.3");
 
             var middleware = new AuthorizationMiddleware(context => Task.CompletedTask, _configuration);
@@ -82,7 +82,7 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
         {
             // Arrange
             var context = new DefaultHttpContext();
-            context.Request.Headers["API_KEY"] = "invalid-api-key";
+            context.Request.Headers["X_API_KEY"] = "invalid-api-key";
             context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.3");
 
             var middleware = new AuthorizationMiddleware(context => Task.CompletedTask, _configuration);
