@@ -1,16 +1,10 @@
-﻿using DwitTech.AccountService.Core.Interfaces;
-using DwitTech.AccountService.Core.Models;
+﻿using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
 using Moq.Protected;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DwitTech.AccountService.Core.Tests.Services
 {

@@ -12,9 +12,11 @@ namespace DwitTech.AccountService.Data.Tests.CustomAnnotations
     {
         public class TestModel
         {
-            public string Password { get; set; }
+        #nullable enable
+            public string? Password { get; set; }
             [DifferentFrom(nameof(Password), ErrorMessage = "New password must be different from old password.")]
-            public string NewPassword { get; set; }
+            public string? NewPassword { get; set; }
+        #nullable disable
         }
 
         [Fact]

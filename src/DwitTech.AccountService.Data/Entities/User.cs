@@ -1,5 +1,6 @@
 ﻿using DwitTech.AccountService.Data.Enum;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DwitTech.AccountService.Data.Entities
 {
@@ -45,7 +46,8 @@ namespace DwitTech.AccountService.Data.Entities
 
         public UserStatus Status { get; set; }
 
+        [ForeignKey("RoleId")]
         public Role Role { get; set; }
-        
+
     }
 }

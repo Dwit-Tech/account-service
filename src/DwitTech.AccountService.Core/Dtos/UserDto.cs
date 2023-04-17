@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 namespace DwitTech.AccountService.Core.Dtos
 {
     [AutoMap(typeof(User), ReverseMap = true)]
-    public class UserDto: Profile 
+    public class UserDto
     {
         [Required]
         [MaxLength(25)]

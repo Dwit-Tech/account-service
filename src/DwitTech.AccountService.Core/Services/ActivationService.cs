@@ -5,6 +5,7 @@ using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
+using System.Reflection;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -13,14 +14,17 @@ namespace DwitTech.AccountService.Core.Services
         private readonly IConfiguration _configuration; //Config instance for GetBaseUrl method
         private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
-        
+        private readonly IHttpClientFactory _httpClientFactory;
+
         public ActivationService(IConfiguration configuration,
-            IUserRepository userRepository, 
-            IEmailService emailService)
+            IUserRepository userRepository,
+            IEmailService emailService,
+            IHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;
             _userRepository = userRepository;
             _emailService = emailService;
+            _httpClientFactory = httpClientFactory;
         }
 
         private static string GetActivationCode()
@@ -56,7 +60,8 @@ namespace DwitTech.AccountService.Core.Services
         private string GetTemplate(string templateName)
         {
             string trimmedTemplateName = templateName.Trim();
-            string filePath = "Templates/" + trimmedTemplateName;
+            var location = new FileInfo(Assembly.GetEntryAssembly().Location);
+            string filePath = Path.Combine(location.DirectoryName, "Templates", trimmedTemplateName);
             var str = new StreamReader(filePath);
             var templateText = str.ReadToEnd();
             str.Close();

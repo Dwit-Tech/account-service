@@ -38,7 +38,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
             userRepository.Setup(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()))
                 .Verifiable();
-            var activationService = new ActivationService(_configuration, userRepository.Object, iEmailMock);
+            var activationService = new ActivationService(_configuration, userRepository.Object, iEmailMock, mockHttpClientFactory.Object);
 
             mockHttpMessageHandler.Protected() //Mock the HTTP response
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())

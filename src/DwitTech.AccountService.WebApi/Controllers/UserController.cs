@@ -10,17 +10,19 @@ namespace DwitTech.AccountService.WebApi.Controllers
         private readonly IActivationService _activationService;
         private readonly IAuthenticationService _authenticationService;
         private readonly IUserService _userService;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(IActivationService activationService, IAuthenticationService authenticationService, IUserService userService)
+        public UserController(IActivationService activationService, IAuthenticationService authenticationService, IUserService userService, ILogger<UserController> logger)
         {
 
             _activationService = activationService;
             _authenticationService = authenticationService;
             _userService = userService;
+            _logger = logger;
         }
 
 
-        [HttpGet("/Activation/{activationCode}")]
+        [HttpGet("Activation/{activationCode}")]
         public async Task<IActionResult> ActivateUser(string activationCode)
         {
             try
@@ -35,6 +37,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> AuthenticateUserLogin([FromBody] LoginRequestDto loginDetails)
@@ -57,7 +60,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        [Route("/createuser")]
+        [Route("createuser")]
         public async Task<IActionResult> CreateUser([FromBody] UserDto user)
         {
             try
@@ -69,7 +72,8 @@ namespace DwitTech.AccountService.WebApi.Controllers
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message.ToString());
+                _logger.LogError(ex, "Unable to create user");
+                return BadRequest("Unable to create user. Please check data and try again");
             }
         }
 
