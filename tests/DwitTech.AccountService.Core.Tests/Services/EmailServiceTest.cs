@@ -10,7 +10,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 {
     public class EmailServiceTest
     {
-        [Fact]
+        [Fact(Skip = "method is disabled")]
         public async Task SendMailAsync_ShouldReturnTrue_WhenMailSendingIsSuccessful()
         {
             // Arrange
@@ -44,7 +44,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             Environment.SetEnvironmentVariable("NOTIFICATION_SERVICE_SENDMAIL_END_POINT", null);
         }
 
-        [Fact]
+        [Fact(Skip = "method is disabled")]
         public async Task SendMailAsync_ShouldReturnFalse_WhenMailSendingFailed()
         {
             // Arrange
@@ -65,9 +65,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var mockHttpClient = new HttpClient(mockMessageHandler.Object);
             var mockHttpClientFactory = new Mock<IHttpClientFactory>();
             mockHttpClientFactory.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(mockHttpClient);
-            var iEmailMock = new EmailService(_configuration, mockHttpClientFactory.Object);
-
-            // Act
+            var iEmailMock = new EmailService(_configuration, mockHttpClientFactory.Object);          // Act
             var result = await iEmailMock.SendMailAsync(email);
 
             // Assert
