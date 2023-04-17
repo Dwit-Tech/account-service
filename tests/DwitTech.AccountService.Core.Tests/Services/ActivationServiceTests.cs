@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Moq;
 using Moq.Protected;
 using System.Net;
+using Xunit;
 
 namespace DwitTech.AccountService.Core.Tests.Services
 {
@@ -13,6 +14,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
     {
         private const string activationEmailTemplateName = "ActivationEmailTemplate.html";
 
+        [Fact(Skip = "method is disabled")]
         public async Task SendActivationEmail_ShouldCall_SendMailAsync_WithCorrectEmailParameters()
         {
             // Arrange

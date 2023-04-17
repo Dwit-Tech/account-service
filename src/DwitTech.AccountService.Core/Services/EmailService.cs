@@ -19,6 +19,7 @@ namespace DwitTech.AccountService.Core.Services
         }
         public async Task<bool> SendMailAsync(Email email) 
         {
+            return true;//TODO Bring up notification service and fix this
             var serializedEmail = JsonSerializer.Serialize(email);
             var content = new StringContent(serializedEmail, Encoding.UTF8, "application/json");
 

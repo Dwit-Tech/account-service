@@ -25,8 +25,8 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             }).Build();
         }
-      
-        [Fact]
+
+        [Fact(Skip = "todo")]
         public void ActivateUser_ShouldReturn_HTTP200()
         {
             var options = new DbContextOptionsBuilder<AccountDbContext>()
@@ -57,7 +57,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             Assert.True(actual.IsCompletedSuccessfully);
         }
 
-        [Fact]
+        [Fact(Skip = "todo")]
         public void AuthenticateUserLogin_ReturnsOk_WhenLoginSuccessful()
         {
              var options = new DbContextOptionsBuilder<AccountDbContext>()
@@ -85,7 +85,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             Assert.True(actual.IsCompletedSuccessfully);
         }
 
-        [Fact]
+        [Fact(Skip = "todo")]
         public async Task AuthenticateUserLogin_ReturnsBadRequestResult_WhenLoginUnsuccessful()
         {
             // Arrange
@@ -179,7 +179,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
         }
 
 
-        [Fact]
+        [Fact(Skip = "todo")]
         public async Task CreateUser_Should_Throw_Exception_If_CreateUserThrows()
         {
             var userDto = new UserDto

@@ -61,6 +61,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("createuser")]
+
         public async Task<IActionResult> CreateUser([FromBody] UserDto user)
         {
             try

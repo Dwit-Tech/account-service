@@ -1,4 +1,4 @@
-﻿using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Utilities;
 using DwitTech.AccountService.Data.Entities;
@@ -61,7 +61,9 @@ namespace DwitTech.AccountService.Core.Services
         {
             string trimmedTemplateName = templateName.Trim();
             var location = new FileInfo(Assembly.GetEntryAssembly().Location);
-            string filePath = Path.Combine(location.DirectoryName, "Templates", trimmedTemplateName);
+
+            string filePath = Path.Combine(location.DirectoryName, "Templates" , trimmedTemplateName);
+
             var str = new StreamReader(filePath);
             var templateText = str.ReadToEnd();
             str.Close();

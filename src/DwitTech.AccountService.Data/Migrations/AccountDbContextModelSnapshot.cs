@@ -50,14 +50,14 @@ namespace DwitTech.AccountService.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedOnUtc = new DateTime(2023, 4, 12, 18, 29, 10, 756, DateTimeKind.Utc).AddTicks(4355),
+                            CreatedOnUtc = new DateTime(2023, 4, 14, 23, 18, 8, 496, DateTimeKind.Utc).AddTicks(4052),
                             Description = "Administrator Role",
                             Name = "Admin"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedOnUtc = new DateTime(2023, 4, 12, 18, 29, 10, 756, DateTimeKind.Utc).AddTicks(4359),
+                            CreatedOnUtc = new DateTime(2023, 4, 14, 23, 18, 8, 496, DateTimeKind.Utc).AddTicks(4054),
                             Description = "User Role",
                             Name = "User"
                         });

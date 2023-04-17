@@ -1,5 +1,6 @@
 ﻿using DwitTech.AccountService.Data.Context;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -17,12 +18,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
                 {
                     var context = serviceScope.ServiceProvider.GetService<AccountDbContext>();
-                    //context.Database.Migrate();
+                    context.Database.Migrate();
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, ex.Message);
+                logger.LogError(ex, "Migration Failed");
             }
 
             return app;

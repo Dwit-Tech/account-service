@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DwitTech.AccountService.Data.Migrations
 {
     [DbContext(typeof(AccountDbContext))]
-    [Migration("20230323004613_UpdatedUserProperties")]
-    partial class UpdatedUserProperties
+    [Migration("20230414231808_FixRelationship")]
+    partial class FixRelationship
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -36,14 +36,12 @@ namespace DwitTech.AccountService.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -54,14 +52,14 @@ namespace DwitTech.AccountService.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedOnUtc = new DateTime(2023, 3, 23, 0, 46, 12, 620, DateTimeKind.Utc).AddTicks(6171),
+                            CreatedOnUtc = new DateTime(2023, 4, 14, 23, 18, 8, 496, DateTimeKind.Utc).AddTicks(4052),
                             Description = "Administrator Role",
                             Name = "Admin"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedOnUtc = new DateTime(2023, 3, 23, 0, 46, 12, 620, DateTimeKind.Utc).AddTicks(6178),
+                            CreatedOnUtc = new DateTime(2023, 4, 14, 23, 18, 8, 496, DateTimeKind.Utc).AddTicks(4054),
                             Description = "User Role",
                             Name = "User"
                         });
@@ -138,10 +136,6 @@ namespace DwitTech.AccountService.Data.Migrations
                     b.Property<DateTime?>("ModifiedOnUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("PassWord")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasMaxLength(11)
@@ -151,12 +145,15 @@ namespace DwitTech.AccountService.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("RolesId")
+                    b.Property<int?>("RoleId")
                         .HasColumnType("integer");
 
                     b.Property<string>("State")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ZipCode")
                         .IsRequired()
@@ -164,20 +161,80 @@ namespace DwitTech.AccountService.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RolesId");
+                    b.HasIndex("RoleId");
 
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("DwitTech.AccountService.Data.Entities.UserLogin", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserLogins");
+                });
+
+            modelBuilder.Entity("DwitTech.AccountService.Data.Entities.ValidationCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
+                    b.Property<int>("CodeType")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ModifiedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("NotificationChannel")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ValidationCodes");
+                });
+
             modelBuilder.Entity("DwitTech.AccountService.Data.Entities.User", b =>
                 {
-                    b.HasOne("DwitTech.AccountService.Data.Entities.Role", "Roles")
+                    b.HasOne("DwitTech.AccountService.Data.Entities.Role", "Role")
                         .WithMany()
-                        .HasForeignKey("RolesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("RoleId");
 
-                    b.Navigation("Roles");
+                    b.Navigation("Role");
                 });
 #pragma warning restore 612, 618
         }
