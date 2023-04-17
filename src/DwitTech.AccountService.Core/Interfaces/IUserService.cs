@@ -12,6 +12,7 @@ namespace DwitTech.AccountService.Core.Interfaces
     {
       
         Task<bool>CreateUser(UserDto user);
+        Task<bool> LogoutUser(string authHeader);
     }
 }
 

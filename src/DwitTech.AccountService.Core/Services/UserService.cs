@@ -25,11 +25,13 @@ namespace DwitTech.AccountService.Core.Services
         private readonly IActivationService _activationService;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
+        private readonly IAuthenticationService _authenticationService;
         public UserService(IUserRepository userRepository, IRoleRepository roleRepository, 
             ILogger<UserService> logger, 
             IActivationService activationService, 
             IEmailService emailService,
-            IConfiguration configuration
+            IConfiguration configuration,
+            IAuthenticationService authenticationService
             )
         {
             _userRepository = userRepository;
@@ -38,6 +40,7 @@ namespace DwitTech.AccountService.Core.Services
             _activationService = activationService;
             _emailService = emailService;
             _configuration = configuration;
+            _authenticationService = authenticationService;
         }
 
         private async Task<Data.Entities.Role> GetAssignedRole(UserDto user)
@@ -122,6 +125,18 @@ namespace DwitTech.AccountService.Core.Services
 
         }
 
-        
+        public async Task<bool> LogoutUser(string authHeader)
+        {
+            try
+            {
+                var userId = JwtUtil.GenerateIdFromToken(authHeader);
+                var logoutResult = await _authenticationService.DeleteUserToken(userId);
+                return logoutResult;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{ex}");
+            }
+        }
     }
 }

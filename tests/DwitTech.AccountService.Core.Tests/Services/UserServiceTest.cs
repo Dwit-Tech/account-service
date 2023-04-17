@@ -38,7 +38,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var iActivationServiceMock = new Mock<IActivationService>();
             var iEmailServiceMock = new Mock<IEmailService>();
             var iConfigurationMock = new Mock<IConfiguration>();
-            IUserService userServiceUnderTest = new UserService(iUserRepoMock.Object,iRoleRepoMock.Object, iLoggerMock.Object, iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object);
+            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            IUserService userServiceUnderTest = new UserService(iUserRepoMock.Object,iRoleRepoMock.Object, iLoggerMock.Object, iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object, iAuthenticationServiceMock.Object);
             var userDto = new UserDto { 
                     FirstName = "james", 
                     LastName = "kim",
@@ -64,8 +65,43 @@ namespace DwitTech.AccountService.Core.Tests.Services
             catch(Exception ex)
             {
                 throw new Exception(ex.Message);
-    }
-}
+            }
+        }
+
+
+
+        [Fact]
+        public async Task Logout_Should_Return_True_If_User_Was_Successfully_Logged_Out()
+        {
+
+            try
+            {
+                string authHeader = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoidXNlckBleGFtcGxlLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2dpdmVubmFtZSI6IkphbWVzIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3VybmFtZSI6IkpvaG4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNjgxNDk3NTA2LCJpc3MiOiJ0ZXN0SXNzdWVyIn0.uaiS1np_dt7-DPr2ot5JLf_fffdeT0iza83al8n7jNM";
+                var iUserRepoMock = new Mock<IUserRepository>();
+                var iLoggerMock = new Mock<ILogger<UserService>>();
+                var iRoleRepoMock = new Mock<IRoleRepository>();
+                var iActivationServiceMock = new Mock<IActivationService>();
+                var iAuthencationService = new Mock<IAuthenticationService>();
+                var iEmailServiceMock = new Mock<IEmailService>();
+                var iConfigurationMock = new Mock<IConfiguration>();
+                IUserService userServiceUnderTest = new UserService(iUserRepoMock.Object, iRoleRepoMock.Object, iLoggerMock.Object, iActivationServiceMock.Object,
+                   iEmailServiceMock.Object, iConfigurationMock.Object
+                   , iAuthencationService.Object);
+
+                iAuthencationService.Setup(x => x.DeleteUserToken(It.IsAny<string>())).ReturnsAsync(true);
+                var result = await userServiceUnderTest.LogoutUser(authHeader);
+                iAuthencationService.Verify(x => x.DeleteUserToken(It.IsAny<string>()), Times.Once());
+                Assert.True(result);
+
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception($"{ex.Message}");
+            }
+
+
+        }
 
     }
 }

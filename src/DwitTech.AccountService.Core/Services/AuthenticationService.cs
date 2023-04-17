@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using DwitTech.AccountService.Data.Repository;
 using DwitTech.AccountService.Core.Utilities;
+using Microsoft.EntityFrameworkCore;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -200,6 +201,19 @@ namespace DwitTech.AccountService.Core.Services
             // create authentication token
             var token = await GenerateAccessToken(user);
             return token;
+        }
+
+        public async Task<bool> DeleteUserToken(string userId)
+        {
+            try
+            {
+                await _repository.DeleteSessionToken(Convert.ToInt32(userId));
+                return true;
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new DbUpdateException($"An error occurred while attempting to update database", ex);
+            }
         }
     }
 }

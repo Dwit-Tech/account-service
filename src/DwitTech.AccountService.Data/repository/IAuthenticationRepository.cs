@@ -9,5 +9,6 @@ namespace DwitTech.AccountService.Data.Repository
         Task AddSessionAsync(SessionToken sessionDetails);
         Task<User> GetUserByEmail(string email);
         Task<bool> ValidateLogin(string email, string hashedPassword);
+        Task<int> DeleteSessionToken(int userId);
     }
 }

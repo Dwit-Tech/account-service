@@ -4,6 +4,7 @@ using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Repository;
 using DwitTech.AccountService.WebApi.Controllers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -197,6 +198,53 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             _mockUserService.Verify(x => x.CreateUser(It.IsAny<UserDto>()), Times.Once);
             await Assert.ThrowsAsync<Exception>(result);
+        }
+
+        [Fact]
+        public async Task Logout_Should_Return_True()
+        {
+            var userService = new Mock<IUserService>();
+            var authService = new Mock<IAuthenticationService>();
+            var actService = new Mock<IActivationService>();
+            var iloggerMock = new Mock<ILogger<UserController>>();
+            string authHeader = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoidXNlckBleGFtcGxlLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2dpdmVubmFtZSI6IkphbWVzIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3VybmFtZSI6IkpvaG4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNjgxNDk3NTA2LCJpc3MiOiJ0ZXN0SXNzdWVyIn0.uaiS1np_dt7-DPr2ot5JLf_fffdeT0iza83al8n7jNM";
+
+            userService.Setup(x => x.LogoutUser(authHeader)).Returns(Task.FromResult(true));
+            var httpContext = new DefaultHttpContext();
+            var request = httpContext.Request;
+            request.Method = "DELETE";
+            request.Headers["Authorization"] = authHeader;
+            var controller = new UserController(actService.Object, authService.Object, userService.Object, iloggerMock.Object);
+            controller.ControllerContext = new ControllerContext()
+            {
+                HttpContext = httpContext
+            };
+            var result = await controller.Logout();
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+
+        [Fact]
+        public async Task Logout_Should_Return_False_If_AuthorizationHeader_Is_Not_Given()
+        {
+            var userService = new Mock<IUserService>();
+            var authService = new Mock<IAuthenticationService>();
+            var actService = new Mock<IActivationService>();
+            var iloggerMock = new Mock<ILogger<UserController>>();
+            string authHeader = "Bearer ";
+            userService.Setup(x => x.LogoutUser(authHeader)).Returns(Task.FromResult(true));
+            var httpContext = new DefaultHttpContext();
+            var request = httpContext.Request;
+            request.Method = "DELETE";
+            var controller = new UserController(actService.Object, authService.Object, userService.Object, iloggerMock.Object);
+            controller.ControllerContext = new ControllerContext()
+            {
+                HttpContext = httpContext
+            };
+            var result = await controller.Logout();
+            userService.Verify(x => x.LogoutUser(authHeader), Times.Never);
+            Assert.IsType<BadRequestObjectResult>(result);
+
         }
     }
 }
