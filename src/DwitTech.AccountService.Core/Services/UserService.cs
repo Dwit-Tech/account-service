@@ -152,8 +152,8 @@ namespace DwitTech.AccountService.Core.Services
                 throw new ArgumentException("Passwords are Identical!");
             }
 
-            await _userRepository.UpdateUserLoginAsync(userEmail, newPasswordHash);
-            _logger.LogInformation(1, $"Password for the user with ID {user.Id} was changed successfully");//TODO
+            await _userRepository.UpdateUserLoginAsync(user, newPasswordHash);
+            _logger.LogInformation($"Password for the user with ID {user.Id} was changed successfully");
             return true;
         }
     }

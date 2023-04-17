@@ -2,6 +2,8 @@ using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace DwitTech.AccountService.Data.Repository
 {
@@ -23,7 +25,7 @@ namespace DwitTech.AccountService.Data.Repository
         public async Task<User> GetUser(int id)
         {
             var user = await _dbContext.Users.FindAsync(id);
-            return user;   
+            return user;
         }
 
         public async Task UpdateUser(User user)
@@ -31,20 +33,20 @@ namespace DwitTech.AccountService.Data.Repository
             _dbContext.Update(user);
             await _dbContext.SaveChangesAsync();
         }
-        
+
         public async Task SaveUserValidationCode(ValidationCode validationCode)
         {
             await _dbContext.ValidationCodes.AddAsync(validationCode);
             await _dbContext.SaveChangesAsync();
         }
-       
-        
+
+
         public async Task<int> CreateUser(User user)
         {
             await _dbContext.Users.AddAsync(user);
             _dbContext.Attach(user.Role);
             await _dbContext.SaveChangesAsync();
-            return user.Id;            
+            return user.Id;
         }
 
         public async Task CreateUserLogin(UserLogin credentials)
@@ -53,14 +55,27 @@ namespace DwitTech.AccountService.Data.Repository
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task UpdateUserLoginAsync(string userName, string newPasswordHash)
+        public async Task UpdateUserLoginAsync(User user, string newPasswordHash)
         {
-            var login = new UserLogin { Username = userName };
-            _dbContext.UserLogins.Attach(login);
-            var entry = _dbContext.Entry(login);
-            entry.Property(x => x.Password).CurrentValue = newPasswordHash;
-            entry.Property(x => x.Password).IsModified = true;
-            await _dbContext.SaveChangesAsync();
+            var login = await _dbContext.UserLogins
+            .Where(l => l.Username == user.Email && l.UserId == user.Id)
+            .Select(l => new UserLogin
+            {
+                Id = l.Id,
+                UserId = l.UserId,
+                Username = l.Username,
+                ModifiedOnUtc = DateTime.UtcNow,
+                Password = newPasswordHash
+            })
+            .FirstOrDefaultAsync();
+
+            if (login != null)
+            {
+                _dbContext.UserLogins.Attach(login);
+                _dbContext.Entry(login).Property(x => x.Password).IsModified = true;
+                _dbContext.Entry(login).Property(x => x.ModifiedOnUtc).IsModified = true;
+                await _dbContext.SaveChangesAsync();
+            }
         }
     }
 }
