@@ -1,13 +1,11 @@
-﻿using System.Text;
-using System.Text.Json;
-using DwitTech.AccountService.Core.Interfaces;
+﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Utilities;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
-using System.Net.Http;
+using System.Reflection;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -62,7 +60,8 @@ namespace DwitTech.AccountService.Core.Services
         private string GetTemplate(string templateName)
         {
             string trimmedTemplateName = templateName.Trim();
-            string filePath = "Templates/" + trimmedTemplateName;
+            var location = new FileInfo(Assembly.GetEntryAssembly().Location);
+            string filePath = Path.Combine(location.DirectoryName, "Templates" , trimmedTemplateName);
             var str = new StreamReader(filePath);
             var templateText = str.ReadToEnd();
             str.Close();
