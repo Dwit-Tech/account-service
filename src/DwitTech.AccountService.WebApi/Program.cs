@@ -73,13 +73,13 @@ namespace DwitTech.AccountService.WebApi
             app.UseSwagger();
             app.UseSwaggerUI();
 
-            //app.UseForwardedHeaders();
+            app.UseForwardedHeaders();
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
 
-            //app.UseMiddleware<AuthorizationMiddleware>();
+            app.UseMiddleware<AuthorizationMiddleware>();
 
             app.UseAuthentication();
 

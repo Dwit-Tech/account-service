@@ -75,7 +75,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
 
         [HttpPost]
-        [Route("/changepassword")]
+        [Route("changepassword")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel passwordDetails)
         {
             try
@@ -87,7 +87,8 @@ namespace DwitTech.AccountService.WebApi.Controllers
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message.ToString());
+                _logger.LogError(ex, "Unable to change password");
+                return BadRequest("Unable to Change password. Please try again later");
             }
         }
     }

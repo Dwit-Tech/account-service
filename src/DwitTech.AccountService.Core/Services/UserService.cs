@@ -146,15 +146,15 @@ namespace DwitTech.AccountService.Core.Services
                 throw new ArgumentException("Invalid current password");
             }
 
-            var user = await _authRepository.GetUserByEmail(userEmail);
-
             if (currentPasswordHash == newPasswordHash)
             {
                 throw new ArgumentException("Passwords are Identical!");
             }
 
+            var user = await _userRepository.GetUserByEmail(userEmail);            
+
             await _userRepository.UpdateUserLoginAsync(user, newPasswordHash);
-            _logger.LogInformation($"Password for the user with ID {user.Id} was changed successfully");
+            _logger.LogInformation(1, $"Password for the user with ID {user.Id} was changed successfully");
             return true;
         }
     }

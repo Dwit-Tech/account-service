@@ -3,8 +3,6 @@ using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using System.Data.SqlClient;
-
 namespace DwitTech.AccountService.Data.Repository
 {
     public class UserRepository : IUserRepository
@@ -25,6 +23,12 @@ namespace DwitTech.AccountService.Data.Repository
         public async Task<User> GetUser(int id)
         {
             var user = await _dbContext.Users.FindAsync(id);
+            return user;
+        }
+
+        public async Task<User> GetUserByEmail(string userEmail)
+        {
+            var user = await _dbContext.Users.Where(x => x.Email == userEmail).FirstOrDefaultAsync();
             return user;
         }
 

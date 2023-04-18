@@ -1,5 +1,6 @@
 using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Repository;
@@ -197,6 +198,89 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             _mockUserService.Verify(x => x.CreateUser(It.IsAny<UserDto>()), Times.Once);
             await Assert.ThrowsAsync<Exception>(result);
+        }
+
+
+        [Fact]
+        public async Task ChangePassword_Should_Return_Ok_If_TaskCompletes_Successfully()
+        {
+            //Arrange
+            var passwordDetails = new ChangePasswordModel()
+            {
+                CurrentPassword = "currentpassword",
+                NewPassword = "newpassword"
+            };
+
+            var _activationService = new Mock<IActivationService>();
+            var _mockAuthService = new Mock<IAuthenticationService>();
+            var _mockUserService = new Mock<IUserService>();
+
+            _mockUserService.Setup(x => x.ChangePasswordAsync(It.IsAny<string>(), It.IsAny<string>()))
+                            .Returns(Task.FromResult(true));
+
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object, Mock.Of<ILogger<UserController>>());
+
+            // Act
+            var result = await userController.ChangePassword(passwordDetails);
+
+            // Assert
+            _mockUserService.Verify(x => x.ChangePasswordAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            Assert.True(result is OkObjectResult);
+        }
+
+
+        [Fact]
+        public async Task ChangePassword_Should_Return_BadRequest_If_PasswordFailsToChange()
+        {
+            //Arrange
+            var passwordDetails = new ChangePasswordModel()
+            {
+                CurrentPassword = "currentpassword",
+                NewPassword = "newpassword"
+            };
+
+            var _activationService = new Mock<IActivationService>();
+            var _mockAuthService = new Mock<IAuthenticationService>();
+            var _mockUserService = new Mock<IUserService>();
+
+            _mockUserService.Setup(x => x.ChangePasswordAsync(It.IsAny<string>(), It.IsAny<string>()))
+                            .Returns(Task.FromResult(false));
+
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object, Mock.Of<ILogger<UserController>>());
+
+            // Act
+            var result = await userController.ChangePassword(passwordDetails);
+
+            // Assert
+            _mockUserService.Verify(x => x.ChangePasswordAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            Assert.True(result is BadRequestObjectResult);
+        }
+
+
+        [Fact]
+        public async Task ChangePassword_Should_Throw_Exception_If_ChangePasswordAsyncThrowsException()
+        {
+            //Arrange
+            var passwordDetails = new ChangePasswordModel()
+            {
+                CurrentPassword = "currentpassword",
+                NewPassword = "newpassword"
+            };
+
+            var _activationService = new Mock<IActivationService>();
+            var _mockAuthService = new Mock<IAuthenticationService>();
+
+            var _mockUserService = new Mock<IUserService>();
+            _mockUserService.Setup(x => x.ChangePasswordAsync(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new ArgumentException());
+
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object, Mock.Of<ILogger<UserController>>());
+
+            // Act
+            var result = await userController.ChangePassword(passwordDetails);
+
+            // Assert
+            _mockUserService.Verify(x => x.ChangePasswordAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            Assert.True(result is BadRequestObjectResult);
         }
     }
 }
