@@ -11,6 +11,7 @@ namespace DwitTech.AccountService.Core.Services
 
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
+
         public EmailService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;

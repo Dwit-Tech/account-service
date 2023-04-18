@@ -48,6 +48,6 @@ namespace DwitTech.AccountService.Data.Entities
 
         [ForeignKey("RoleId")]
         public Role Role { get; set; }
-        
+
     }
 }

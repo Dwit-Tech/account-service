@@ -46,7 +46,11 @@ namespace DwitTech.AccountService.WebApi.Controllers
             try
             {
                 var loginResult = await _authenticationService.AuthenticateUserLogin(loginDetails.Email, loginDetails.Password);
-                return Ok(loginResult);
+                if (loginResult == null)
+                {
+                    return BadRequest("Invalid email or password.");
+                }
+                return Ok(new { message = "Login successful." });
             }
             catch (Exception e)
             {
@@ -57,6 +61,8 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
         [AllowAnonymous]
         [HttpPost]
+        [Route("createuser")]
+
         public async Task<IActionResult> CreateUser([FromBody] UserDto user)
         {
             try
