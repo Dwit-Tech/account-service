@@ -24,5 +24,29 @@ namespace DwitTech.AccountService.Core.Utilities
             string accessToken = new JwtSecurityTokenHandler().WriteToken(token);
             return accessToken;
         }
+
+        public static string GenerateIdFromToken(string authHeader)
+        {
+            if (authHeader != null && authHeader.StartsWith("Bearer "))
+            {
+                try
+                {
+                    string bearerToken = authHeader.Substring("Bearer ".Length);
+                    var handler = new JwtSecurityTokenHandler();
+                    var jwt = handler.ReadJwtToken(bearerToken.Trim());
+                    var userIdClaim = jwt.Claims.FirstOrDefault(c => c.Type == "UserId");
+                    var userId = userIdClaim.Value;
+                    return userId = userIdClaim.Value;
+                }
+                catch (ArgumentNullException ex)
+                {
+                    throw new ArgumentNullException("Authorization Header is invalid",ex);
+                }
+            }
+            else
+            {
+                throw new Exception("Authorization Header Not Supplied");
+            }
+        }
     }
 }

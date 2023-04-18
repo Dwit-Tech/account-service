@@ -41,5 +41,13 @@ namespace DwitTech.AccountService.Data.Repository
         {
             return await _context.UserLogins.AnyAsync(u => u.Username == email && u.Password == hashedPassword);
         }
+
+        public async Task<int> DeleteSessionToken(int userId)
+        {
+            var user = _context.SessionTokens.Where(x => x.UserId == userId).First();
+            _context.SessionTokens.Remove(user);
+            return await _context.SaveChangesAsync();
+
+        }
     }
 }
