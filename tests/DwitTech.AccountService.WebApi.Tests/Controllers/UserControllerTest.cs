@@ -34,7 +34,6 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
                 .Options;
 
             var mockDbContext = new Mock<AccountDbContext>(options);
-            var userRepository = new Mock<UserRepository>(mockDbContext.Object);
             var _configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
             {
                 { "FROM_EMAIL","example@gmail.com" },
@@ -42,24 +41,13 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             
             }).Build();
 
-            var _userRepository = new Mock<IUserRepository>();
-            var _roleRepository = new Mock<IRoleRepository>();
-            var _logger = new Mock<ILogger<UserService>>();
             var _activationService = new Mock<IActivationService>();
-            var _emailService = new Mock<IEmailService>();
-
-            var iHttpClientFactory = new Mock<IHttpClientFactory>();
-            var iEmailService = new Mock<IEmailService>();
+            var _mockUserService = new Mock<IUserService>();
             var authRepository = new Mock<AuthenticationRepository>(mockDbContext.Object);
-            var _mockService = new ActivationService(_configuration,userRepository.Object, iEmailService.Object,iHttpClientFactory.Object);
             var _mockAuthService = new Mock<AuthenticationService>(_configuration, authRepository.Object);
-            var userService = new Mock<UserService>(_userRepository.Object, _roleRepository.Object, _logger.Object, _activationService.Object, _emailService.Object);
-            var userController = new UserController(_mockService, _mockAuthService.Object, userService.Object, Mock.Of<ILogger<UserController>>());
 
-            
-            //var _mockService = new ActivationService(_configuration, userRepository.Object, iHttpClientFactory.Object);
-            
-            //var userController = new UserController(_mockService, _mockAuthService);
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object, Mock.Of<ILogger<UserController>>());
+
             string activationCode = "erg3345dh2";
 
             //act
@@ -70,21 +58,19 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
         }
 
         [Fact(Skip = "todo")]
-        public void AuthenticateUserLogin_ShouldReturn_Ok()
+        public void AuthenticateUserLogin_ReturnsOk_WhenLoginSuccessful()
         {
-            var options = new DbContextOptionsBuilder<AccountDbContext>()
+             var options = new DbContextOptionsBuilder<AccountDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
 
             var mockDbContext = new Mock<AccountDbContext>(options);
-            var userRepository = new Mock<UserRepository>(mockDbContext.Object);
-            var iHttpClientFactory = new Mock<IHttpClientFactory>();
+            var _activationService = new Mock<IActivationService>();
             var authRepository = new Mock<AuthenticationRepository>(mockDbContext.Object);
             var _mockUserService = new Mock<IUserService>(); 
-            var _mockService = new Mock<ActivationService>(_configuration, userRepository.Object, iHttpClientFactory.Object);
             var _mockAuthService = new Mock<AuthenticationService>(_configuration, authRepository.Object);
 
-            var userController = new UserController(_mockService.Object, _mockAuthService.Object,_mockUserService.Object, Mock.Of<ILogger<UserController>>());
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object, Mock.Of<ILogger<UserController>>());
 
             var requestLoginDto = new LoginRequestDto
             {
@@ -97,6 +83,33 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             //assert
             Assert.True(actual.IsCompletedSuccessfully);
+        }
+
+        [Fact(Skip = "todo")]
+        public async Task AuthenticateUserLogin_ReturnsBadRequestResult_WhenLoginUnsuccessful()
+        {
+            // Arrange
+            var requestLoginDto = new LoginRequestDto
+            {
+                Email = "hello@support.com",
+                Password = "incorrectpassword"
+            };
+
+            var _activationService = new Mock<IActivationService>();
+            var _mockAuthService = new Mock<IAuthenticationService>();
+            var _mockUserService = new Mock<IUserService>();
+
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object, Mock.Of<ILogger<UserController>>());
+
+            // Act
+            var result = await userController.AuthenticateUserLogin(requestLoginDto);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+            var badRequestResult = result as BadRequestObjectResult;
+        #nullable enable
+            Assert.Equal("Invalid email or password.", badRequestResult?.Value);
+        #nullable disable
         }
 
         [Fact]
@@ -169,12 +182,6 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
         [Fact(Skip = "todo")]
         public async Task CreateUser_Should_Throw_Exception_If_CreateUserThrows()
         {
-            var _activationService = new Mock<IActivationService>();
-            var _mockAuthService = new Mock<IAuthenticationService>();
-
-            var _mockUserService = new Mock<IUserService>();
-            _mockUserService.Setup(x => x.CreateUser(It.IsAny<UserDto>())).Throws(new DbUpdateException());
-
             var userDto = new UserDto
             {
                 FirstName = "james",
@@ -192,11 +199,27 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
                 PhoneNumber = "1234567890"
             };
 
-            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object, Mock.Of<ILogger<UserController>>());
-            var result = ()=> userController.CreateUser(userDto);
+            var _activationService = new Mock<IActivationService>();
+            var _mockAuthService = new Mock<IAuthenticationService>();
+            var _mockLogger = new Mock<ILogger<UserController>>();
+            var _mockUserService = new Mock<IUserService>();
 
-            _mockUserService.Verify(x => x.CreateUser(It.IsAny<UserDto>()), Times.Once);
-            await Assert.ThrowsAsync<Exception>(result);
+            _mockUserService.Setup(x => x.CreateUser(userDto)).Throws(new Exception("Test exception"));
+
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object, _mockLogger.Object);
+
+            // Act
+            var result = await userController.CreateUser(userDto);
+
+            // Assert
+            _mockLogger.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((o, t) => true),
+                    It.IsAny<Exception>(),
+                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
+                Times.Once);
         }
     }
 }

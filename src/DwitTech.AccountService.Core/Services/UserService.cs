@@ -25,9 +25,9 @@ namespace DwitTech.AccountService.Core.Services
         private readonly IActivationService _activationService;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
-        public UserService(IUserRepository userRepository, IRoleRepository roleRepository, 
-            ILogger<UserService> logger, 
-            IActivationService activationService, 
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository,
+            ILogger<UserService> logger,
+            IActivationService activationService,
             IEmailService emailService,
             IConfiguration configuration
             )
@@ -122,6 +122,6 @@ namespace DwitTech.AccountService.Core.Services
 
         }
 
-        
+
     }
 }
