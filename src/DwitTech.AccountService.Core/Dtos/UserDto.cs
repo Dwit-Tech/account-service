@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DwitTech.AccountService.Core.CustomAnnotations;
 using DwitTech.AccountService.Core.Enums;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
@@ -18,6 +19,7 @@ namespace DwitTech.AccountService.Core.Dtos
         public string LastName { get; set; }
 
         [Required]
+        [ValidatePassword]
         public string PassWord { get; set; }
 
         [Required]

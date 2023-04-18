@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6C1480BF-9B2F-419C-A437-24237CF52BD1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{12DE9949-1F6F-4643-8E5B-D9F9C2FFD4F4}"
+	ProjectSection(SolutionItems) = preProject
+		src\DwitTech.AccountService.Data\Repository\RoleRepository.cs = src\DwitTech.AccountService.Data\Repository\RoleRepository.cs
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DwitTech.AccountService.WebApi", "src\DwitTech.AccountService.WebApi\DwitTech.AccountService.WebApi.csproj", "{B3DBF1DD-67CE-4C7E-BD5E-27633D3DC5D3}"
 EndProject
