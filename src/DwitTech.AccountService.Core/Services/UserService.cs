@@ -21,6 +21,7 @@ namespace DwitTech.AccountService.Core.Services
         private readonly IActivationService _activationService;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
+        private readonly IAuthenticationService _authenticationService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserService(IUserRepository userRepository, IRoleRepository roleRepository,
@@ -29,6 +30,7 @@ namespace DwitTech.AccountService.Core.Services
             IActivationService activationService, 
             IEmailService emailService,
             IConfiguration configuration,
+            IAuthenticationService authenticationService,            
             IHttpContextAccessor httpContextAccessor
             )
         {
@@ -39,6 +41,7 @@ namespace DwitTech.AccountService.Core.Services
             _activationService = activationService;
             _emailService = emailService;
             _configuration = configuration;
+            _authenticationService = authenticationService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -156,6 +159,21 @@ namespace DwitTech.AccountService.Core.Services
             await _userRepository.UpdateUserLoginAsync(user, newPasswordHash);
             _logger.LogInformation(1, $"Password for the user with ID {user.Id} was changed successfully");
             return true;
+        }
+
+
+        public async Task<bool> LogoutUser(string authHeader)
+        {
+            try
+            {
+                var userId = JwtUtil.GenerateIdFromToken(authHeader);
+                var logoutResult = await _authenticationService.DeleteUserToken(userId);
+                return logoutResult;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{ex}");
+            }
         }
     }
 }

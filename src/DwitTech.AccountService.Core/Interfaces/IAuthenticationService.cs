@@ -8,6 +8,7 @@ namespace DwitTech.AccountService.Core.Interfaces
         Task<TokenModel> GenerateAccessToken(User user);
         Task<TokenModel> GenerateAccessTokenFromRefreshToken(TokenModel tokenModel);
         Task<TokenModel> AuthenticateUserLogin(string email, string password);
+        Task<bool> DeleteUserToken(string userId);
 
     }
 }

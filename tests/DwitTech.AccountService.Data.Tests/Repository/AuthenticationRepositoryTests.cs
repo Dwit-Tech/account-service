@@ -164,6 +164,33 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
         }
 
+        [Fact]
+        public async Task DeleteSessionToken_RemovesSessionTokenFromDb()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+            var sessionToken = new SessionToken { UserId = 1, RefreshToken = "218fea5e5664bfa21c9cc79cf4f57b5d" };
+            using (var context = new AccountDbContext(options))
+            {
+                await context.SessionTokens.AddAsync(sessionToken);
+                await context.SaveChangesAsync();
+            }
+
+            using (var context = new AccountDbContext(options))
+            {
+                var repository = new AuthenticationRepository(context);
+
+                // Act
+                var result = await repository.DeleteSessionToken(sessionToken.UserId);
+
+                // Assert
+                Assert.Equal(1, result);
+                Assert.DoesNotContain(sessionToken, context.SessionTokens);
+            }
+        }
+
         public void Dispose()
         {
         }

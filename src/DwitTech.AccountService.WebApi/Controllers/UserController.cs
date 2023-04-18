@@ -97,6 +97,27 @@ namespace DwitTech.AccountService.WebApi.Controllers
                 return BadRequest("Unable to Change password. Please try again later");
             }
         }
+
+
+        [Authorize]
+        [HttpDelete("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            try
+            {
+                string authHeader = Request.Headers["Authorization"];
+                var logoutResult = await _userService.LogoutUser(authHeader);
+                if (logoutResult)
+                    return Ok(logoutResult);
+
+                return BadRequest("No authorization header present");
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"{e}");
+            }
+        }
+
     }
 
 }
