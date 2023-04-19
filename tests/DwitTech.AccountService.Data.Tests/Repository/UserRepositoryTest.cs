@@ -241,7 +241,9 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
                 // Assert
                 var updatedLogin = await accountDbContext.UserLogins.FindAsync(login.Id);
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 Assert.Equal(newPasswordHash, updatedLogin.Password);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 Assert.True(updatedLogin.ModifiedOnUtc > login.ModifiedOnUtc);
             }
         }
