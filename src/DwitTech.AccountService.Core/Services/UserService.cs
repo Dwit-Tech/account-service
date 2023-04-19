@@ -1,18 +1,13 @@
-using AutoMapper;
 using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Utilities;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -21,26 +16,33 @@ namespace DwitTech.AccountService.Core.Services
 
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
+        private readonly IAuthenticationRepository _authRepository;
         private readonly ILogger<UserService> _logger;
         private readonly IActivationService _activationService;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly IAuthenticationService _authenticationService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         public UserService(IUserRepository userRepository, IRoleRepository roleRepository,
-            ILogger<UserService> logger,
-            IActivationService activationService,
+            IAuthenticationRepository authRepository,
+            ILogger<UserService> logger, 
+            IActivationService activationService, 
             IEmailService emailService,
             IConfiguration configuration,
-            IAuthenticationService authenticationService
+            IAuthenticationService authenticationService,            
+            IHttpContextAccessor httpContextAccessor
             )
         {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
+            _authRepository = authRepository;
             _logger = logger;
             _activationService = activationService;
             _emailService = emailService;
             _configuration = configuration;
             _authenticationService = authenticationService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         private async Task<Data.Entities.Role> GetAssignedRole(UserDto user)
@@ -124,6 +126,41 @@ namespace DwitTech.AccountService.Core.Services
                 return true;
 
         }
+
+
+        public async Task<bool> ChangePasswordAsync(string currentPassword, string newPassword)
+        {
+            if(string.IsNullOrEmpty(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
+            {
+                throw new ArgumentNullException("Invalid password!");
+            }
+
+            var userEmail = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+            if (userEmail == null)
+            {
+                throw new NullReferenceException("Email is not present in this context.");
+            }
+
+            var currentPasswordHash = StringUtil.HashString(currentPassword);
+            var newPasswordHash = StringUtil.HashString(newPassword);
+            var verifyLogin = await _authRepository.ValidateLogin(userEmail, currentPasswordHash);
+            if (!verifyLogin)
+            {
+                throw new ArgumentException("Invalid current password");
+            }
+
+            if (currentPasswordHash == newPasswordHash)
+            {
+                throw new ArgumentException("Passwords are Identical!");
+            }
+
+            var user = await _userRepository.GetUserByEmail(userEmail);            
+
+            await _userRepository.UpdateUserLoginAsync(user, newPasswordHash);
+            _logger.LogInformation(1, $"Password for the user with ID {user.Id} was changed successfully");
+            return true;
+        }
+
 
         public async Task<bool> LogoutUser(string authHeader)
         {

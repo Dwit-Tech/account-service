@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using DwitTech.AccountService.Core.Models;
 
 namespace DwitTech.AccountService.WebApi.Controllers
 { 
@@ -39,7 +40,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        [Route("login")]
+        [Route("/login")]
         public async Task<IActionResult> AuthenticateUserLogin([FromBody] LoginRequestDto loginDetails)
         {
             try
@@ -77,6 +78,26 @@ namespace DwitTech.AccountService.WebApi.Controllers
                 return BadRequest("Unable to create user. Please check data and try again");
             }
         }
+
+
+        [HttpPost]
+        [Route("changepassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel passwordDetails)
+        {
+            try
+            {
+                var result = await _userService.ChangePasswordAsync(passwordDetails.CurrentPassword, passwordDetails.NewPassword);
+                if (result)
+                    return Ok("Password has been changed successfully.");
+                return BadRequest("Unable to Change password. Please try again later");                
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unable to change password");
+                return BadRequest("Unable to Change password. Please try again later");
+            }
+        }
+
 
         [Authorize]
         [HttpDelete("logout")]

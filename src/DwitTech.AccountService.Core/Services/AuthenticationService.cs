@@ -171,6 +171,8 @@ namespace DwitTech.AccountService.Core.Services
                 throw new SecurityTokenException("Invalid access token", ex);
             }            
         }
+
+
         private static bool IsUserActivated(User user)
         {
             if (user.Status == Data.Enum.UserStatus.Active)
@@ -182,11 +184,10 @@ namespace DwitTech.AccountService.Core.Services
 
         public async Task<TokenModel> AuthenticateUserLogin(string email, string password)
         {
-
             //validate email and password combination
             var hashedPassword = StringUtil.HashString(password);
-            var dbUser = _repository.ValidateLogin(email, hashedPassword);
-            if (dbUser == null)
+            var dbUser = await _repository.ValidateLogin(email, hashedPassword);
+            if (!dbUser)
             {
                 throw new Exception("Email or Password is incorrect.");
             }

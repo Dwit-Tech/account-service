@@ -26,6 +26,12 @@ namespace DwitTech.AccountService.Data.Repository
             return user;
         }
 
+        public async Task<User> GetUserByEmail(string userEmail)
+        {
+            var user = await _dbContext.Users.Where(x => x.Email == userEmail).FirstOrDefaultAsync();
+            return user;
+        }
+
         public async Task UpdateUser(User user)
         {
             _dbContext.Update(user);
@@ -52,5 +58,29 @@ namespace DwitTech.AccountService.Data.Repository
             _dbContext.UserLogins.Add(credentials);
             await _dbContext.SaveChangesAsync();
         }
+
+        public async Task UpdateUserLoginAsync(User user, string newPasswordHash)
+        {
+            var login = await _dbContext.UserLogins
+            .Where(l => l.Username == user.Email && l.UserId == user.Id)
+            .Select(l => new UserLogin
+            {
+                Id = l.Id,
+                UserId = l.UserId,
+                Username = l.Username,
+                ModifiedOnUtc = DateTime.UtcNow,
+                Password = newPasswordHash
+            })
+            .FirstOrDefaultAsync();
+
+            if (login != null)
+            {
+                _dbContext.UserLogins.Attach(login);
+                _dbContext.Entry(login).Property(x => x.Password).IsModified = true;
+                _dbContext.Entry(login).Property(x => x.ModifiedOnUtc).IsModified = true;
+                await _dbContext.SaveChangesAsync();
+            }
+        }
     }
 }
+

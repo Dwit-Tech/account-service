@@ -216,6 +216,65 @@ namespace DwitTech.AccountService.Data.Tests.Repository
         }
 
 
+        [Fact]
+        public async Task UpdateUserLoginAsync_ShouldUpdateUserLoginAndPassword_WhenLoginExists()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            var user = new User { Id = 1, Email = "test@example.com" };
+            var login = new UserLogin { Id = 1, UserId = user.Id, Username = user.Email, Password = "oldPassword", ModifiedOnUtc = DateTime.UtcNow };
+            var newPasswordHash = "newPasswordHash";
+
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+                accountDbContext.UserLogins.Add(login);
+                await accountDbContext.SaveChangesAsync();
+                accountDbContext.Entry(login).State = EntityState.Detached;
+
+                var userRepository = new UserRepository(accountDbContext);
+
+                // Act
+                await userRepository.UpdateUserLoginAsync(user, newPasswordHash);
+
+                // Assert
+                var updatedLogin = await accountDbContext.UserLogins.FindAsync(login.Id);
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                Assert.Equal(newPasswordHash, updatedLogin.Password);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                Assert.True(updatedLogin.ModifiedOnUtc > login.ModifiedOnUtc);
+            }
+        }
+
+
+        [Fact]
+        public async Task UpdateUserLoginAsync_ShouldNotUpdateUserLoginAndPassword_WhenLoginDoesNotExist()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            var user = new User { Id = 1, Email = "test@example.com" };
+            var login = new UserLogin { Id = 1, UserId = user.Id, Username = user.Email, Password = "oldPassword", ModifiedOnUtc = DateTime.UtcNow };
+            var newPasswordHash = "newPasswordHash";
+
+            using (var accountDbContext = new AccountDbContext(options))
+            {                
+                var userRepository = new UserRepository(accountDbContext);
+
+                // Act
+                await userRepository.UpdateUserLoginAsync(user, newPasswordHash);
+
+                // Assert
+                var updatedLogin = await accountDbContext.UserLogins.FindAsync(login.Id);
+                Assert.Null(updatedLogin);
+            }
+        }
+
+
         public void Dispose()
         {
             _accountDbContext.Database.EnsureDeleted();
