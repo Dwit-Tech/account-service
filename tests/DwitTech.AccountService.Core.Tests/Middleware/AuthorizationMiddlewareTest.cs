@@ -61,23 +61,6 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
         }
 
         [Fact]
-        public async Task InvokeAsync_WithInvalidSourceIp_ReturnsUnauthorized()
-        {
-            // Arrange
-            var context = new DefaultHttpContext();
-            context.Request.Headers["X_API_KEY"] = "your_api_key";
-            context.Connection.RemoteIpAddress = IPAddress.Parse("192.168.1.3");
-
-            var middleware = new AuthorizationMiddleware(context => Task.CompletedTask, _configuration);
-
-            // Act
-            await middleware.InvokeAsync(context);
-
-            // Assert
-            Assert.Equal((int)HttpStatusCode.Unauthorized, context.Response.StatusCode);
-        }
-
-        [Fact]
         public async Task InvokeAsync_WithInvalidSourceIpAndApiKey_ReturnsUnauthorized()
         {
             // Arrange

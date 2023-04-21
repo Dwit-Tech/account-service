@@ -28,19 +28,10 @@ namespace DwitTech.AccountService.Core.Middleware
                 return;
             }
 
-            string apiKey = _configuration["X_API_KEY"];
-            string sourceIP = _configuration["SOURCE_IP"];
-
-            // validate source IP
-            if (context.Connection.RemoteIpAddress.ToString() != sourceIP)
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                await context.Response.WriteAsync("Unauthorized access");
-                return;
-            }
+            string apiKeys = _configuration["X_API_KEYS"];
 
             // validate API key
-            if (!context.Request.Headers.ContainsKey("X_API_KEY") || context.Request.Headers["X_API_KEY"] != apiKey)
+            if (!context.Request.Headers.ContainsKey("X_API_KEY") || !apiKeys.Contains(context.Request.Headers["X_API_KEY"]))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                 await context.Response.WriteAsync("Invalid API key");
