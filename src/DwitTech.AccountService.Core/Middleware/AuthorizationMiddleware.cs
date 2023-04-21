@@ -22,6 +22,12 @@ namespace DwitTech.AccountService.Core.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
+            if (context.Request.Path.Value.ToLower().Contains("health"))
+            {
+                await _next(context);
+                return;
+            }
+
             string apiKey = _configuration["X_API_KEY"];
             string sourceIP = _configuration["SOURCE_IP"];
 

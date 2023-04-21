@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using DwitTech.AccountService.Core.Extension;
 using DwitTech.AccountService.Core.Middleware;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Hosting;
 
 namespace DwitTech.AccountService.WebApi
 {
@@ -69,6 +70,11 @@ namespace DwitTech.AccountService.WebApi
 
             // Configure the HTTP request pipeline.
             app.MapHealthChecks("/health");
+
+            if (environment.IsEnvironment("Development") || environment.IsEnvironment("Local"))
+            {
+                app.UseDeveloperExceptionPage();
+            }
 
             app.UseSwagger();
             app.UseSwaggerUI();
