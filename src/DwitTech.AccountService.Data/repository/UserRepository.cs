@@ -81,6 +81,13 @@ namespace DwitTech.AccountService.Data.Repository
                 await _dbContext.SaveChangesAsync();
             }
         }
+
+        public async Task DeleteUserAsync(int id)
+        {
+            var user = await _dbContext.Users.FindAsync(id);
+            _dbContext.Users.Remove(user);
+           await _dbContext.SaveChangesAsync();
+        }
     }
 }
 

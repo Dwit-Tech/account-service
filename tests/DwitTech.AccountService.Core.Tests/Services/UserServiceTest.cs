@@ -5,6 +5,7 @@ using DwitTech.AccountService.Core.Utilities;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -284,6 +285,61 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
                 throw new Exception($"{ex.Message}");
             }
+        }
+
+        [Fact]
+        public async Task DeleteUserAsync_DeletesUserWithValidId()
+        {
+            // Arrange
+            int userIdToDelete = 1;
+            var iUserRepoMock = new Mock<IUserRepository>();
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationService = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var iConfigurationMock = new Mock<IConfiguration>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+
+
+            var userService = new UserService(iUserRepoMock.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+                iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object, iAuthenticationService.Object, mockHttpContextAccessor.Object);
+
+            iUserRepoMock.Setup(repo => repo.DeleteUserAsync(userIdToDelete))
+                .Returns(Task.CompletedTask);
+
+            // Act
+            await userService.DeleteUserAsync(userIdToDelete);
+
+            // Assert
+            iUserRepoMock.Verify(repo => repo.DeleteUserAsync(userIdToDelete), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteUserAsync_ThrowsDbUpdateException_WhenDatabaseUpdateFails()
+        {
+            // Arrange
+            int userIdToDelete = 1;
+            var iUserRepoMock = new Mock<IUserRepository>();
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationService = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var iConfigurationMock = new Mock<IConfiguration>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+
+            var userService = new UserService(iUserRepoMock.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+                iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object, iAuthenticationService.Object, mockHttpContextAccessor.Object);
+
+            iUserRepoMock.Setup(repo => repo.DeleteUserAsync(userIdToDelete))
+                .Throws(new DbUpdateException("Error deleting user from database"));
+
+            // Act and assert
+            await Assert.ThrowsAsync<DbUpdateException>(async () => await userService.DeleteUserAsync(userIdToDelete));
+            iUserRepoMock.Verify(repo => repo.DeleteUserAsync(userIdToDelete), Times.Once);
         }
     }
 }

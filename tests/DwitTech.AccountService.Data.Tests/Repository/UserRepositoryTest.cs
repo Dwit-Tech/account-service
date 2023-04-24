@@ -274,6 +274,52 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             }
         }
 
+        [Fact]
+        public async Task DeleteUserAsync_DeletesUserFromDatabase()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            int userId = 1;
+            var user = new User
+            {
+                Id = userId,
+                FirstName = "John",
+                LastName = "Okpo",
+                AddressLine1 = "",
+                AddressLine2 = "",
+                City = "",
+                PhoneNumber = "09023145678",
+                ZipCode = "92001",
+                PostalCode = "Andrew",
+                Email = "example@gmail.com",
+                Country = "Brazil",
+                State = "South Casmero"
+            };
+
+            // Seed the database with a user
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+                accountDbContext.Users.Add(user);
+                await accountDbContext.SaveChangesAsync();
+            }
+
+            // Act
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+                var userRepository = new UserRepository(accountDbContext);
+                await userRepository.DeleteUserAsync(userId);
+            }
+
+            // Assert
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+                var deletedUser = await accountDbContext.Users.FindAsync(userId);
+                Assert.Null(deletedUser);
+            }
+        }
 
         public void Dispose()
         {
