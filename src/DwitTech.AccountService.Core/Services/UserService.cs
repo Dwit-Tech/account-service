@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using AutoMapper;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -23,6 +24,7 @@ namespace DwitTech.AccountService.Core.Services
         private readonly IConfiguration _configuration;
         private readonly IAuthenticationService _authenticationService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IMapper _mapper;
 
         public UserService(IUserRepository userRepository, IRoleRepository roleRepository,
             IAuthenticationRepository authRepository,
@@ -31,7 +33,8 @@ namespace DwitTech.AccountService.Core.Services
             IEmailService emailService,
             IConfiguration configuration,
             IAuthenticationService authenticationService,            
-            IHttpContextAccessor httpContextAccessor
+            IHttpContextAccessor httpContextAccessor,
+            IMapper mapper
             )
         {
             _userRepository = userRepository;
@@ -43,6 +46,7 @@ namespace DwitTech.AccountService.Core.Services
             _configuration = configuration;
             _authenticationService = authenticationService;
             _httpContextAccessor = httpContextAccessor;
+            _mapper = mapper;
         }
 
         private async Task<Data.Entities.Role> GetAssignedRole(UserDto user)
@@ -174,6 +178,21 @@ namespace DwitTech.AccountService.Core.Services
             {
                 throw new Exception($"{ex}");
             }
+        }
+
+        public async Task<bool> EditAccount(string authHeader, EditRequestDto editDto)
+        {
+            var userId = JwtUtil.GenerateIdFromToken(authHeader);
+            var userEntity = await _userRepository.GetUser(Convert.ToInt32(userId));
+            if(userEntity == null)
+            {
+                _logger.LogError("User does not exist");
+                throw new Exception("Record was not updated because the user does not exist");
+               
+            }
+            var updatedRecord = _mapper.Map(editDto, userEntity);
+            await _userRepository.UpdateUser(updatedRecord);
+            return true;
         }
     }
 }
