@@ -27,20 +27,27 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
 
 
         [Fact]
-        public async Task InvokeAsync_WithValidApiKeyAndSourceIp_ReturnsOk()
+        public async Task InvokeAsync_WithValidApiKey_ShouldCallNextMiddleware()
         {
             // Arrange
-            var context = new DefaultHttpContext();
-            context.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
-            context.Request.Headers["X_API_KEY"] = "your_api_key";
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    { "X_API_KEYS", "valid-key" }
+                })
+                .Build();
 
-            var middleware = new AuthorizationMiddleware(context => Task.CompletedTask, _configuration);
+            var middleware = new AuthorizationMiddleware(
+                (innerHttpContext) => Task.FromResult(0),
+                configuration);
 
             // Act
+            var context = new DefaultHttpContext();
+            context.Request.Headers["X_API_KEY"] = "valid-key";
             await middleware.InvokeAsync(context);
 
             // Assert
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, context.Response.StatusCode);
         }
 
         [Fact]
