@@ -118,6 +118,25 @@ namespace DwitTech.AccountService.WebApi.Controllers
             }
         }
 
+
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("resetpassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] string email)
+        {
+            try
+            {
+                var result = await _userService.ResetPassword(email);
+                if (result)
+                    return Ok("An e-mail has been sent to your email address. Please follow the instructions in the email to reset your password.");
+                return BadRequest("Unable to Reset password. Please try again later");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unable to Send password reset email");
+                return BadRequest("Unable to Reset password. Please try again later");
+            }            
+        }
     }
 
 }

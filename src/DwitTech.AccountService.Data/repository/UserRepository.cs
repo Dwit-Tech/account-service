@@ -20,6 +20,18 @@ namespace DwitTech.AccountService.Data.Repository
             return result;
         }
 
+        public async Task<ValidationCode> FindUserValidationCode(int userId, CodeType codeType)
+        {
+            var result = await _dbContext.ValidationCodes.Where(x => x.UserId == userId && x.CodeType == codeType).FirstOrDefaultAsync();
+            return result;
+        }
+
+        public async Task UpdateValidationCode(ValidationCode validationCode)
+        {
+            _dbContext.Update(validationCode);
+            await _dbContext.SaveChangesAsync();
+        }
+
         public async Task<User> GetUser(int id)
         {
             var user = await _dbContext.Users.FindAsync(id);

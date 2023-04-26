@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using DwitTech.AccountService.Data.Enum;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -130,7 +131,7 @@ namespace DwitTech.AccountService.Core.Services
 
         public async Task<bool> ChangePasswordAsync(string currentPassword, string newPassword)
         {
-            if(string.IsNullOrEmpty(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
+            if(string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
             {
                 throw new ArgumentNullException("Invalid password!");
             }
@@ -174,6 +175,68 @@ namespace DwitTech.AccountService.Core.Services
             {
                 throw new Exception($"{ex}");
             }
+        }
+
+        private async Task<string> GetResetPasswordUrl(int userId)
+        {
+            string baseUrl = _configuration["BASE_URL"];
+            string resetToken = Guid.NewGuid().ToString();
+            string resetPasswordUrl = baseUrl + "/Account/Reset-Password/" + resetToken;
+
+            try
+            {
+                var existingValidatonCode = await _userRepository.FindUserValidationCode(userId, CodeType.ResetToken);
+
+                if (existingValidatonCode != null)
+                {
+                    existingValidatonCode.Code = resetToken;
+                    existingValidatonCode.ModifiedOnUtc = DateTime.UtcNow;
+                    await _userRepository.UpdateValidationCode(existingValidatonCode);
+                    _logger.LogInformation($"ValidationCode for the user with ID {userId} was updated successfully"); //TODO                    
+                    return resetPasswordUrl;
+                }
+                    
+                var validationCode = new ValidationCode
+                {
+                    Code = resetToken,
+                    CodeType = CodeType.ResetToken,
+                    UserId = userId,
+                    NotificationChannel = NotificationChannel.Email,
+                    ModifiedOnUtc = DateTime.UtcNow
+                };
+                await _userRepository.SaveUserValidationCode(validationCode);
+                _logger.LogInformation($"ValidationCode for the user with ID {userId} was added successfully"); //TODO
+                return resetPasswordUrl;
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException($"{ex.Message}");
+            }
+        }
+
+        private async Task<bool> SendResetPasswordEmail(User user)
+        {
+            string templateText = _activationService.GetTemplate("ResetPasswordEmailTemplate.html");
+            templateText = templateText.Replace("{{Firstname}}", user.FirstName);
+            templateText = templateText.Replace("{{Lastname}}", user.LastName);
+            string body = templateText;
+            const string subject = "Reset Password";
+            string fromEmail = _configuration["FROM_EMAIL"];
+            var email = new Email { FromEmail = fromEmail, ToEmail = user.Email, Subject = subject, Body = body };
+            var response = await _emailService.SendMailAsync(email);
+            return response;
+        }
+
+        public async Task<bool> ResetPassword(string userEmail)
+        {
+            var user = await _userRepository.GetUserByEmail(userEmail);
+            if (user == null)
+            {
+                throw new ArgumentException("Invalid email address");
+            }
+
+            var resetPasswordUrl = GetResetPasswordUrl(user.Id);
+            return await SendResetPasswordEmail(user);
         }
     }
 }

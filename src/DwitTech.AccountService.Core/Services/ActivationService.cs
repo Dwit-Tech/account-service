@@ -57,7 +57,7 @@ namespace DwitTech.AccountService.Core.Services
             }
         }
 
-        private string GetTemplate(string templateName)
+        public string GetTemplate(string templateName)
         {
             string trimmedTemplateName = templateName.Trim();
             var location = new FileInfo(Assembly.GetEntryAssembly().Location);

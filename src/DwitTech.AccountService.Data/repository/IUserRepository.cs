@@ -13,6 +13,8 @@ namespace DwitTech.AccountService.Data.Repository
         Task CreateUserLogin(UserLogin credentials);
         Task UpdateUserLoginAsync(User user, string newPasswordHash);
         Task<User> GetUserByEmail(string userEmail);
+        Task<ValidationCode> FindUserValidationCode(int userId, CodeType codeType);
+        Task UpdateValidationCode(ValidationCode validationCode);
     }
 
 }

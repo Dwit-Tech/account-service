@@ -42,6 +42,9 @@
     <None Update="Templates\ActivationEmailTemplate.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Templates\ResetPasswordEmailTemplate.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Templates\WelcomeEmail.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
