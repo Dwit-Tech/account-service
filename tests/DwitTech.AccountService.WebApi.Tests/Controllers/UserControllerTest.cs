@@ -355,13 +355,13 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
         }
 
         [Fact]
-        public async Task EditUser_Should_Return_True_If_Successful()
+        public async Task EditUser_Should_Return_Type_OKObjectResult_If_Successful()
         {
             var userService = new Mock<IUserService>();
             var authService = new Mock<IAuthenticationService>();
             var actService = new Mock<IActivationService>();
             var iloggerMock = new Mock<ILogger<UserController>>();
-            string authHeader = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoidXNlckBleGFtcGxlLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2dpdmVubmFtZSI6IkphbWVzIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3VybmFtZSI6IkpvaG4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNjgxNDk3NTA2LCJpc3MiOiJ0ZXN0SXNzdWVyIn0.uaiS1np_dt7-DPr2ot5JLf_fffdeT0iza83al8n7jNM";
+            string authToken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoidXNlckBleGFtcGxlLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2dpdmVubmFtZSI6IkphbWVzIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3VybmFtZSI6IkpvaG4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNjgxNDk3NTA2LCJpc3MiOiJ0ZXN0SXNzdWVyIn0.uaiS1np_dt7-DPr2ot5JLf_fffdeT0iza83al8n7jNM";
             var editRequestDto = new EditRequestDto
             {
                 FirstName = "john",
@@ -376,11 +376,11 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
                 Email = "example@gmail.com",
                 State = "washington dc"
             };
-            userService.Setup(x => x.EditAccount(authHeader, editRequestDto)).Returns(Task.FromResult(true));
+            userService.Setup(x => x.EditAccount(authToken, editRequestDto)).Returns(Task.FromResult(true));
             var httpContext = new DefaultHttpContext();
             var request = httpContext.Request;
             request.Method = "PUT";
-            request.Headers["Authorization"] = authHeader;
+            request.Headers["Authorization"] = authToken;
             var controller = new UserController(actService.Object, authService.Object, userService.Object, iloggerMock.Object);
             controller.ControllerContext = new ControllerContext()
             {
@@ -392,13 +392,13 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
 
         [Fact]
-        public async Task EditUser_Should_Return_False_If_AuthorizationHeader_Is_Not_Given()
+        public async Task EditUser_Should_Return_Type_BadRequestObjectResult_If_AuthorizationHeader_Is_Not_Given()
         {
             var userService = new Mock<IUserService>();
             var authService = new Mock<IAuthenticationService>();
             var actService = new Mock<IActivationService>();
             var iloggerMock = new Mock<ILogger<UserController>>();
-            string authHeader = "Bearer ";
+            string authToken = "Bearer ";
             var editRequestDto = new EditRequestDto
             {
                 FirstName = "john",
@@ -413,7 +413,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
                 Email = "example@gmail.com",
                 State = "washington dc"
             };
-            userService.Setup(x => x.EditAccount(authHeader, editRequestDto)).Returns(Task.FromResult(true));
+            userService.Setup(x => x.EditAccount(authToken, editRequestDto)).Returns(Task.FromResult(true));
             var httpContext = new DefaultHttpContext();
             var request = httpContext.Request;
             request.Method = "PUT";
@@ -423,11 +423,8 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
                 HttpContext = httpContext
             };
             var result = await controller.EditAccount(editRequestDto);
-            userService.Verify(x => x.EditAccount(authHeader, editRequestDto), Times.Never);
+            userService.Verify(x => x.EditAccount(authToken, editRequestDto), Times.Never);
             Assert.IsType<BadRequestObjectResult>(result);
-
         }
-
-
     }
 }

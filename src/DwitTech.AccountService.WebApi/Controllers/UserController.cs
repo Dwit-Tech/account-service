@@ -108,7 +108,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
                 string authHeader = Request.Headers["Authorization"];
                 var editResult = await _userService.EditAccount(authHeader, editRequest);
                 if (editResult)
-                    return Ok(editResult);
+                    return Ok(new { message = "Account Edited successfully." });
                 return BadRequest("Update error. Please try again later");
             }
             catch (Exception ex)
@@ -117,7 +117,6 @@ namespace DwitTech.AccountService.WebApi.Controllers
                 return BadRequest("Unable to update. Please try again later");
             }
         }
-
 
         [Authorize]
         [HttpDelete("logout")]

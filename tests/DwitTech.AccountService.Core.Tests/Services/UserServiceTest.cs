@@ -327,7 +327,6 @@ namespace DwitTech.AccountService.Core.Tests.Services
                iEmailServiceMock.Object, iConfigurationMock.Object, iAuthencationService.Object, mockHttpContextAccessor.Object, iMapperMock.Object);
             iUserRepoMock.Setup(x => x.GetUser(It.IsAny<int>())).ReturnsAsync(new User { });
             var result = await userServiceUnderTest.EditAccount(authHeader, editRequestDto);
-            //Assert.NotEmpty(editRequestDto.FirstName);
             Assert.True(result);
         }
 

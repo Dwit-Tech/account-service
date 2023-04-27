@@ -165,7 +165,6 @@ namespace DwitTech.AccountService.Core.Services
             return true;
         }
 
-
         public async Task<bool> LogoutUser(string authHeader)
         {
             try
@@ -180,15 +179,14 @@ namespace DwitTech.AccountService.Core.Services
             }
         }
 
-        public async Task<bool> EditAccount(string authHeader, EditRequestDto editDto)
+        public async Task<bool> EditAccount(string authToken, EditRequestDto editDto)
         {
-            var userId = JwtUtil.GenerateIdFromToken(authHeader);
+            var userId = JwtUtil.GenerateIdFromToken(authToken);
             var userEntity = await _userRepository.GetUser(Convert.ToInt32(userId));
             if(userEntity == null)
             {
                 _logger.LogError("User does not exist");
                 throw new Exception("Record was not updated because the user does not exist");
-               
             }
             var updatedRecord = _mapper.Map(editDto, userEntity);
             await _userRepository.UpdateUser(updatedRecord);
