@@ -50,7 +50,8 @@ namespace DwitTech.AccountService.WebApi.Controllers
                 {
                     return BadRequest("Invalid email or password.");
                 }
-                return Ok(new { message = "Login successful." });
+                return Ok(loginResult);
+                //return Ok(new { message = "Login successful." });
             }
             catch (Exception e)
             {
@@ -105,8 +106,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
         {
             try
             {
-                string authHeader = Request.Headers["Authorization"];
-                var editResult = await _userService.EditAccount(authHeader, editRequest);
+                var editResult = await _userService.EditAccount(editRequest);
                 if (editResult)
                     return Ok(new { message = "Account Edited successfully." });
                 return BadRequest("Update error. Please try again later");

@@ -10,8 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Security.Claims;
-using Xunit;
-using Xunit.Sdk;
+
 
 namespace DwitTech.AccountService.Core.Tests.Services
 {
@@ -318,21 +317,28 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 ZipCode = "20017",
                 City = "reo",
                 Country = "united nations",
-                Email = "example@gmail.com",
+                Email = "user@gmail.com",
                 State = "washington dc"
             };
 
-            string authHeader = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoidXNlckBleGFtcGxlLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2dpdmVubmFtZSI6IkphbWVzIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3VybmFtZSI6IkpvaG4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwiZXhwIjoxNjgxNDk3NTA2LCJpc3MiOiJ0ZXN0SXNzdWVyIn0.uaiS1np_dt7-DPr2ot5JLf_fffdeT0iza83al8n7jNM";
+            var httpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] {
+                new Claim(ClaimTypes.Email, editRequestDto.Email)
+                }))
+            };
+
             IUserService userServiceUnderTest = new UserService(iUserRepoMock.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object, iActivationServiceMock.Object,
                iEmailServiceMock.Object, iConfigurationMock.Object, iAuthencationService.Object, mockHttpContextAccessor.Object, iMapperMock.Object);
-            iUserRepoMock.Setup(x => x.GetUser(It.IsAny<int>())).ReturnsAsync(new User { });
-            var result = await userServiceUnderTest.EditAccount(authHeader, editRequestDto);
+            mockHttpContextAccessor.SetupGet(x=>x.HttpContext).Returns(httpContext);
+            iUserRepoMock.Setup(x => x.GetUserByEmail(It.IsAny<string>())).ReturnsAsync(new User { });
+            var result = await userServiceUnderTest.EditAccount(editRequestDto);
             Assert.True(result);
         }
 
 
         [Fact]
-        public async Task EditUser_Should_Throw_Exception_If_AuthorizationHeader_Payload_Is_Not_Supplied()
+        public async Task EditUser_Should_Throw_Exception_If_Email_Is_Not_Is_Not_Present_In_UserClaims()
         {
             var iUserRepoMock = new Mock<IUserRepository>();
             var iLoggerMock = new Mock<ILogger<UserService>>();
@@ -356,17 +362,22 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 ZipCode = "20017",
                 City = "reo",
                 Country = "united nations",
-                Email = "example@gmail.com",
+                Email = "user@gmail.com",
                 State = "washington dc"
             };
 
-            string authHeader = "";
+            var httpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal()
+            };
+
             IUserService userServiceUnderTest = new UserService(iUserRepoMock.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object, iActivationServiceMock.Object,
                iEmailServiceMock.Object, iConfigurationMock.Object, iAuthencationService.Object, mockHttpContextAccessor.Object, iMapperMock.Object);
-            iUserRepoMock.Setup(x => x.GetUser(It.IsAny<int>())).ReturnsAsync(new User { });
-            var result = () => userServiceUnderTest.EditAccount(authHeader, editRequestDto);
-            var ex = await Assert.ThrowsAsync<Exception>(result);
-            Assert.Equal("Authorization Header Not Supplied", ex.Message);
+            mockHttpContextAccessor.SetupGet(x => x.HttpContext).Returns(httpContext);
+            iUserRepoMock.Setup(x => x.GetUserByEmail(It.IsAny<string>())).ReturnsAsync(new User { });
+            var result = () => userServiceUnderTest.EditAccount(editRequestDto);
+            var ex = await Assert.ThrowsAsync<NullReferenceException>(result);
+            Assert.Equal("Email is not present in this context.", ex.Message);
         }
     }
 }

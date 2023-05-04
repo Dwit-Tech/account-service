@@ -179,18 +179,89 @@ namespace DwitTech.AccountService.Core.Services
             }
         }
 
-        public async Task<bool> EditAccount(string authToken, EditRequestDto editDto)
+        public async Task<bool> EditAccount(EditRequestDto editDto)
         {
-            var userId = JwtUtil.GenerateIdFromToken(authToken);
-            var userEntity = await _userRepository.GetUser(Convert.ToInt32(userId));
-            if(userEntity == null)
+            var editResult = await PerformEdit(editDto);
+          
+            if(editResult)
             {
-                _logger.LogError("User does not exist");
-                throw new Exception("Record was not updated because the user does not exist");
+                return true;
             }
-            var updatedRecord = _mapper.Map(editDto, userEntity);
-            await _userRepository.UpdateUser(updatedRecord);
-            return true;
+            return false;
+        }
+
+        private async Task<bool> PerformEdit(EditRequestDto editDto)
+        {
+            var userEmail = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+
+            if (userEmail == null)
+            {
+                throw new NullReferenceException("Email is not present in this context.");
+            }
+
+            var user = await _userRepository.GetUserByEmail(userEmail);
+            if (user != null)
+            {
+
+                if (!string.Equals(user.Email, editDto.Email, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.Email))
+                {
+                    user.Email = editDto.Email;
+                }
+
+                if (!string.Equals(user.FirstName, editDto.FirstName, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.FirstName))
+                {
+                    user.FirstName = editDto.FirstName;
+                }
+
+                if (!string.Equals(user.LastName, editDto.LastName, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.LastName))
+                {
+                    user.LastName = editDto.LastName;
+                }
+
+                if (!string.Equals(user.AddressLine1, editDto.AddressLine1, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.AddressLine1))
+                {
+                    user.AddressLine1 = editDto.AddressLine1;
+                }
+
+                if (!string.Equals(user.AddressLine2, editDto.AddressLine2, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.AddressLine2))
+                {
+                    user.AddressLine2 = editDto.AddressLine2;
+                }
+
+                if (!string.Equals(user.PhoneNumber, editDto.PhoneNumber, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.PhoneNumber))
+                {
+                    user.PhoneNumber = editDto.PhoneNumber;
+                }
+
+                if (!string.Equals(user.Country, editDto.Country, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.Country))
+                {
+                    user.Country = editDto.Country;
+                }
+
+                if (!string.Equals(user.State, editDto.State, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.State))
+                {
+                    user.State = editDto.State;
+                }
+
+                if (!string.Equals(user.PostalCode, editDto.PostalCode, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.PostalCode))
+                {
+                    user.PostalCode = editDto.PostalCode;
+                }
+
+                if (!string.Equals(user.ZipCode, editDto.ZipCode, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.ZipCode))
+                {
+                    user.ZipCode = editDto.ZipCode;
+                }
+
+                await _userRepository.UpdateUser(user);
+                _logger.LogInformation("User  was updated successfully");
+                return true;
+            }
+            else
+            {
+                _logger.LogError("Error encountered");
+                return false;
+            }
         }
     }
 }
