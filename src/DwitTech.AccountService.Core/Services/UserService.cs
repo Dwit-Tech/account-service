@@ -254,7 +254,7 @@ namespace DwitTech.AccountService.Core.Services
                 }
 
                 await _userRepository.UpdateUser(user);
-                _logger.LogInformation("User  was updated successfully");
+                _logger.LogInformation("Account was edited successfully");
                 return true;
             }
             else

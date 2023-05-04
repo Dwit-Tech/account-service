@@ -50,8 +50,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
                 {
                     return BadRequest("Invalid email or password.");
                 }
-                return Ok(loginResult);
-                //return Ok(new { message = "Login successful." });
+                return Ok(new { message = "Login successful." });
             }
             catch (Exception e)
             {
