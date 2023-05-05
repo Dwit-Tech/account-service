@@ -275,17 +275,19 @@ namespace DwitTech.AccountService.Data.Tests.Repository
         }
 
         [Fact]
-        public async Task DeleteUserAsync_DeletesUserFromDatabase()
-        {
+        public async Task DeleteUserAsync_DeletesUserWithMatchingId()
+        {   
             // Arrange
             var options = new DbContextOptionsBuilder<AccountDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .UseInMemoryDatabase(databaseName: "DeleteUserAsync_DeletesUserWithMatchingId")
                 .Options;
 
-            int userId = 1;
+            var dbContext = new AccountDbContext(options);
+            var userRepository = new UserRepository(dbContext);
+            
             var user = new User
             {
-                Id = userId,
+                Id = 1,
                 FirstName = "John",
                 LastName = "Okpo",
                 AddressLine1 = "",
@@ -296,29 +298,20 @@ namespace DwitTech.AccountService.Data.Tests.Repository
                 PostalCode = "Andrew",
                 Email = "example@gmail.com",
                 Country = "Brazil",
-                State = "South Casmero"
+                State = "South Casmero",
+                Status = UserStatus.Active
             };
 
-            // Seed the database with a user
-            using (var accountDbContext = new AccountDbContext(options))
-            {
-                accountDbContext.Users.Add(user);
-                await accountDbContext.SaveChangesAsync();
-            }
+            dbContext.Users.Add(user);
+            await dbContext.SaveChangesAsync();
 
             // Act
-            using (var accountDbContext = new AccountDbContext(options))
-            {
-                var userRepository = new UserRepository(accountDbContext);
-                await userRepository.DeleteUserAsync(userId);
-            }
+            await userRepository.DeleteUserAsync(1);
 
             // Assert
-            using (var accountDbContext = new AccountDbContext(options))
-            {
-                var deletedUser = await accountDbContext.Users.FindAsync(userId);
-                Assert.Null(deletedUser);
-            }
+            var deletedUser = await dbContext.Users.FindAsync(1);
+            Assert.NotNull(deletedUser);
+            Assert.Equal(UserStatus.Deleted, deletedUser.Status);
         }
 
         public void Dispose()
