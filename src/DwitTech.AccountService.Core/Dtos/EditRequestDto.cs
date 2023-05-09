@@ -6,7 +6,6 @@ using System.Text.Json.Serialization;
 
 namespace DwitTech.AccountService.Core.Dtos
 {
-    [AutoMap(typeof(User), ReverseMap = true)]
     public class EditRequestDto
     {
         [JsonPropertyName("firstName")]

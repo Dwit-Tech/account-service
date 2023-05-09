@@ -259,7 +259,7 @@ namespace DwitTech.AccountService.Core.Services
             }
             else
             {
-                _logger.LogError("Error encountered");
+                _logger.LogError("Error encountered while editing account");
                 return false;
             }
         }
