@@ -44,7 +44,7 @@ namespace DwitTech.AccountService.Data.Repository
 
         public async Task<int> DeleteSessionToken(int userId)
         {
-            var user = _context.SessionTokens.Where(x => x.UserId == userId).First();
+            var user =await _context.SessionTokens.Where(x => x.UserId == userId).FirstAsync();
             _context.SessionTokens.Remove(user);
             return await _context.SaveChangesAsync();
 

@@ -27,11 +27,11 @@ namespace DwitTech.AccountService.Core.Services
 
         public UserService(IUserRepository userRepository, IRoleRepository roleRepository,
             IAuthenticationRepository authRepository,
-            ILogger<UserService> logger, 
-            IActivationService activationService, 
+            ILogger<UserService> logger,
+            IActivationService activationService,
             IEmailService emailService,
             IConfiguration configuration,
-            IAuthenticationService authenticationService,            
+            IAuthenticationService authenticationService,
             IHttpContextAccessor httpContextAccessor
             )
         {
@@ -89,7 +89,8 @@ namespace DwitTech.AccountService.Core.Services
                 ZipCode = user.ZipCode,
                 PostalCode = user.PostalCode,
                 PhoneNumber = user.PhoneNumber,
-                City = user.City
+                City = user.City,
+                Status = UserStatus.Inactive
             };
         }
 
@@ -107,31 +108,30 @@ namespace DwitTech.AccountService.Core.Services
 
         public async Task<bool> CreateUser(UserDto user)
         {
-                Data.Entities.Role userRole = await GetAssignedRole(user);
-                var userModel = GetUserEntity(user, userRole);
+            Data.Entities.Role userRole = await GetAssignedRole(user);
+            var userModel = GetUserEntity(user, userRole);
 
-                var activationEmailHtmlTemplate = "ActivationEmailTemplate.html";
-                var recipientName = $"{userModel.FirstName.ToLower()} {userModel.LastName.ToLower()}";
-                var emailModel = GenerateEmail(user);
+            var activationEmailHtmlTemplate = "ActivationEmailTemplate.html";
+            var recipientName = $"{userModel.FirstName.ToLower()} {userModel.LastName.ToLower()}";
+            var emailModel = GenerateEmail(user);
 
-                await _activationService.SendActivationEmail(userModel.Id,recipientName, emailModel, activationEmailHtmlTemplate);
+            var newUserId = await _userRepository.CreateUser(userModel);
+            await _activationService.SendActivationEmail(newUserId, recipientName, emailModel, activationEmailHtmlTemplate);
 
-                var newUserId = await _userRepository.CreateUser(userModel);
+            var loginCredentials = GenerateLoginCredentials(user, newUserId);
 
-                var loginCredentials = GenerateLoginCredentials(user, newUserId);
+            await _userRepository.CreateUserLogin(loginCredentials);
 
-                await _userRepository.CreateUserLogin(loginCredentials);
+            _logger.LogInformation(1, $"Login Credentials for the user with ID {userModel.Id} is successfully created");
 
-                _logger.LogInformation(1, $"Login Credentials for the user with ID {userModel.Id} is successfully created");
-
-                return true;
+            return true;
 
         }
 
 
         public async Task<bool> ChangePasswordAsync(string currentPassword, string newPassword)
         {
-            if(string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
+            if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
             {
                 throw new ArgumentNullException("Invalid password!");
             }
@@ -155,7 +155,7 @@ namespace DwitTech.AccountService.Core.Services
                 throw new ArgumentException("Passwords are Identical!");
             }
 
-            var user = await _userRepository.GetUserByEmail(userEmail);            
+            var user = await _userRepository.GetUserByEmail(userEmail);
 
             await _userRepository.UpdateUserLoginAsync(user, newPasswordHash);
             _logger.LogInformation(1, $"Password for the user with ID {user.Id} was changed successfully");
@@ -183,8 +183,6 @@ namespace DwitTech.AccountService.Core.Services
             string resetToken = Guid.NewGuid().ToString();
             string resetPasswordUrl = baseUrl + "/Account/Reset-Password/" + resetToken;
 
-            try
-            {
                 var existingValidatonCode = await _userRepository.FindUserValidationCode(userId, CodeType.ResetToken);
 
                 if (existingValidatonCode != null)
@@ -195,7 +193,7 @@ namespace DwitTech.AccountService.Core.Services
                     _logger.LogInformation($"ValidationCode for the user with ID {userId} was updated successfully"); //TODO                    
                     return resetPasswordUrl;
                 }
-                    
+
                 var validationCode = new ValidationCode
                 {
                     Code = resetToken,
@@ -207,16 +205,12 @@ namespace DwitTech.AccountService.Core.Services
                 await _userRepository.SaveUserValidationCode(validationCode);
                 _logger.LogInformation($"ValidationCode for the user with ID {userId} was added successfully"); //TODO
                 return resetPasswordUrl;
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException($"{ex.Message}");
-            }
+
         }
 
         private async Task<bool> SendResetPasswordEmail(User user)
         {
-            string templateText = _activationService.GetTemplate("ResetPasswordEmailTemplate.html");
+            string templateText = await _activationService.GetTemplate("ResetPasswordEmailTemplate.html");
             templateText = templateText.Replace("{{Firstname}}", user.FirstName);
             templateText = templateText.Replace("{{Lastname}}", user.LastName);
             string body = templateText;
@@ -235,7 +229,7 @@ namespace DwitTech.AccountService.Core.Services
                 throw new ArgumentException("Invalid email address");
             }
 
-            var resetPasswordUrl = GetResetPasswordUrl(user.Id);
+            var resetPasswordUrl = await GetResetPasswordUrl(user.Id);
             return await SendResetPasswordEmail(user);
         }
     }

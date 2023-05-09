@@ -15,7 +15,6 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
         public UserController(IActivationService activationService, IAuthenticationService authenticationService, IUserService userService, ILogger<UserController> logger)
         {
-
             _activationService = activationService;
             _authenticationService = authenticationService;
             _userService = userService;
@@ -24,6 +23,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
 
         [HttpGet("Activation/{activationCode}")]
+        [AllowAnonymous]
         public async Task<IActionResult> ActivateUser(string activationCode)
         {
             try
@@ -39,8 +39,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost]
-        [Route("/login")]
+        [HttpPost("login")]
         public async Task<IActionResult> AuthenticateUserLogin([FromBody] LoginRequestDto loginDetails)
         {
             try
@@ -60,16 +59,14 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
 
         [AllowAnonymous]
-        [HttpPost]
-        [Route("createuser")]
-
+        [HttpPost("createuser")]
         public async Task<IActionResult> CreateUser([FromBody] UserDto user)
         {
             try
             {
                 var createUserResult = await _userService.CreateUser(user);
                 if (createUserResult)
-                    return Ok(createUserResult);
+                    return new CreatedResult("User", null);
                 return BadRequest("Unable to create user. Please try again later");
             }
             catch (Exception ex)
@@ -80,8 +77,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
         }
 
 
-        [HttpPost]
-        [Route("changepassword")]
+        [HttpPost("changepassword")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel passwordDetails)
         {
             try
@@ -99,7 +95,6 @@ namespace DwitTech.AccountService.WebApi.Controllers
         }
 
 
-        [Authorize]
         [HttpDelete("logout")]
         public async Task<IActionResult> Logout()
         {
@@ -119,9 +114,8 @@ namespace DwitTech.AccountService.WebApi.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("resetpassword")]
         [AllowAnonymous]
-        [Route("resetpassword")]
         public async Task<IActionResult> ResetPassword([FromBody] string email)
         {
             try
