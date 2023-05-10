@@ -182,43 +182,37 @@ namespace DwitTech.AccountService.Core.Services
             string baseUrl = _configuration["BASE_URL"];
             string resetToken = Guid.NewGuid().ToString();
             string resetPasswordUrl = baseUrl + "/Account/Reset-Password/" + resetToken;
+            
+            var existingValidatonCode = await _userRepository.FindUserValidationCode(userId, CodeType.ResetToken);
 
-            try
+            if (existingValidatonCode != null)
             {
-                var existingValidatonCode = await _userRepository.FindUserValidationCode(userId, CodeType.ResetToken);
-
-                if (existingValidatonCode != null)
-                {
-                    existingValidatonCode.Code = resetToken;
-                    existingValidatonCode.ModifiedOnUtc = DateTime.UtcNow;
-                    await _userRepository.UpdateValidationCode(existingValidatonCode);
-                    _logger.LogInformation($"ValidationCode for the user with ID {userId} was updated successfully"); //TODO                    
-                    return resetPasswordUrl;
-                }
-                    
-                var validationCode = new ValidationCode
-                {
-                    Code = resetToken,
-                    CodeType = CodeType.ResetToken,
-                    UserId = userId,
-                    NotificationChannel = NotificationChannel.Email,
-                    ModifiedOnUtc = DateTime.UtcNow
-                };
-                await _userRepository.SaveUserValidationCode(validationCode);
-                _logger.LogInformation($"ValidationCode for the user with ID {userId} was added successfully"); //TODO
+                existingValidatonCode.Code = resetToken;
+                existingValidatonCode.ModifiedOnUtc = DateTime.UtcNow;
+                await _userRepository.UpdateValidationCode(existingValidatonCode);
+                _logger.LogInformation($"ValidationCode for the user with ID {userId} was updated successfully"); //TODO                    
                 return resetPasswordUrl;
             }
-            catch (Exception ex)
+                    
+            var validationCode = new ValidationCode
             {
-                throw new ArgumentException($"{ex.Message}");
-            }
+                Code = resetToken,
+                CodeType = CodeType.ResetToken,
+                UserId = userId,
+                NotificationChannel = NotificationChannel.Email,
+                ModifiedOnUtc = DateTime.UtcNow
+            };
+            await _userRepository.SaveUserValidationCode(validationCode);
+            _logger.LogInformation($"ValidationCode for the user with ID {userId} was added successfully"); //TODO
+            return resetPasswordUrl;
         }
 
-        private async Task<bool> SendResetPasswordEmail(User user)
+        private async Task<bool> SendResetPasswordEmail(User user, string resetPasswordUrl)
         {
             string templateText = _activationService.GetTemplate("ResetPasswordEmailTemplate.html");
-            templateText = templateText.Replace("{{Firstname}}", user.FirstName);
-            templateText = templateText.Replace("{{Lastname}}", user.LastName);
+            templateText = templateText.Replace("{{firstName}}", user.FirstName);
+            templateText = templateText.Replace("{{lastname}}", user.LastName);
+            templateText = templateText.Replace("{{resetPasswordurl}}", resetPasswordUrl);
             string body = templateText;
             const string subject = "Reset Password";
             string fromEmail = _configuration["FROM_EMAIL"];
@@ -235,8 +229,15 @@ namespace DwitTech.AccountService.Core.Services
                 throw new ArgumentException("Invalid email address");
             }
 
-            var resetPasswordUrl = GetResetPasswordUrl(user.Id);
-            return await SendResetPasswordEmail(user);
+            try
+            {
+                var resetPasswordUrl = await GetResetPasswordUrl(user.Id);
+                return await SendResetPasswordEmail(user, resetPasswordUrl);
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }            
         }
     }
 }

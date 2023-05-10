@@ -122,11 +122,11 @@ namespace DwitTech.AccountService.WebApi.Controllers
         [HttpPost]
         [AllowAnonymous]
         [Route("resetpassword")]
-        public async Task<IActionResult> ResetPassword([FromBody] string email)
+        public async Task<IActionResult> ResetPassword([FromBody] UserEmailRequestModel email)
         {
             try
             {
-                var result = await _userService.ResetPassword(email);
+                var result = await _userService.ResetPassword(email.UserEmail);
                 if (result)
                     return Ok("An e-mail has been sent to your email address. Please follow the instructions in the email to reset your password.");
                 return BadRequest("Unable to Reset password. Please try again later");
