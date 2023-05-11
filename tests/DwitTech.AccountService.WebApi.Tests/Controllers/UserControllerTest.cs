@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Net;
 
 namespace DwitTech.AccountService.WebApi.Tests.Controllers
 {
@@ -355,7 +356,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
         }
 
         [Fact]
-        public async Task DeleteUser_Returns_NoContentResult()
+        public async Task DeleteUser_Returns_NoContentResult_WhenSuccessful()
         {
             // Arrange
             var userId = 1;
@@ -365,6 +366,8 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             var _mockUserService = new Mock<IUserService>();
 
             var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object, iloggerMock.Object);
+
+            _mockUserService.Setup(service => service.DeleteUserAsync(userId)).Returns(Task.CompletedTask);
 
             // Act
             var result = await userController.DeleteUser(userId);
@@ -403,7 +406,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             // Assert
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal("User with ID 1 not found", notFoundResult.Value);
+            Assert.Equal($"User with ID {id} not found", notFoundResult.Value);
         }
 
         [Fact]
@@ -426,7 +429,8 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             var result = await userController.DeleteUser(id);
 
             // Assert
-            var statusCodeResult = Assert.IsType<StatusCodeResult>(result);
+            Assert.IsType<StatusCodeResult>(result);
+            var statusCodeResult = (StatusCodeResult)result;
             Assert.Equal(500, statusCodeResult.StatusCode);
         }
     }
