@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using DwitTech.AccountService.Data.Enum;
+using Microsoft.EntityFrameworkCore;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -190,7 +191,7 @@ namespace DwitTech.AccountService.Core.Services
                 existingValidatonCode.Code = resetToken;
                 existingValidatonCode.ModifiedOnUtc = DateTime.UtcNow;
                 await _userRepository.UpdateValidationCode(existingValidatonCode);
-                _logger.LogInformation($"ValidationCode for the user with ID {userId} was updated successfully"); //TODO                    
+                _logger.LogInformation("ValidationCode for the user with ID {UserId} was updated successfully", userId);
                 return resetPasswordUrl;
             }
                     
@@ -203,7 +204,7 @@ namespace DwitTech.AccountService.Core.Services
                 ModifiedOnUtc = DateTime.UtcNow
             };
             await _userRepository.SaveUserValidationCode(validationCode);
-            _logger.LogInformation($"ValidationCode for the user with ID {userId} was added successfully"); //TODO
+            _logger.LogInformation("ValidationCode for the user with ID {userId} was added successfully", userId);
             return resetPasswordUrl;
         }
 
@@ -211,10 +212,10 @@ namespace DwitTech.AccountService.Core.Services
         {
             string templateText = _activationService.GetTemplate("ResetPasswordEmailTemplate.html");
             templateText = templateText.Replace("{{firstName}}", user.FirstName);
-            templateText = templateText.Replace("{{lastname}}", user.LastName);
-            templateText = templateText.Replace("{{resetPasswordurl}}", resetPasswordUrl);
+            templateText = templateText.Replace("{{lastName}}", user.LastName);
+            templateText = templateText.Replace("{{resetPasswordUrl}}", resetPasswordUrl);
             string body = templateText;
-            const string subject = "Reset Password";
+            const string subject = "Password Reset";
             string fromEmail = _configuration["FROM_EMAIL"];
             var email = new Email { FromEmail = fromEmail, ToEmail = user.Email, Subject = subject, Body = body };
             var response = await _emailService.SendMailAsync(email);
@@ -234,10 +235,26 @@ namespace DwitTech.AccountService.Core.Services
                 var resetPasswordUrl = await GetResetPasswordUrl(user.Id);
                 return await SendResetPasswordEmail(user, resetPasswordUrl);
             }
-            catch(Exception ex)
+            catch (OperationCanceledException ex)
             {
-                throw new Exception(ex.Message);
-            }            
+                _logger.LogError(ex, "Error! Unable to update the database!");
+                throw;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogError(ex, "Error! Unable to update the database!");
+                throw;
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Error! Unable to update the database!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error! Unable to update the database!");
+                throw;
+            }
         }
     }
 }

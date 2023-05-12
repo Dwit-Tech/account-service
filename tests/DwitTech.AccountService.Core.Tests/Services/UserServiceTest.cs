@@ -1,10 +1,13 @@
 ﻿using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Interfaces;
+using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Core.Utilities;
 using DwitTech.AccountService.Data.Entities;
+using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -23,6 +26,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 {"GMAIL_INFO:HOST", "smtp.gmail.com"},
                 {"GMAIL_INFO:PORT", "587"},
                 {"GMAIL_INFO:APP_PASSWORD", "fyvdxxvlsvosecwg"},
+                {"BASE_URL", "www.DwitTech.com" },
+                {"FROM_EMAIL", "DwitTech@gmail.com" }
 
             }).Build();
         }
@@ -284,6 +289,277 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
                 throw new Exception($"{ex.Message}");
             }
+        }
+
+
+        [Fact]
+        public async Task ResetPassword_Should_ThrowArgumentException_When_UserEmailIsInvalid()
+        {
+            // Arrange
+            string userEmail = "invalidemail";
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();            
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+
+            mockUserRepository.Setup(x => x.GetUserByEmail(userEmail)).ReturnsAsync((User?)null);
+
+            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+                iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+            
+            // Act and Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => userService.ResetPassword(userEmail));
+        }        
+
+        [Fact]
+        public async Task ResetPassword_Should_ReturnTrue_When_UserEmail_IsValid_And_PasswordResetEmailIsSentSuccessfully()
+        {
+            // Arrange
+            var templateName = "ResetPasswordEmailTemplate.html";
+            var mockTemplateBody = "{{firstName}} {{lastName}} {{resetPasswordUrl}}";
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+            var user = new User { Id = 1 };
+            string userEmail = "testuser@test.com";
+
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+
+
+            mockUserRepository.Setup(x => x.GetUserByEmail(userEmail)).ReturnsAsync(user);
+            iEmailServiceMock.Setup(x => x.SendMailAsync(It.IsAny<Email>())).ReturnsAsync(true);
+
+            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+                iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+            
+            // Act
+            var result = await userService.ResetPassword(userEmail);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task ResetPassword_Should_ReturnFalse_When_PasswordResetEmailIsNotSentSuccessfully()
+        {
+            // Arrange
+            var templateName = "ResetPasswordEmailTemplate.html";
+            var mockTemplateBody = "{{firstName}} {{lastName}} {{resetPasswordUrl}}";
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+            var user = new User { Id = 1 };
+            string userEmail = "testuser@test.com";
+
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+
+            mockUserRepository.Setup(x => x.GetUserByEmail(userEmail)).ReturnsAsync(user);
+            iEmailServiceMock.Setup(x => x.SendMailAsync(It.IsAny<Email>())).ReturnsAsync(false);
+
+            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+                iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+
+            // Act
+            var result = await userService.ResetPassword(userEmail);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task ResetPassword_Should_ThrowDbUpdateException_When_DbUpdateExceptionOccurs()
+        {
+            // Arrange
+            var templateName = "ResetPasswordEmailTemplate.html";
+            var mockTemplateBody = "{{firstName}} {{lastName}} {{resetPasswordUrl}}";
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+            string userEmail = "testuser@test.com";
+            var user = new User { Id = 1 };
+            var validationCode = new ValidationCode { UserId = user.Id };
+
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+
+            mockUserRepository.Setup(x => x.GetUserByEmail(userEmail)).ReturnsAsync(user);
+            mockUserRepository.Setup(x => x.FindUserValidationCode(It.IsAny<int>(), CodeType.ResetToken))
+                            .ReturnsAsync(validationCode);
+            mockUserRepository.Setup(x => x.UpdateValidationCode(It.IsAny<ValidationCode>())).Throws<DbUpdateException>();
+
+            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+                iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+
+            // Act and Assert
+            await Assert.ThrowsAsync<DbUpdateException>(() => userService.ResetPassword(userEmail));
+        }
+
+        [Fact]
+        public async Task ResetPassword_Should_ThrowOperationCanceledException_When_OperationCanceledExceptionOccurs()
+        {
+            // Arrange
+            var templateName = "ResetPasswordEmailTemplate.html";
+            var mockTemplateBody = "{{firstName}} {{lastName}} {{resetPasswordUrl}}";
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+            string userEmail = "testuser@test.com";
+            var user = new User { Id = 1 };
+            var validationCode = new ValidationCode { UserId = user.Id };
+
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+
+            mockUserRepository.Setup(x => x.GetUserByEmail(userEmail)).ReturnsAsync(user);
+            mockUserRepository.Setup(x => x.FindUserValidationCode(It.IsAny<int>(), CodeType.ResetToken))
+                .ReturnsAsync((ValidationCode?)null);
+            mockUserRepository.Setup(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>())).Throws<OperationCanceledException>();
+
+            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+                iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+
+            // Act and Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(() => userService.ResetPassword(userEmail));            
+        }
+
+        [Fact]
+        public async Task ResetPassword_Should_ThrowDbUpdateConcurrencyException_When_DbUpdateConcurrencyExceptionOccurs()
+        {
+            // Arrange
+            var templateName = "ResetPasswordEmailTemplate.html";
+            var mockTemplateBody = "{{firstName}} {{lastName}} {{resetPasswordUrl}}";
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+            var user = new User { Id = 1, Email = "testuser@test.com" };
+            var validationCode = new ValidationCode { UserId = user.Id };
+
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+
+            mockUserRepository.Setup(x => x.GetUserByEmail(user.Email)).ReturnsAsync(user);
+            mockUserRepository.Setup(x => x.FindUserValidationCode(It.IsAny<int>(), CodeType.ResetToken))
+                .ReturnsAsync((ValidationCode?)null);
+            mockUserRepository.Setup(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>())).Throws<DbUpdateConcurrencyException>();
+
+            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+                iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+
+            // Act and Assert
+            await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => userService.ResetPassword(user.Email));
+        }
+
+        [Fact]
+        public async Task GetResetPasswordUrl_calls_UpdateValidationCode_when_ExistingValidationCode_IsNotNull()
+        {
+            // Arrange
+            var templateName = "ResetPasswordEmailTemplate.html";
+            var mockTemplateBody = "{{firstName}} {{lastName}} {{resetPasswordUrl}}";
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+
+            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+               iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+
+
+            mockUserRepository.Setup(x => x.GetUserByEmail(It.IsAny<string>()))
+                .ReturnsAsync(new User { Id = 1 });
+
+            mockUserRepository.Setup(x => x.FindUserValidationCode(It.IsAny<int>(), CodeType.ResetToken))
+                .ReturnsAsync(new ValidationCode());
+
+            mockUserRepository.Setup(x => x.UpdateValidationCode(It.IsAny<ValidationCode>()))
+    .Returns(Task.CompletedTask);
+
+            mockUserRepository.Setup(x => x.UpdateValidationCode(It.IsAny<ValidationCode>()))
+                .Verifiable();
+
+            mockUserRepository.Setup(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()))
+                .Verifiable();
+
+            // Act
+            await userService.ResetPassword("valid@example.com");
+
+            // Assert
+            mockUserRepository.Verify(x => x.UpdateValidationCode(It.IsAny<ValidationCode>()), Times.Once);
+            mockUserRepository.Verify(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetResetPasswordUrl_calls_SaveUserValidationCode_when_ExistingValidationCode_IsNull()
+        {
+            // Arrange
+            var templateName = "ResetPasswordEmailTemplate.html";
+            var mockTemplateBody = "{{firstName}} {{lastName}} {{resetPasswordUrl}}";
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+
+            mockUserRepository.Setup(x => x.GetUserByEmail(It.IsAny<string>()))
+                .ReturnsAsync(new User { Id = 1, Email = "valid@example.com", FirstName = "John", LastName = "Doe"});
+
+            mockUserRepository.Setup(x => x.FindUserValidationCode(It.IsAny<int>(), CodeType.ResetToken))
+                .ReturnsAsync((ValidationCode?)null);
+
+            mockUserRepository.Setup(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()))
+    .Returns(Task.CompletedTask);
+
+            mockUserRepository.Setup(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()))
+                .Verifiable();
+
+            mockUserRepository.Setup(x => x.UpdateValidationCode(It.IsAny<ValidationCode>()))
+                .Verifiable();
+
+            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+               iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+            
+            // Act
+            await userService.ResetPassword("valid@example.com");
+
+            // Assert
+            mockUserRepository.Verify(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()), Times.Once);
+            mockUserRepository.Verify(x => x.UpdateValidationCode(It.IsAny<ValidationCode>()), Times.Never);
         }
     }
 }

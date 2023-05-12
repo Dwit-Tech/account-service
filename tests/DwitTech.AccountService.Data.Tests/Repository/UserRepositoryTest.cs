@@ -131,7 +131,6 @@ namespace DwitTech.AccountService.Data.Tests.Repository
         [Fact]
         public async Task GetUserValidationCode_Returns_ValidationCodeDetails_WhenActivationCodeExists()
         {
-
             //Arrange
             var options = new DbContextOptionsBuilder<AccountDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
@@ -274,6 +273,73 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             }
         }
 
+        [Fact]
+        public async Task FindUserValidationCode_Returns_ValidationCodeDetails_WhenValidationCodeWithMatchingUserIdExists()
+        {
+            //Arrange
+            var user = new User { Id = 1 };
+            ValidationCode mockValidationCode = new()
+            {
+                Id = 01,
+                UserId = 1,
+                Code = "erg3345dh2",
+                CodeType = CodeType.ResetToken
+            };
+
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+            var accountDbContext = new AccountDbContext(options);
+
+            await accountDbContext.ValidationCodes.AddAsync(mockValidationCode);
+            await accountDbContext.SaveChangesAsync();
+
+            var userRepository = new UserRepository(accountDbContext);
+
+            //Act
+            var result = await userRepository.FindUserValidationCode(user.Id, mockValidationCode.CodeType);
+
+            //Assert
+            Assert.NotNull(result);
+            Assert.Equal(mockValidationCode, result);
+        }
+
+        [Fact]
+        public async Task UpdateValidationCode_ShouldUpdateValidationCode_WhenExistingValidationCode_IsNotNull()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            var user = new User { Id = 1, Email = "test@example.com" };
+            ValidationCode existingValidationCode = new()
+            {
+                Id = 01,
+                UserId = 1,
+                Code = "erg3345dh2",
+                CodeType = CodeType.ResetToken
+            };
+            var newResetToken = "d55bcd56-867a-4507-a23f-49368e85d50c";
+
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+                accountDbContext.ValidationCodes.Add(existingValidationCode);
+                await accountDbContext.SaveChangesAsync();
+                
+                var userRepository = new UserRepository(accountDbContext);
+
+                //Act
+                existingValidationCode.Code = newResetToken;
+                await userRepository.UpdateValidationCode(existingValidationCode);
+
+                //Assert
+                var updatedValidationCode = await accountDbContext.ValidationCodes.FirstOrDefaultAsync(x => x.UserId == existingValidationCode.UserId);
+
+                Assert.NotNull(updatedValidationCode);
+                Assert.Equal(newResetToken, updatedValidationCode.Code);
+            }
+        }
 
         public void Dispose()
         {
