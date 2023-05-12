@@ -332,7 +332,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var user = new User { Id = 1 };
             string userEmail = "testuser@test.com";
 
-            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(Task.FromResult(mockTemplateBody));
 
 
             mockUserRepository.Setup(x => x.GetUserByEmail(userEmail)).ReturnsAsync(user);
@@ -365,7 +365,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var user = new User { Id = 1 };
             string userEmail = "testuser@test.com";
 
-            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(Task.FromResult(mockTemplateBody));
 
             mockUserRepository.Setup(x => x.GetUserByEmail(userEmail)).ReturnsAsync(user);
             iEmailServiceMock.Setup(x => x.SendMailAsync(It.IsAny<Email>())).ReturnsAsync(false);
@@ -398,7 +398,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var user = new User { Id = 1 };
             var validationCode = new ValidationCode { UserId = user.Id };
 
-            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(Task.FromResult(mockTemplateBody));
 
             mockUserRepository.Setup(x => x.GetUserByEmail(userEmail)).ReturnsAsync(user);
             mockUserRepository.Setup(x => x.FindUserValidationCode(It.IsAny<int>(), CodeType.ResetToken))
@@ -430,7 +430,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var user = new User { Id = 1 };
             var validationCode = new ValidationCode { UserId = user.Id };
 
-            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(Task.FromResult(mockTemplateBody));
 
             mockUserRepository.Setup(x => x.GetUserByEmail(userEmail)).ReturnsAsync(user);
             mockUserRepository.Setup(x => x.FindUserValidationCode(It.IsAny<int>(), CodeType.ResetToken))
@@ -461,7 +461,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var user = new User { Id = 1, Email = "testuser@test.com" };
             var validationCode = new ValidationCode { UserId = user.Id };
 
-            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(Task.FromResult(mockTemplateBody));
 
             mockUserRepository.Setup(x => x.GetUserByEmail(user.Email)).ReturnsAsync(user);
             mockUserRepository.Setup(x => x.FindUserValidationCode(It.IsAny<int>(), CodeType.ResetToken))
@@ -493,7 +493,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
                iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
 
-            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(Task.FromResult(mockTemplateBody));
 
 
             mockUserRepository.Setup(x => x.GetUserByEmail(It.IsAny<string>()))
@@ -534,7 +534,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var mockAuthRepository = new Mock<IAuthenticationRepository>();
             var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
 
-            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(mockTemplateBody);
+            iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(Task.FromResult(mockTemplateBody));
 
             mockUserRepository.Setup(x => x.GetUserByEmail(It.IsAny<string>()))
                 .ReturnsAsync(new User { Id = 1, Email = "valid@example.com", FirstName = "John", LastName = "Doe"});

@@ -115,7 +115,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
         }
 
         [Fact]
-        public async Task CreateUser_Should_Return_Ok_If_TaskCompletes_Successfully()
+        public async Task CreateUser_Should_Return_CreeatedResult_If_TaskCompletes_Successfully()
         {
             var _activationService = new Mock<IActivationService>();
             var _mockAuthService = new Mock<IAuthenticationService>();
@@ -144,7 +144,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             var result = await userController.CreateUser(userDto);
 
             _mockUserService.Verify(x => x.CreateUser(It.IsAny<UserDto>()), Times.Once);
-            Assert.True(result is OkObjectResult);
+            Assert.True(result is CreatedResult);
         }
 
         [Fact]
