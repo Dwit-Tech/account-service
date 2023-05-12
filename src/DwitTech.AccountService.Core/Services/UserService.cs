@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -173,6 +174,21 @@ namespace DwitTech.AccountService.Core.Services
             catch (Exception ex)
             {
                 throw new Exception($"{ex}");
+            }
+        }
+
+        public async Task DeleteUserAsync(int id)
+        {
+            try
+            {
+                await _userRepository.DeleteUserAsync(id);
+            }
+            
+            catch (DbUpdateException ex)
+            {
+                // Log the error
+                _logger.LogError(ex, $"Error deleting user with ID {id}: {ex.Message}");
+                throw;
             }
         }
     }
