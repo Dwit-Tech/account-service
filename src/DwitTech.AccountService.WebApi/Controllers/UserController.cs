@@ -119,9 +119,8 @@ namespace DwitTech.AccountService.WebApi.Controllers
         }
 
 
-        [HttpPost]
         [AllowAnonymous]
-        [Route("resetpassword")]
+        [HttpPost("resetpassword")]
         public async Task<IActionResult> ResetPassword([FromBody] UserEmailRequestModel email)
         {
             try
