@@ -57,7 +57,7 @@ namespace DwitTech.AccountService.Core.Services
             }
         }
 
-        public string GetTemplate(string templateName)
+        public async Task<string> GetTemplate(string templateName)
         {
             string trimmedTemplateName = templateName.Trim();
             var location = new FileInfo(Assembly.GetEntryAssembly().Location);
@@ -65,7 +65,7 @@ namespace DwitTech.AccountService.Core.Services
             string filePath = Path.Combine(location.DirectoryName, "Templates" , trimmedTemplateName);
 
             var str = new StreamReader(filePath);
-            var templateText = str.ReadToEnd();
+            var templateText = await str.ReadToEndAsync();
             str.Close();
             return templateText.ToString();
         }
@@ -75,7 +75,7 @@ namespace DwitTech.AccountService.Core.Services
             const string subject = "Account Activation";
             email.Subject = subject;
             var activationUrl = await GetActivationUrl(userId);
-            string templateText = GetTemplate(templateName);
+            string templateText =await GetTemplate(templateName);
             templateText = templateText.Replace("{{name}}", recipientName);
             templateText = templateText.Replace("{{activationUrl}}", activationUrl);
             email.Body = templateText;
@@ -84,7 +84,7 @@ namespace DwitTech.AccountService.Core.Services
         }
         public async Task<bool> SendWelcomeEmail(User user)
         {
-            string templateText = GetTemplate("WelcomeEmail.html");
+            string templateText = await GetTemplate("WelcomeEmail.html");
             templateText = templateText.Replace("{{Firstname}}", user.FirstName);
             templateText = templateText.Replace("{{Lastname}}", user.LastName);
             string body = templateText;
@@ -96,11 +96,7 @@ namespace DwitTech.AccountService.Core.Services
         }
         private static bool IsUserActivated(User user)
         {
-            if (user.Status == Data.Enum.UserStatus.Active)
-            {
-                return true;
-            }
-            return false;
+            return user.Status == UserStatus.Active;
         }
 
         public async Task<bool> ActivateUser(string activationCode)
