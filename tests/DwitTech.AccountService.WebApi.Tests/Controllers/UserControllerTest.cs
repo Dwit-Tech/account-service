@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Net;
 
 namespace DwitTech.AccountService.WebApi.Tests.Controllers
 {
@@ -414,6 +415,85 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteUser_Returns_NoContentResult_WhenSuccessful()
+        {
+            // Arrange
+            var userId = 1;
+            var _activationService = new Mock<IActivationService>();
+            var iloggerMock = new Mock<ILogger<UserController>>();
+            var _mockAuthService = new Mock<IAuthenticationService>();
+            var _mockUserService = new Mock<IUserService>();
+
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object, iloggerMock.Object);
+
+            _mockUserService.Setup(service => service.DeleteUserAsync(userId)).Returns(Task.CompletedTask);
+
+            // Act
+            var result = await userController.DeleteUser(userId);
+
+            // Assert
+            Assert.IsType<NoContentResult>(result);
+            _mockUserService.Verify(service => service.DeleteUserAsync(userId), Times.Once);
+            iloggerMock.Verify(
+                logger => logger.Log(
+                    LogLevel.Information,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((o, t) => o.ToString().Contains($"User with ID {userId} deleted")),
+                    It.IsAny<Exception>(),
+                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteUser_WithInvalidId_ReturnsNotFound()
+        {
+            // Arrange
+            var id = 1;
+            var exceptionMessage = $"User with ID {id} not found";
+            var _activationService = new Mock<IActivationService>();
+            var iloggerMock = new Mock<ILogger<UserController>>();
+            var _mockAuthService = new Mock<IAuthenticationService>();
+            var _mockUserService = new Mock<IUserService>();
+
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object, iloggerMock.Object);
+
+            _mockUserService
+                    .Setup(service => service.DeleteUserAsync(id))
+                    .Throws(new ArgumentException($"User with ID {id} not found"));
+            // Act
+            var result = await userController.DeleteUser(id);
+
+            // Assert
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal($"User with ID {id} not found", notFoundResult.Value);
+        }
+
+        [Fact]
+        public async Task DeleteUser_WithException_ReturnsStatusCode500()
+        {
+            // Arrange
+            var id = 1;
+            var errorMessage = "Something went wrong";
+            var exception = new Exception(errorMessage);
+            var _activationService = new Mock<IActivationService>();
+            var iloggerMock = new Mock<ILogger<UserController>>();
+            var _mockAuthService = new Mock<IAuthenticationService>();
+            var _mockUserService = new Mock<IUserService>();
+
+            var userController = new UserController(_activationService.Object, _mockAuthService.Object, _mockUserService.Object, iloggerMock.Object);
+
+            _mockUserService.Setup(service => service.DeleteUserAsync(id)).ThrowsAsync(exception);
+
+            // Act
+            var result = await userController.DeleteUser(id);
+
+            // Assert
+            Assert.IsType<StatusCodeResult>(result);
+            var statusCodeResult = (StatusCodeResult)result;
+            Assert.Equal(500, statusCodeResult.StatusCode);
         }
     }
 }

@@ -274,6 +274,46 @@ namespace DwitTech.AccountService.Data.Tests.Repository
         }
 
         [Fact]
+        public async Task DeleteUserAsync_DeletesUserWithMatchingId()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(databaseName: "DeleteUserAsync_DeletesUserWithMatchingId")
+                .Options;
+
+            var dbContext = new AccountDbContext(options);
+            var userRepository = new UserRepository(dbContext);
+
+            var user = new User
+            {
+                Id = 1,
+                FirstName = "John",
+                LastName = "Okpo",
+                AddressLine1 = "",
+                AddressLine2 = "",
+                City = "",
+                PhoneNumber = "09023145678",
+                ZipCode = "92001",
+                PostalCode = "Andrew",
+                Email = "example@gmail.com",
+                Country = "Brazil",
+                State = "South Casmero",
+                Status = UserStatus.Active
+            };
+
+            dbContext.Users.Add(user);
+            await dbContext.SaveChangesAsync();
+
+            // Act
+            await userRepository.DeleteUserAsync(1);
+
+            // Assert
+            var deletedUser = await dbContext.Users.FindAsync(1);
+            Assert.NotNull(deletedUser);
+            Assert.Equal(UserStatus.Deleted, deletedUser.Status);
+        }
+
+        [Fact]
         public async Task FindUserValidationCode_Returns_ValidationCodeDetails_WhenValidationCodeWithMatchingUserIdExists()
         {
             //Arrange
@@ -303,7 +343,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             Assert.NotNull(result);
             Assert.Equal(mockValidationCode, result);
         }
-
+                
         [Fact]
         public async Task UpdateValidationCode_ShouldUpdateValidationCode_WhenExistingValidationCode_IsNotNull()
         {

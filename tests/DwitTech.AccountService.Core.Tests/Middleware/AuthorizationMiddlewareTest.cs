@@ -8,19 +8,6 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
 {
     public class AuthorizationMiddlewareTest
     {
-        private readonly IConfiguration _configuration;
-        public AuthorizationMiddlewareTest()
-        {
-            _configuration = new ConfigurationBuilder()
-               .AddInMemoryCollection(new Dictionary<string, string>()
-               {
-                    {"X_API_KEY", "your_api_key"},
-                    {"SOURCE_IP", "127.0.0.1"}
-               })
-               .Build();
-        }
-
-
         [Fact]
         public async Task InvokeAsync_WithValidApiKey_ShouldCallNextMiddleware()
         {
@@ -48,7 +35,7 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
         [Fact]
         public async Task InvokeAsync_WithInvalidApiKey_ShouldReturnUnauthorized()
         {
-
+            // Arrange
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
@@ -59,7 +46,6 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
             var middleware = new AuthorizationMiddleware(
                 (innerHttpContext) => Task.FromResult(0),
                 configuration);
-
 
             var context = new DefaultHttpContext();
             context.Request.Headers["X_API_KEY"] = "invalid-key";
@@ -73,7 +59,6 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
             context.Response.Body.Seek(0, SeekOrigin.Begin);
             var responseBody = await new StreamReader(context.Response.Body).ReadToEndAsync();
             Assert.Equal("Invalid API key", responseBody);
-
         }
 
         [Fact]
@@ -84,6 +69,7 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
             var middleware = new AuthorizationMiddleware(
                 (innerHttpContext) => Task.FromResult(0),
                 configuration.Object);
+
             var context = new DefaultHttpContext();
             context.Request.Path = "/health";
 
@@ -92,7 +78,6 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
 
             // Assert
             Assert.Equal((int)HttpStatusCode.OK, context.Response.StatusCode);
-
         }
     }
 }

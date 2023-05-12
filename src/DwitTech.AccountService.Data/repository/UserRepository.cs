@@ -34,13 +34,13 @@ namespace DwitTech.AccountService.Data.Repository
 
         public async Task<User> GetUser(int id)
         {
-            var user = await _dbContext.Users.FindAsync(id);
+            var user = await GetActiveUsers().FirstOrDefaultAsync(x => x.Id == id);
             return user;
         }
 
         public async Task<User> GetUserByEmail(string userEmail)
         {
-            var user = await _dbContext.Users.Where(x => x.Email == userEmail).FirstOrDefaultAsync();
+            var user = await GetActiveUsers().Where(x => x.Email == userEmail).FirstOrDefaultAsync();
             return user;
         }
 
@@ -92,6 +92,21 @@ namespace DwitTech.AccountService.Data.Repository
                 _dbContext.Entry(login).Property(x => x.ModifiedOnUtc).IsModified = true;
                 await _dbContext.SaveChangesAsync();
             }
+        }
+
+        public async Task DeleteUserAsync(int id)
+        {
+            var user = await GetUser(id);
+            if (user != null)
+            {
+                user.Status = UserStatus.Deleted;
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+        private IQueryable<User> GetActiveUsers()
+        {
+            return _dbContext.Users.Where(x => x.Status != UserStatus.Deleted);
         }
     }
 }

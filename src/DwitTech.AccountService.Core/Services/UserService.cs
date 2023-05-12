@@ -178,6 +178,21 @@ namespace DwitTech.AccountService.Core.Services
             }
         }
 
+        public async Task DeleteUserAsync(int id)
+        {
+            try
+            {
+                await _userRepository.DeleteUserAsync(id);
+            }
+            
+            catch (DbUpdateException ex)
+            {
+                // Log the error
+                _logger.LogError(ex, $"Error deleting user with ID {id}: {ex.Message}");
+                throw;
+            }
+        }
+
         private async Task<string> GetResetPasswordUrl(int userId)
         {
             string baseUrl = _configuration["BASE_URL"];
