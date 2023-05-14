@@ -25,7 +25,7 @@ namespace DwitTech.AccountService.Core.Services
         private readonly IConfiguration _configuration;
         private readonly IAuthenticationService _authenticationService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IMapper _mapper;
+        
 
         public UserService(IUserRepository userRepository, IRoleRepository roleRepository,
             IAuthenticationRepository authRepository,
@@ -34,8 +34,8 @@ namespace DwitTech.AccountService.Core.Services
             IEmailService emailService,
             IConfiguration configuration,
             IAuthenticationService authenticationService,            
-            IHttpContextAccessor httpContextAccessor,
-            IMapper mapper
+            IHttpContextAccessor httpContextAccessor
+            
             )
         {
             _userRepository = userRepository;
@@ -47,7 +47,7 @@ namespace DwitTech.AccountService.Core.Services
             _configuration = configuration;
             _authenticationService = authenticationService;
             _httpContextAccessor = httpContextAccessor;
-            _mapper = mapper;
+            
         }
 
         private async Task<Data.Entities.Role> GetAssignedRole(UserDto user)
