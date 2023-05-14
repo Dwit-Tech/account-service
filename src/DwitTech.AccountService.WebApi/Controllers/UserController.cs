@@ -99,6 +99,24 @@ namespace DwitTech.AccountService.WebApi.Controllers
         }
 
 
+        [HttpPut]
+        [Route("editaccount")]
+        public async Task<IActionResult> EditAccount([FromBody] EditRequestDto editRequest)
+        {
+            try
+            {
+                var editResult = await _userService.EditAccount(editRequest);
+                if (editResult)
+                    return Ok(new { message = "Account Edited successfully." });
+                return BadRequest("Update error. Please try again later");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Update error", ex);
+                return BadRequest("Unable to update. Please try again later");
+            }
+        }
+
         [Authorize]
         [HttpDelete("logout")]
         public async Task<IActionResult> Logout()

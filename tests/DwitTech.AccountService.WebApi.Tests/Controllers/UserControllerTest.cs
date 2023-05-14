@@ -433,5 +433,46 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             var statusCodeResult = (StatusCodeResult)result;
             Assert.Equal(500, statusCodeResult.StatusCode);
         }
+
+        [Fact]
+        public async Task EditUser_Should_Return_Type_OKObjectResult_If_Successful()
+        {
+            var userService = new Mock<IUserService>();
+            var authService = new Mock<IAuthenticationService>();
+            var actService = new Mock<IActivationService>();
+            var iloggerMock = new Mock<ILogger<UserController>>();
+            var editRequestDto = new EditRequestDto
+            {
+                FirstName = "john",
+                LastName = "doe",
+                AddressLine1 = "south east london",
+                AddressLine2 = "north carolina",
+                PhoneNumber = "09085678900",
+                PostalCode = "90021",
+                ZipCode = "20017",
+                City = "reo",
+                Country = "united nations",
+                Email = "example@gmail.com",
+                State = "washington dc"
+            };
+            userService.Setup(x => x.EditAccount(editRequestDto)).Returns(Task.FromResult(true));
+            var controller = new UserController(actService.Object, authService.Object, userService.Object, iloggerMock.Object);
+            var result = await controller.EditAccount(editRequestDto);
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+
+        [Fact]
+        public async Task EditUser_Should_Return_Type_BadRequestObjectResult_If_Not_Successful()
+        {
+            var userService = new Mock<IUserService>();
+            var authService = new Mock<IAuthenticationService>();
+            var actService = new Mock<IActivationService>();
+            var iloggerMock = new Mock<ILogger<UserController>>();
+            userService.Setup(x => x.EditAccount(new EditRequestDto { })).Returns(Task.FromResult(true));
+            var controller = new UserController(actService.Object, authService.Object, userService.Object, iloggerMock.Object);
+            var result = await controller.EditAccount(new EditRequestDto { });
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
     }
 }

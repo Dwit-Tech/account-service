@@ -29,10 +29,9 @@ namespace DwitTech.AccountService.Core.Tests.Middleware
                 (innerHttpContext) => Task.FromResult(0),
                 configuration);
 
+            // Act
             var context = new DefaultHttpContext();
             context.Request.Headers["X_API_KEY"] = "valid-key";
-
-            // Act
             await middleware.InvokeAsync(context);
 
             // Assert

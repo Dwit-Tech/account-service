@@ -1,4 +1,5 @@
-﻿using DwitTech.AccountService.Core.Dtos;
+﻿using AutoMapper;
+using DwitTech.AccountService.Core.Dtos;
 using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Core.Utilities;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Security.Claims;
+
 
 namespace DwitTech.AccountService.Core.Tests.Services
 {
@@ -41,6 +43,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var iConfigurationMock = new Mock<IConfiguration>();
             var contextMock = new Mock<IHttpContextAccessor>();
             var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            var iMapperMock = new Mock<IMapper>();
+
             IUserService userServiceUnderTest = new UserService(iUserRepoMock.Object,iRoleRepoMock.Object, mockAuthRepo.Object, iLoggerMock.Object, 
                 iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object, iAuthenticationServiceMock.Object, contextMock.Object);
             
@@ -95,7 +99,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var mockUserRepository = new Mock<IUserRepository>();
             mockUserRepository.Setup(x => x.GetUserByEmail(user.Email)).ReturnsAsync(user);            
             mockUserRepository.Setup(x => x.UpdateUserLoginAsync(It.IsAny<User>(), It.IsAny<string>())).Returns(Task.CompletedTask);
-
+            var iMapperMock = new Mock<IMapper>();
             var httpContext = new DefaultHttpContext
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] {
@@ -134,7 +138,8 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var iEmailServiceMock = new Mock<IEmailService>();
             var iConfigurationMock = new Mock<IConfiguration>();
             var mockUserRepository = new Mock<IUserRepository>();
-            var mockAuthRepository = new Mock<IAuthenticationRepository>();            
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var iMapperMock = new Mock<IMapper>();
             var httpContext = new DefaultHttpContext
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] {
@@ -166,7 +171,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var iConfigurationMock = new Mock<IConfiguration>();
             var mockUserRepository = new Mock<IUserRepository>();
             var mockAuthRepository = new Mock<IAuthenticationRepository>();
-
+            var iMapperMock = new Mock<IMapper>();
             var httpContext = new DefaultHttpContext
             {
                 User = null!
@@ -200,7 +205,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             mockAuthRepository.Setup(x => x.ValidateLogin(user.Email, StringUtil.HashString(currentPassword)))
                               .ReturnsAsync(false);
             var userRepositoryMock = new Mock<IUserRepository>();
-
+            var iMapperMock = new Mock<IMapper>();
             var httpContext = new DefaultHttpContext
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] {
@@ -236,7 +241,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var mockUserRepository = new Mock<IUserRepository>();
             var mockAuthRepository = new Mock<IAuthenticationRepository>();
             mockAuthRepository.Setup(x => x.ValidateLogin(user.Email, It.IsAny<string>())).ReturnsAsync(true);
-
+            var iMapperMock = new Mock<IMapper>();
             var httpContext = new DefaultHttpContext
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] {
@@ -270,6 +275,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
                 var iEmailServiceMock = new Mock<IEmailService>();
                 var iConfigurationMock = new Mock<IConfiguration>();
                 var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+                var iMapperMock = new Mock<IMapper>();
 
                 IUserService userServiceUnderTest = new UserService(iUserRepoMock.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object, iActivationServiceMock.Object,
                    iEmailServiceMock.Object, iConfigurationMock.Object, iAuthencationService.Object, mockHttpContextAccessor.Object);
@@ -301,7 +307,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var iEmailServiceMock = new Mock<IEmailService>();
             var iConfigurationMock = new Mock<IConfiguration>();
             var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
-
+            var iMapperMock = new Mock<IMapper>();
 
             var userService = new UserService(iUserRepoMock.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
                 iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object, iAuthenticationService.Object, mockHttpContextAccessor.Object);
@@ -330,6 +336,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var iEmailServiceMock = new Mock<IEmailService>();
             var iConfigurationMock = new Mock<IConfiguration>();
             var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+            var iMapperMock = new Mock<IMapper>();
 
             var userService = new UserService(iUserRepoMock.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
                 iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object, iAuthenticationService.Object, mockHttpContextAccessor.Object);
@@ -340,6 +347,94 @@ namespace DwitTech.AccountService.Core.Tests.Services
             // Act and assert
             await Assert.ThrowsAsync<DbUpdateException>(async () => await userService.DeleteUserAsync(userIdToDelete));
             iUserRepoMock.Verify(repo => repo.DeleteUserAsync(userIdToDelete), Times.Once);
+        }
+
+        [Fact]
+        public async Task EditUser_Should_Return_True_If_Successful()
+        {
+            var iUserRepoMock = new Mock<IUserRepository>();
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthencationService = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var iConfigurationMock = new Mock<IConfiguration>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+            var iMapperMock = new Mock<IMapper>();
+
+            var editRequestDto = new EditRequestDto 
+            {
+                FirstName="john", 
+                LastName="doe", 
+                AddressLine1 = "south east london",
+                AddressLine2 = "north carolina",
+                PhoneNumber = "09085678900",
+                PostalCode = "90021",
+                ZipCode = "20017",
+                City = "reo",
+                Country = "united nations",
+                Email = "user@gmail.com",
+                State = "washington dc"
+            };
+
+            var httpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] {
+                new Claim(ClaimTypes.Email, editRequestDto.Email)
+                }))
+            };
+
+            IUserService userServiceUnderTest = new UserService(iUserRepoMock.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object, iActivationServiceMock.Object,
+               iEmailServiceMock.Object, iConfigurationMock.Object, iAuthencationService.Object, mockHttpContextAccessor.Object);
+            mockHttpContextAccessor.SetupGet(x=>x.HttpContext).Returns(httpContext);
+            iUserRepoMock.Setup(x => x.GetUserByEmail(It.IsAny<string>())).ReturnsAsync(new User { });
+            var result = await userServiceUnderTest.EditAccount(editRequestDto);
+            Assert.True(result);
+        }
+
+
+        [Fact]
+        public async Task EditUser_Should_Throw_Exception_If_Email_Is_Not_Is_Not_Present_In_UserClaims()
+        {
+            var iUserRepoMock = new Mock<IUserRepository>();
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthencationService = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var iConfigurationMock = new Mock<IConfiguration>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+            var iMapperMock = new Mock<IMapper>();
+
+            var editRequestDto = new EditRequestDto
+            {
+                FirstName = "john",
+                LastName = "doe",
+                AddressLine1 = "south east london",
+                AddressLine2 = "north carolina",
+                PhoneNumber = "09085678900",
+                PostalCode = "90021",
+                ZipCode = "20017",
+                City = "reo",
+                Country = "united nations",
+                Email = "user@gmail.com",
+                State = "washington dc"
+            };
+
+            var httpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal()
+            };
+
+            IUserService userServiceUnderTest = new UserService(iUserRepoMock.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object, iActivationServiceMock.Object,
+               iEmailServiceMock.Object, iConfigurationMock.Object, iAuthencationService.Object, mockHttpContextAccessor.Object);
+            mockHttpContextAccessor.SetupGet(x => x.HttpContext).Returns(httpContext);
+            iUserRepoMock.Setup(x => x.GetUserByEmail(It.IsAny<string>())).ReturnsAsync(new User { });
+            var result = () => userServiceUnderTest.EditAccount(editRequestDto);
+            var ex = await Assert.ThrowsAsync<NullReferenceException>(result);
+            Assert.Equal("Email is not present in this context.", ex.Message);
         }
     }
 }

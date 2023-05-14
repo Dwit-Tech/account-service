@@ -14,6 +14,7 @@ namespace DwitTech.AccountService.Core.Interfaces
         Task<bool> LogoutUser(string authHeader);
         Task<bool> ChangePasswordAsync(string currentPassword, string newPassword);
         Task DeleteUserAsync(int id);
+        Task<bool> EditAccount(EditRequestDto editDto);
     }
 }
 
