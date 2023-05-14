@@ -91,7 +91,7 @@ namespace DwitTech.AccountService.Core.Services
                 Email = user.Email,
                 AddressLine1 = user.AddressLine1,
                 AddressLine2 = user.AddressLine2,
-                ZipCode = user.ZipCode,
+                CountryCode = user.CountryCode,
                 PostalCode = user.PostalCode,
                 PhoneNumber = user.PhoneNumber,
                 City = user.City,
@@ -265,9 +265,9 @@ namespace DwitTech.AccountService.Core.Services
                     user.PostalCode = editDto.PostalCode;
                 }
 
-                if (!string.Equals(user.ZipCode, editDto.ZipCode, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.ZipCode))
+                if (!string.Equals(user.CountryCode, editDto.ZipCode, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.ZipCode))
                 {
-                    user.ZipCode = editDto.ZipCode;
+                    user.CountryCode = editDto.ZipCode;
                 }
 
                 await _userRepository.UpdateUser(user);

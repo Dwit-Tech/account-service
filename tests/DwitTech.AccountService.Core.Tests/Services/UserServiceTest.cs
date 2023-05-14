@@ -61,7 +61,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             AddressLine2 = "add2",
             City = "Bida",
             State = "Niger",
-            ZipCode ="910001",
+            CountryCode = "910001",
             Roles = Enums.Role.User,
             Country = "Nigeria",
             PostalCode = "90001",

@@ -47,7 +47,7 @@ namespace DwitTech.AccountService.Core.Dtos
         public string PostalCode { get; set; }
 
         [Required]
-        public string ZipCode { get; set; }
+        public string CountryCode { get; set; }
 
         public Enums.Role Roles { get; set; }
     }

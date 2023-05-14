@@ -42,7 +42,7 @@ namespace DwitTech.AccountService.Data.Entities
         public string PostalCode { get; set; }
 
         [Required]
-        public string ZipCode { get; set; }
+        public string CountryCode { get; set; }
 
         public UserStatus Status { get; set; }
 
