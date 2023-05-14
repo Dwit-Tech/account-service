@@ -40,7 +40,7 @@ namespace DwitTech.AccountService.WebApi.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        [Route("/login")]
+        [Route("login")]
         public async Task<IActionResult> AuthenticateUserLogin([FromBody] LoginRequestDto loginDetails)
         {
             try
@@ -133,6 +133,27 @@ namespace DwitTech.AccountService.WebApi.Controllers
             catch (Exception e)
             {
                 throw new Exception($"{e}");
+            }
+        }
+
+        [Authorize]
+        [HttpDelete("delete_account")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            try
+            {
+                await _userService.DeleteUserAsync(id);
+                _logger.LogInformation($"User with ID {id} deleted successfully");
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting user with ID {id}");
+                return StatusCode(500);
             }
         }
 
