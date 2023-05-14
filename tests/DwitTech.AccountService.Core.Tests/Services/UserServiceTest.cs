@@ -307,10 +307,10 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var iEmailServiceMock = new Mock<IEmailService>();
             var iConfigurationMock = new Mock<IConfiguration>();
             var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
-
+            var iMapperMock = new Mock<IMapper>();
 
             var userService = new UserService(iUserRepoMock.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
-                iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object, iAuthenticationService.Object, mockHttpContextAccessor.Object);
+                iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object, iAuthenticationService.Object, mockHttpContextAccessor.Object, iMapperMock.Object);
 
             iUserRepoMock.Setup(repo => repo.DeleteUserAsync(userIdToDelete))
                 .Returns(Task.CompletedTask);
@@ -336,9 +336,10 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var iEmailServiceMock = new Mock<IEmailService>();
             var iConfigurationMock = new Mock<IConfiguration>();
             var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+            var iMapperMock = new Mock<IMapper>();
 
             var userService = new UserService(iUserRepoMock.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
-                iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object, iAuthenticationService.Object, mockHttpContextAccessor.Object);
+                iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object, iAuthenticationService.Object, mockHttpContextAccessor.Object, iMapperMock.Object);
 
             iUserRepoMock.Setup(repo => repo.DeleteUserAsync(userIdToDelete))
                 .Throws(new DbUpdateException("Error deleting user from database"));
