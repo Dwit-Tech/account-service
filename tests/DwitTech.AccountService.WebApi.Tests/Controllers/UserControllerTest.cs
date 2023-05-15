@@ -116,7 +116,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
         }
 
         [Fact]
-        public async Task CreateUser_Should_Return_Ok_If_TaskCompletes_Successfully()
+        public async Task CreateUser_Should_Return_CreeatedResult_If_TaskCompletes_Successfully()
         {
             var _activationService = new Mock<IActivationService>();
             var _mockAuthService = new Mock<IAuthenticationService>();
@@ -133,7 +133,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
                 AddressLine2 = "add2",
                 City = "Bida",
                 State = "Niger",
-                ZipCode = "910001",
+                CountryCode = "910001",
                 Roles = Core.Enums.Role.User,
                 Country = "Nigeria",
                 PostalCode = "90001",
@@ -145,7 +145,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             var result = await userController.CreateUser(userDto);
 
             _mockUserService.Verify(x => x.CreateUser(It.IsAny<UserDto>()), Times.Once);
-            Assert.True(result is OkObjectResult);
+            Assert.True(result is CreatedResult);
         }
 
         [Fact]
@@ -166,7 +166,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
                 AddressLine2 = "add2",
                 City = "Bida",
                 State = "Niger",
-                ZipCode = "910001",
+                CountryCode = "910001",
                 Roles = Core.Enums.Role.User,
                 Country = "Nigeria",
                 PostalCode = "90001",
@@ -194,7 +194,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
                 AddressLine2 = "add2",
                 City = "Bida",
                 State = "Niger",
-                ZipCode = "910001",
+                CountryCode = "910001",
                 Roles = Core.Enums.Role.User,
                 Country = "Nigeria",
                 PostalCode = "90001",
@@ -283,7 +283,7 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
 
         [Fact]
-        public async Task ChangePassword_Should_Throw_Exception_If_ChangePasswordAsyncThrowsException()
+        public async Task ChangePassword_ShouldReturnBadRequest_If_ChangePasswordAsyncThrowsException()
         {
             //Arrange
             var passwordDetails = new ChangePasswordModel()
@@ -352,7 +352,69 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             var result = await controller.Logout();
             userService.Verify(x => x.LogoutUser(authHeader), Times.Never);
             Assert.IsType<BadRequestObjectResult>(result);
+        }
 
+
+        [Fact]
+        public async Task ResetPassword_Should_ReturnOkResult_When_RequestIsValid()
+        {
+            // Arrange
+            var email = new UserEmailRequestModel { UserEmail = "testuser@test.com" };
+            var authService = new Mock<IAuthenticationService>();
+            var actService = new Mock<IActivationService>();
+            var iloggerMock = new Mock<ILogger<UserController>>();
+            var userService = new Mock<IUserService>();
+            userService.Setup(x => x.ResetPassword(email.UserEmail)).ReturnsAsync(true);
+
+            var controller = new UserController(actService.Object, authService.Object, userService.Object, iloggerMock.Object);
+
+            // Act
+            var result = await controller.ResetPassword(email);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+
+        [Fact]
+        public async Task ResetPassword_Should_ReturnBadRequestResult_When_RequestIsInvalid()
+        {
+            // Arrange
+            var email = new UserEmailRequestModel { UserEmail = "invalidemail" };
+            var authService = new Mock<IAuthenticationService>();
+            var actService = new Mock<IActivationService>();
+            var iloggerMock = new Mock<ILogger<UserController>>();
+            var userService = new Mock<IUserService>();
+            userService.Setup(x => x.ResetPassword(email.UserEmail)).Throws(new ArgumentException());
+
+            var controller = new UserController(actService.Object, authService.Object, userService.Object, iloggerMock.Object);
+
+            // Act
+            var result = await controller.ResetPassword(email);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+
+        [Fact]
+        public async Task ResetPassword_Should_ReturnBadRequestResult_When_RestPasswordInServiceThrowsException()
+        {
+            // Arrange
+            var email = new UserEmailRequestModel { UserEmail = "testuser@test.com" };
+            var authService = new Mock<IAuthenticationService>();
+            var actService = new Mock<IActivationService>();
+            var iloggerMock = new Mock<ILogger<UserController>>();
+            var userService = new Mock<IUserService>();
+            userService.Setup(x => x.ResetPassword(email.UserEmail)).Throws(new Exception());
+
+            var controller = new UserController(actService.Object, authService.Object, userService.Object, iloggerMock.Object);
+
+            // Act
+            var result = await controller.ResetPassword(email);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
         }
 
         [Fact]

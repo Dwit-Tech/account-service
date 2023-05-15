@@ -2,6 +2,7 @@
 {
     public enum CodeType
     {
-        Activation
+        Activation,
+        ResetToken
     }
 }

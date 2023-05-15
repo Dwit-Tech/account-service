@@ -6,5 +6,6 @@ namespace DwitTech.AccountService.Core.Interfaces
     {
        Task <bool> SendActivationEmail(int userId, string recipientName, Email email, string templateName);
        Task<bool> ActivateUser(string activationCode);
+       Task<string> GetTemplate(string templateName);
     }
 }

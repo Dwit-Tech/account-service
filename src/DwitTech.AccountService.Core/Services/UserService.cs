@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using DwitTech.AccountService.Data.Enum;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 
@@ -29,11 +30,11 @@ namespace DwitTech.AccountService.Core.Services
 
         public UserService(IUserRepository userRepository, IRoleRepository roleRepository,
             IAuthenticationRepository authRepository,
-            ILogger<UserService> logger, 
-            IActivationService activationService, 
+            ILogger<UserService> logger,
+            IActivationService activationService,
             IEmailService emailService,
             IConfiguration configuration,
-            IAuthenticationService authenticationService,            
+            IAuthenticationService authenticationService,
             IHttpContextAccessor httpContextAccessor
             
             )
@@ -90,10 +91,11 @@ namespace DwitTech.AccountService.Core.Services
                 Email = user.Email,
                 AddressLine1 = user.AddressLine1,
                 AddressLine2 = user.AddressLine2,
-                ZipCode = user.ZipCode,
+                CountryCode = user.CountryCode,
                 PostalCode = user.PostalCode,
                 PhoneNumber = user.PhoneNumber,
-                City = user.City
+                City = user.City,
+                Status = UserStatus.Inactive
             };
         }
 
@@ -118,24 +120,23 @@ namespace DwitTech.AccountService.Core.Services
                 var recipientName = $"{userModel.FirstName.ToLower()} {userModel.LastName.ToLower()}";
                 var emailModel = GenerateEmail(user);
 
-                await _activationService.SendActivationEmail(userModel.Id,recipientName, emailModel, activationEmailHtmlTemplate);
+            var newUserId = await _userRepository.CreateUser(userModel);
+            await _activationService.SendActivationEmail(newUserId, recipientName, emailModel, activationEmailHtmlTemplate);
 
-                var newUserId = await _userRepository.CreateUser(userModel);
+            var loginCredentials = GenerateLoginCredentials(user, newUserId);
 
-                var loginCredentials = GenerateLoginCredentials(user, newUserId);
+            await _userRepository.CreateUserLogin(loginCredentials);
 
-                await _userRepository.CreateUserLogin(loginCredentials);
+            _logger.LogInformation(1, $"Login Credentials for the user with ID {userModel.Id} is successfully created");
 
-                _logger.LogInformation(1, $"Login Credentials for the user with ID {userModel.Id} is successfully created");
-
-                return true;
+            return true;
 
         }
 
 
         public async Task<bool> ChangePasswordAsync(string currentPassword, string newPassword)
         {
-            if(string.IsNullOrEmpty(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
+            if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
             {
                 throw new ArgumentNullException("Invalid password!");
             }
@@ -264,9 +265,9 @@ namespace DwitTech.AccountService.Core.Services
                     user.PostalCode = editDto.PostalCode;
                 }
 
-                if (!string.Equals(user.ZipCode, editDto.ZipCode, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.ZipCode))
+                if (!string.Equals(user.CountryCode, editDto.ZipCode, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(editDto.ZipCode))
                 {
-                    user.ZipCode = editDto.ZipCode;
+                    user.CountryCode = editDto.ZipCode;
                 }
 
                 await _userRepository.UpdateUser(user);
@@ -277,6 +278,85 @@ namespace DwitTech.AccountService.Core.Services
             {
                 _logger.LogError("Error encountered while editing account");
                 return false;
+            }
+        }
+
+        private async Task<string> GetResetPasswordUrl(int userId)
+        {
+            string baseUrl = _configuration["BASE_URL"];
+            string resetToken = Guid.NewGuid().ToString();
+            string resetPasswordUrl = baseUrl + "/Account/Reset-Password/" + resetToken;
+            
+            var existingValidatonCode = await _userRepository.FindUserValidationCode(userId, CodeType.ResetToken);
+
+            if (existingValidatonCode != null)
+            {
+                existingValidatonCode.Code = resetToken;
+                existingValidatonCode.ModifiedOnUtc = DateTime.UtcNow;
+                await _userRepository.UpdateValidationCode(existingValidatonCode);
+                _logger.LogInformation("ValidationCode for the user with ID {UserId} was updated successfully", userId);
+                return resetPasswordUrl;
+            }
+                    
+            var validationCode = new ValidationCode
+            {
+                Code = resetToken,
+                CodeType = CodeType.ResetToken,
+                UserId = userId,
+                NotificationChannel = NotificationChannel.Email,
+                ModifiedOnUtc = DateTime.UtcNow
+            };
+            await _userRepository.SaveUserValidationCode(validationCode);
+            _logger.LogInformation("ValidationCode for the user with ID {userId} was added successfully", userId);
+            return resetPasswordUrl;
+        }
+
+        private async Task<bool> SendResetPasswordEmail(User user, string resetPasswordUrl)
+        {
+            string templateText = await _activationService.GetTemplate("ResetPasswordEmailTemplate.html");
+            templateText = templateText.Replace("{{firstName}}", user.FirstName);
+            templateText = templateText.Replace("{{lastName}}", user.LastName);
+            templateText = templateText.Replace("{{resetPasswordUrl}}", resetPasswordUrl);
+            string body = templateText;
+            const string subject = "Password Reset";
+            string fromEmail = _configuration["FROM_EMAIL"];
+            var email = new Email { FromEmail = fromEmail, ToEmail = user.Email, Subject = subject, Body = body };
+            var response = await _emailService.SendMailAsync(email);
+            return response;
+        }
+
+        public async Task<bool> ResetPassword(string userEmail)
+        {
+            var user = await _userRepository.GetUserByEmail(userEmail);
+            if (user == null)
+            {
+                throw new ArgumentException("Invalid email address");
+            }
+
+            try
+            {
+                var resetPasswordUrl = await GetResetPasswordUrl(user.Id);
+                return await SendResetPasswordEmail(user, resetPasswordUrl);
+            }
+            catch (OperationCanceledException ex)
+            {
+                _logger.LogError(ex, "Error! Unable to update the database!");
+                throw;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogError(ex, "Error! Unable to update the database!");
+                throw;
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Error! Unable to update the database!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error! Unable to update the database!");
+                throw;
             }
         }
     }

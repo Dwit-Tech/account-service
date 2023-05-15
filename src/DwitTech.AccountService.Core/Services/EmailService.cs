@@ -17,9 +17,13 @@ namespace DwitTech.AccountService.Core.Services
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
         }
+
+
         public async Task<bool> SendMailAsync(Email email) 
         {
-            return true;//TODO Bring up notification service and fix this
+            return await Task.FromResult(true);
+            //TODO Bring up notification service and fix this
+            /*
             var serializedEmail = JsonSerializer.Serialize(email);
             var content = new StringContent(serializedEmail, Encoding.UTF8, "application/json");
 
@@ -31,8 +35,7 @@ namespace DwitTech.AccountService.Core.Services
             httpClient.BaseAddress = new Uri(_configuration["NOTIFICATION_SERVICE_BASE_URL"]);
             var response = await httpClient.PostAsync(_configuration["NOTIFICATION_SERVICE_SENDMAIL_END_POINT"], content);
             return (response != null && response.IsSuccessStatusCode);
-        }
-
-        
+            */
+        }        
     }
 }
