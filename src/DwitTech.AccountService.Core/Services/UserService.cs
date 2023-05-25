@@ -390,7 +390,7 @@ namespace DwitTech.AccountService.Core.Services
             {
                 
                 _logger.LogError("This error is due to ", ex);
-                throw new Exception("This error is due to ", ex);
+                throw;
             }
         }
 
