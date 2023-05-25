@@ -174,6 +174,26 @@ namespace DwitTech.AccountService.WebApi.Controllers
                 return BadRequest("Unable to Reset password. Please try again later");
             }            
         }
+
+        [AllowAnonymous]
+        [HttpPost("password-reset")]
+        public async Task<IActionResult> PasswordReset([FromQuery] string resetToken, PasswordResetModel passwordResetModel)
+        {
+            try
+            {
+                var resetPasswordResult = await _userService.HandlePasswordReset(resetToken, passwordResetModel);
+
+                if (resetPasswordResult)
+                    return Ok(new {message="Password Reset Successful"});
+
+                return BadRequest("Unable to Update Password. Please try again later");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Update Error", ex);
+                return BadRequest("Unable to Update Password. Please try again later");
+            }
+        }
     }
 
 }

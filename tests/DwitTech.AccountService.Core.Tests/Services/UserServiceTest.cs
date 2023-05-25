@@ -711,5 +711,126 @@ namespace DwitTech.AccountService.Core.Tests.Services
             mockUserRepository.Verify(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()), Times.Once);
             mockUserRepository.Verify(x => x.UpdateValidationCode(It.IsAny<ValidationCode>()), Times.Never);
         }
+
+        [Fact]
+        public async Task UpdatePassword_Should_Return_True_If_Password_Was_Updated_Successfully()
+        {
+          
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+
+            mockUserRepository.Setup(x=>x.UpdateUserLoginsPassword(It.IsAny<UserLogin>())).Returns(Task.FromResult(true));
+            mockUserRepository.Setup(x => x.GetUserLoginsByUserId(It.IsAny<int>())).ReturnsAsync(new UserLogin { Password="12345", Username="test", UserId=1 });
+
+            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+              iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+           
+            var passwordRest = new PasswordResetModel
+            {
+                NewPassword = "test1",
+                ConfirmPassword = "test1" 
+            };
+            var result = await userService.UpdatePassword(1, passwordRest);
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task UpdatePassword_Should_Throw_Argument_Exception_If_User_Does_Not_Exist()
+        {
+
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+
+
+            mockUserRepository.Setup(x => x.UpdateUserLoginsPassword(It.IsAny<UserLogin>())).Returns(Task.FromResult(true));
+            mockUserRepository.Setup(x => x.GetUserLoginsByUserId(2)).ReturnsAsync(new UserLogin { Password = "12345", Username = "test", UserId = 1 });
+
+            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+              iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+
+            var passwordRest = new PasswordResetModel
+            {
+                NewPassword = "test1",
+                ConfirmPassword = "test1"
+            };
+            await Assert.ThrowsAsync<ArgumentException>(() => userService.UpdatePassword(1, passwordRest));
+        }
+
+
+        [Fact]
+        public async Task HandlePasswordReset_Should_Return_True_If_Successful()
+        {
+
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+
+
+            mockUserRepository.Setup(x => x.UpdateUserLoginsPassword(It.IsAny<UserLogin>())).Returns(Task.FromResult(true));
+            mockUserRepository.Setup(x => x.GetUserLoginsByUserId(It.IsAny<int>())).ReturnsAsync(new UserLogin { Password = "12345", Username = "test", UserId = 1 });
+            mockUserRepository.Setup(x => x.FindPasswordResetToken(It.IsAny<string>())).Returns(true);
+            mockUserRepository.Setup(x => x.GetUserIdByPasswordResetToken(It.IsAny<string>())).ReturnsAsync(1);
+            
+            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+              iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+          
+            var passwordRest = new PasswordResetModel
+            {
+                NewPassword = "test1",
+                ConfirmPassword = "test1"
+            };
+            var token = "9fPn1CFhKXoFMa72dmSh";
+            var result = await userService.HandlePasswordReset(token, passwordRest);
+            Assert.True(result);
+        }
+
+
+        [Fact]
+        public async Task HandlePasswordReset_Should_Throw_NullReference_Exception_When_Token_Matches_No_User()
+        {
+
+            var iLoggerMock = new Mock<ILogger<UserService>>();
+            var iRoleRepoMock = new Mock<IRoleRepository>();
+            var iActivationServiceMock = new Mock<IActivationService>();
+            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
+            var iEmailServiceMock = new Mock<IEmailService>();
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockAuthRepository = new Mock<IAuthenticationRepository>();
+            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+
+            mockUserRepository.Setup(x => x.UpdateUserLoginsPassword(It.IsAny<UserLogin>())).Returns(Task.FromResult(true));
+            mockUserRepository.Setup(x => x.GetUserLoginsByUserId(It.IsAny<int>())).ReturnsAsync(new UserLogin { Password = "12345", Username = "test", UserId = 1 });
+            mockUserRepository.Setup(x => x.FindPasswordResetToken(It.IsAny<string>())).Returns(true);
+            mockUserRepository.Setup(x => x.GetUserIdByPasswordResetToken(It.IsAny<string>())).ReturnsAsync(It.IsAny<int>());
+
+            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+              iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+
+            var passwordRest = new PasswordResetModel
+            {
+                NewPassword = "test1",
+                ConfirmPassword = "test1"
+            };
+            var token = "9fPn1CFhKXoFMa72dmSh";
+            
+            await Assert.ThrowsAsync<NullReferenceException>(() => userService.HandlePasswordReset(token, passwordRest));
+        }
     }
 }

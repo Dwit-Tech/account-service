@@ -381,6 +381,172 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             }
         }
 
+
+        [Fact]
+        public async Task FindPasswordResetToken_Should_Return_True_If_Condition_Is_Satisfied()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            ValidationCode existingValidationCode = new()
+            {
+                Id = 1,
+                UserId = 1,
+                Code = "9fPn1CFhKXoFMa72dmSh",
+                CodeType = CodeType.ResetToken
+            };
+           
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+
+                accountDbContext.ValidationCodes.Add(existingValidationCode);
+                await accountDbContext.SaveChangesAsync();
+
+                var userRepository = new UserRepository(accountDbContext);
+
+               //Act
+                var token = "9fPn1CFhKXoFMa72dmSh";
+                var result = userRepository.FindPasswordResetToken(token);
+
+                Assert.True(result);
+            }
+        }
+
+        [Fact]
+        public async Task GetUserIdByPasswordResetToken_Should_Pass_If_UserId_Are_Same()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            ValidationCode existingValidationCode = new()
+            {
+                Id = 1,
+                UserId = 1,
+                Code = "9fPn1CFhKXoFMa72dmSh",
+                CodeType = CodeType.ResetToken
+            };
+            
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+
+                accountDbContext.ValidationCodes.Add(existingValidationCode);
+                await accountDbContext.SaveChangesAsync();
+
+                var userRepository = new UserRepository(accountDbContext);
+
+                //Act
+                var token = "9fPn1CFhKXoFMa72dmSh";
+                var result = await userRepository.GetUserIdByPasswordResetToken(token);
+
+                Assert.Equal(result,existingValidationCode.UserId);
+            }
+        }
+
+        [Fact]
+        public async Task GetUserIdByPasswordResetToken_Should_Pass_If_UserId_Are_Not_Same()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+
+            ValidationCode existingValidationCode = new()
+            {
+                Id = 1,
+                UserId = 2,
+                Code = "9fPn1CFhKXoFMa72dmSh",
+                CodeType = CodeType.ResetToken
+            };
+
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+
+                accountDbContext.ValidationCodes.Add(existingValidationCode);
+                await accountDbContext.SaveChangesAsync();
+
+                var userRepository = new UserRepository(accountDbContext);
+
+                //Act
+                var token = "9fPn1CFhKXoFMa72dmSh";
+                var expected = 1;
+                var result = await userRepository.GetUserIdByPasswordResetToken(token);
+
+                Assert.NotEqual(expected, existingValidationCode.UserId);
+            }
+        }
+
+
+        [Fact]
+        public async Task GetUserLoginsByUserId_Should_Return_UserLogin_If_User_Is_Found()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            UserLogin userLogin = new()
+            {
+                Id = 1,
+                UserId = 1,
+                Username = "testuser",
+                Password = "password1"
+            };
+
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+
+                accountDbContext.UserLogins.Add(userLogin);
+                await accountDbContext.SaveChangesAsync();
+
+                var userRepository = new UserRepository(accountDbContext);
+
+                var userId = 1;
+                var result = await userRepository.GetUserLoginsByUserId(userId);
+
+                Assert.IsType<UserLogin>(result);
+            }
+        }
+
+
+        [Fact]
+        public async Task UpdateUserLoginsPassword_ShouldUpdateUserPassword_If_User_Exists()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            UserLogin userLogin = new()
+            {
+                Id = 1,
+                UserId = 1,
+                Username = "testuser",
+                Password = "password1"
+            };
+            var newPassword = "password123";
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+                accountDbContext.UserLogins.Add(userLogin);
+                await accountDbContext.SaveChangesAsync();
+                var userRepository = new UserRepository(accountDbContext);
+
+                //Act
+                userLogin.Password = newPassword;
+                await userRepository.UpdateUserLoginsPassword(userLogin);
+
+                //Assert
+                var updatedUserLogin = await accountDbContext.UserLogins.FirstOrDefaultAsync(x => x.UserId == userLogin.UserId);
+                Assert.NotNull(updatedUserLogin);
+                Assert.Equal(newPassword, updatedUserLogin.Password);
+            }
+        }
+
+
         public void Dispose()
         {
             _accountDbContext.Database.EnsureDeleted();

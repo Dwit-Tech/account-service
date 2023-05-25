@@ -2,6 +2,7 @@ using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace DwitTech.AccountService.Data.Repository
 {
@@ -107,6 +108,30 @@ namespace DwitTech.AccountService.Data.Repository
         private IQueryable<User> GetActiveUsers()
         {
             return _dbContext.Users.Where(x => x.Status != UserStatus.Deleted);
+        }
+
+        public bool FindPasswordResetToken(string token)
+        {
+            var tokenExists = _dbContext.ValidationCodes.Any(x => x.Code == token);
+            return tokenExists;
+        }
+
+        public async Task<int> GetUserIdByPasswordResetToken(string token)
+        {
+            var result = await _dbContext.ValidationCodes.Where(x => x.Code == token).FirstOrDefaultAsync();
+            return result.UserId;
+        }
+
+        public async Task UpdateUserLoginsPassword(UserLogin userLogin)
+        {
+            _dbContext.UserLogins.Update(userLogin);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<UserLogin> GetUserLoginsByUserId(int userId)
+        {
+            var result = await _dbContext.UserLogins.Where(x => x.UserId == userId).FirstOrDefaultAsync();
+            return result;
         }
     }
 }

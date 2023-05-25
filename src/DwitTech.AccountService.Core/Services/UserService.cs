@@ -359,5 +359,55 @@ namespace DwitTech.AccountService.Core.Services
                 throw;
             }
         }
+
+
+        public async Task<bool> HandlePasswordReset(string token, PasswordResetModel passwordResetModel)
+        {
+            var existsResetToken = _userRepository.FindPasswordResetToken(token);
+            if (existsResetToken is false)
+            {
+                throw new ArgumentException("Invalid token provided");
+            }
+
+            try
+            {
+                var userId = await _userRepository.GetUserIdByPasswordResetToken(token);
+                if (userId != 0)
+                {
+                    var resetPasswordResult = await UpdatePassword(userId, passwordResetModel);
+                    if(resetPasswordResult)
+                        return true;
+                    throw new DbUpdateException("Unable to make changes to the record in the database");
+                }
+                else
+                {
+                    _logger.LogError("User does not exist");
+                    throw new NullReferenceException("User with the given token does not exist");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                
+                _logger.LogError("This error is due to ", ex);
+                throw new Exception("This error is due to ", ex);
+            }
+        }
+
+        public async Task<bool> UpdatePassword(int userId, PasswordResetModel passwordResetModel)
+        {
+            var userLoginsModel = await _userRepository.GetUserLoginsByUserId(userId);
+            if(userLoginsModel != null)
+            {
+                userLoginsModel.Password = StringUtil.HashString(passwordResetModel.NewPassword);
+                await _userRepository.UpdateUserLoginsPassword(userLoginsModel);
+                _logger.LogInformation("Password updated successfully in the database");
+                return true;
+            }
+            else
+            {
+                throw new ArgumentException("User does not exist");
+            }
+        }
     }
 }
