@@ -5,6 +5,8 @@ using DwitTech.AccountService.Core.Extension;
 using DwitTech.AccountService.Core.Middleware;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Hosting;
+using DwitTech.AccountService.Core.EventsHandler;
+using Confluent.Kafka;
 
 namespace DwitTech.AccountService.WebApi
 {
@@ -61,6 +63,21 @@ namespace DwitTech.AccountService.WebApi
             builder.Services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            });
+
+            builder.Services.AddSingleton<ProducerConfig>(provider =>
+            {
+                var configuration = provider.GetRequiredService<IConfiguration>();
+
+                var bootstrapServers = configuration["KAFKA_BOOTSTRAP_SERVERS"];
+                var clientId = configuration["KAFKA_CLIENT_ID"];
+
+                return new ProducerConfig
+                {
+                    BootstrapServers = bootstrapServers,
+                    ClientId = clientId
+                    // Add any additional configuration properties as needed
+                };
             });
 
             var app = builder.Build();

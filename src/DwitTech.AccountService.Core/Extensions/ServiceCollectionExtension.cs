@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using DwitTech.AccountService.Core.EventsHandler;
 
 namespace DwitTech.AccountService.Core.Extension
 
@@ -50,6 +51,7 @@ namespace DwitTech.AccountService.Core.Extension
             service.AddScoped<IUserService, UserService>();
             service.AddScoped<IRoleRepository, RoleRepository>();
             service.AddScoped<IEmailService, EmailService>();
+            service.AddSingleton<EventPublisher>();
             service.AddHttpClient();
             return service;
         }
