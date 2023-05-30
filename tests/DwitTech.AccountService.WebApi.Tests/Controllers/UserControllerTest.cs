@@ -568,8 +568,11 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
 
             userService.Setup(x => x.HandlePasswordReset("", new PasswordResetModel { })).Returns(Task.FromResult(true));
             var controller = new UserController(actService.Object, authService.Object, userService.Object, iloggerMock.Object);
-            var result = await controller.PasswordReset("", new PasswordResetModel { });
+            var result = await controller.PasswordReset(null, new PasswordResetModel { });
+            var badRequestMessage = Assert.IsType<BadRequestObjectResult>(result);
+
             Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Unable to Update Password. Please try again later", badRequestMessage.Value.ToString());
         }
 
     }

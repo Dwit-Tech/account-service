@@ -124,13 +124,23 @@ namespace DwitTech.AccountService.Data.Repository
 
         public async Task UpdateUserLoginsPassword(UserLogin userLogin)
         {
-            _dbContext.UserLogins.Update(userLogin);
+            _dbContext.UserLogins.Attach(userLogin);
+            _dbContext.Entry(userLogin).Property(x => x.Password).IsModified = true;
             await _dbContext.SaveChangesAsync();
         }
 
         public async Task<UserLogin> GetUserLoginsByUserId(int userId)
         {
-            var result = await _dbContext.UserLogins.Where(x => x.UserId == userId).FirstOrDefaultAsync();
+            var result = await _dbContext.UserLogins
+                .Where(x => x.UserId == userId)
+                .Select(x=> new UserLogin 
+                    {
+                     Id = x.Id,
+                     UserId = x.UserId,
+                     Username = x.Username
+                    }
+                )
+                .FirstOrDefaultAsync();
             return result;
         }
     }

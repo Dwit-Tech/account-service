@@ -755,17 +755,17 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
 
             mockUserRepository.Setup(x => x.UpdateUserLoginsPassword(It.IsAny<UserLogin>())).Returns(Task.FromResult(true));
-            mockUserRepository.Setup(x => x.GetUserLoginsByUserId(2)).ReturnsAsync(new UserLogin { Password = "12345", Username = "test", UserId = 1 });
+            mockUserRepository.Setup(x => x.GetUserLoginsByUserId(It.IsAny<int>())).ReturnsAsync((UserLogin?)null);
 
             var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
               iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
 
-            var passwordRest = new PasswordResetModel
+            var passwordReset = new PasswordResetModel
             {
                 NewPassword = "test1",
                 ConfirmPassword = "test1"
             };
-            await Assert.ThrowsAsync<ArgumentException>(() => userService.UpdatePassword(1, passwordRest));
+            await Assert.ThrowsAsync<ArgumentException>(() => userService.UpdatePassword(2, passwordReset));
         }
 
 
@@ -791,13 +791,13 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
               iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
           
-            var passwordRest = new PasswordResetModel
+            var passwordReset = new PasswordResetModel
             {
                 NewPassword = "test1",
                 ConfirmPassword = "test1"
             };
             var token = "9fPn1CFhKXoFMa72dmSh";
-            var result = await userService.HandlePasswordReset(token, passwordRest);
+            var result = await userService.HandlePasswordReset(token, passwordReset);
             Assert.True(result);
         }
 
@@ -818,19 +818,19 @@ namespace DwitTech.AccountService.Core.Tests.Services
             mockUserRepository.Setup(x => x.UpdateUserLoginsPassword(It.IsAny<UserLogin>())).Returns(Task.FromResult(true));
             mockUserRepository.Setup(x => x.GetUserLoginsByUserId(It.IsAny<int>())).ReturnsAsync(new UserLogin { Password = "12345", Username = "test", UserId = 1 });
             mockUserRepository.Setup(x => x.FindPasswordResetToken(It.IsAny<string>())).Returns(true);
-            mockUserRepository.Setup(x => x.GetUserIdByPasswordResetToken(It.IsAny<string>())).ReturnsAsync(It.IsAny<int>());
+            mockUserRepository.Setup(x => x.GetUserIdByPasswordResetToken(It.IsAny<string>())).ReturnsAsync(0);
 
             var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
               iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
 
-            var passwordRest = new PasswordResetModel
+            var passwordReset = new PasswordResetModel
             {
                 NewPassword = "test1",
                 ConfirmPassword = "test1"
             };
             var token = "9fPn1CFhKXoFMa72dmSh";
             
-            await Assert.ThrowsAsync<NullReferenceException>(() => userService.HandlePasswordReset(token, passwordRest));
+            await Assert.ThrowsAsync<NullReferenceException>(() => userService.HandlePasswordReset(token, passwordReset));
         }
     }
 }

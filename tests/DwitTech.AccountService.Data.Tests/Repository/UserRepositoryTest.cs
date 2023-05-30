@@ -415,7 +415,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
         }
 
         [Fact]
-        public async Task GetUserIdByPasswordResetToken_Should_Pass_If_UserId_Are_Same()
+        public async Task GetUserIdByPasswordResetToken_Tests_For_UserId_Match()
         {
             // Arrange
             var options = new DbContextOptionsBuilder<AccountDbContext>()
@@ -447,7 +447,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
         }
 
         [Fact]
-        public async Task GetUserIdByPasswordResetToken_Should_Pass_If_UserId_Are_Not_Same()
+        public async Task GetUserIdByPasswordResetToken_Tests_For_UserId_Mismatch()
         {
             // Arrange
             var options = new DbContextOptionsBuilder<AccountDbContext>()
@@ -473,10 +473,10 @@ namespace DwitTech.AccountService.Data.Tests.Repository
 
                 //Act
                 var token = "9fPn1CFhKXoFMa72dmSh";
-                var expected = 1;
+                var expectedUserId = 1;
                 var result = await userRepository.GetUserIdByPasswordResetToken(token);
 
-                Assert.NotEqual(expected, existingValidationCode.UserId);
+                Assert.NotEqual(expectedUserId, existingValidationCode.UserId);
             }
         }
 
@@ -509,6 +509,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
                 var result = await userRepository.GetUserLoginsByUserId(userId);
 
                 Assert.IsType<UserLogin>(result);
+                Assert.Equal(userLogin.Id,result.Id);
             }
         }
 
@@ -542,7 +543,7 @@ namespace DwitTech.AccountService.Data.Tests.Repository
                 //Assert
                 var updatedUserLogin = await accountDbContext.UserLogins.FirstOrDefaultAsync(x => x.UserId == userLogin.UserId);
                 Assert.NotNull(updatedUserLogin);
-                Assert.Equal(newPassword, updatedUserLogin.Password);
+                Assert.Equal(userLogin.Password, updatedUserLogin.Password);
             }
         }
 

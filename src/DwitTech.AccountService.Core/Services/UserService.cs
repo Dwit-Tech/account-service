@@ -400,7 +400,13 @@ namespace DwitTech.AccountService.Core.Services
             if(userLoginsModel != null)
             {
                 userLoginsModel.Password = StringUtil.HashString(passwordResetModel.NewPassword);
-                await _userRepository.UpdateUserLoginsPassword(userLoginsModel);
+                var updatedUserLogins = new UserLogin { 
+                    Id = userLoginsModel.Id, 
+                    UserId = userLoginsModel.UserId, 
+                    Username = userLoginsModel.Username ,
+                    Password = userLoginsModel.Password 
+                };
+                await _userRepository.UpdateUserLoginsPassword(updatedUserLogins);
                 _logger.LogInformation("Password updated successfully in the database");
                 return true;
             }
