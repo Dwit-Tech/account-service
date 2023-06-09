@@ -1,10 +1,6 @@
-﻿using DwitTech.AccountService.Core.EventsHandler;
-using DwitTech.AccountService.Core.Interfaces;
+﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using Microsoft.Extensions.Configuration;
-using System.Diagnostics;
-using System.Text;
-using System.Text.Json;
 
 namespace DwitTech.AccountService.Core.Services
 {
@@ -12,9 +8,9 @@ namespace DwitTech.AccountService.Core.Services
     {
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly EventPublisher _eventPublisher;
+        private readonly IEventPublisher _eventPublisher;
 
-        public EmailService(IConfiguration configuration, IHttpClientFactory httpClientFactory, EventPublisher eventPublisher)
+        public EmailService(IConfiguration configuration, IHttpClientFactory httpClientFactory, IEventPublisher eventPublisher)
         {
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
@@ -22,15 +18,8 @@ namespace DwitTech.AccountService.Core.Services
         }
 
 
-        public async Task<bool> SendMailAsync(Email email) //TODO
+        private async Task<bool> SendHttpEmailAsync(Email email)
         {
-            var eventData = new EmailSentEvent()
-            {
-                EmailAddress = email.ToEmail
-            };
-
-            _eventPublisher.PublishEvent("email-sent", eventData);
-            Debug.WriteLine("Event published successfully.");
             return await Task.FromResult(true);
             //TODO Bring up notification service and fix this
             /*
@@ -46,6 +35,21 @@ namespace DwitTech.AccountService.Core.Services
             var response = await httpClient.PostAsync(_configuration["NOTIFICATION_SERVICE_SENDMAIL_END_POINT"], content);
             return (response != null && response.IsSuccessStatusCode);
             */
-        }        
+        }
+
+        public async Task<bool> SendMailAsync(Email email, bool useHttp = false)
+        {
+            if (useHttp)
+            {
+                var status = await SendHttpEmailAsync(email);
+
+                if (!status)
+                {
+                    return await _eventPublisher.PublishEmailEventAsync("email-sent", email);
+                }
+                return status;
+            }
+            return await _eventPublisher.PublishEmailEventAsync("email-sent", email);
+        }
     }
 }

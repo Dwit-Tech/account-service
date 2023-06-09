@@ -1,3 +1,4 @@
+using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Data.Entities;
@@ -32,10 +33,11 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var userId = 1;
             var recipientName = "John Doe";
             var mockHttpClientFactory = new Mock<IHttpClientFactory>();
+            var mockEventPublisher = new Mock<IEventPublisher>();
 
             var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             var userRepository = new Mock<IUserRepository>();
-            var iEmailMock = new EmailService(_configuration, mockHttpClientFactory.Object);
+            var iEmailMock = new EmailService(_configuration, mockHttpClientFactory.Object, mockEventPublisher.Object);
 
 
             userRepository.Setup(x => x.SaveUserValidationCode(It.IsAny<ValidationCode>()))
