@@ -39,17 +39,19 @@ namespace DwitTech.AccountService.Core.Services
 
         public async Task<bool> SendMailAsync(Email email, bool useHttp = false)
         {
+            const string topicName = "email-sent";
+
             if (useHttp)
             {
                 var status = await SendHttpEmailAsync(email);
 
                 if (!status)
                 {
-                    return await _eventPublisher.PublishEmailEventAsync("email-sent", email);
+                    return await _eventPublisher.PublishEmailEventAsync(topicName, email);
                 }
                 return status;
             }
-            return await _eventPublisher.PublishEmailEventAsync("email-sent", email);
+            return await _eventPublisher.PublishEmailEventAsync(topicName, email);
         }
     }
 }
