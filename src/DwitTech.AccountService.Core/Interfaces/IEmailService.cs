@@ -10,6 +10,6 @@ namespace DwitTech.AccountService.Core.Interfaces
 {
     public interface IEmailService
     {
-        Task<bool> SendMailAsync(Email email);
+        Task<bool> SendMailAsync(Email email, bool useHttp = false);
     }
 }

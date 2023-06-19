@@ -4,7 +4,6 @@ using System.Text.Json.Serialization;
 using DwitTech.AccountService.Core.Extension;
 using DwitTech.AccountService.Core.Middleware;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.Hosting;
 
 namespace DwitTech.AccountService.WebApi
 {
