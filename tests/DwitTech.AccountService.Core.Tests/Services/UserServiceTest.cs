@@ -4,6 +4,7 @@ using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using DwitTech.AccountService.Core.Services;
 using DwitTech.AccountService.Core.Utilities;
+using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 using DwitTech.AccountService.Data.Repository;
@@ -226,41 +227,6 @@ namespace DwitTech.AccountService.Core.Tests.Services
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(() => userService.ChangePasswordAsync(currentPassword, newPassword));
             mockAuthRepository.Verify(x => x.ValidateLogin(user.Email, It.IsAny<string>()), Times.Once);
-        }
-
-
-        [Fact]
-        public async Task ChangePasswordAsync_IdenticalPasswords_ThrowsNullArgumentException()
-        {
-            // Arrange
-            var currentPassword = "oldPassword123";
-            var newPassword = "oldPassword123";
-            var user = new User { Id = 1, Email = "test@example.com" };
-            var iLoggerMock = new Mock<ILogger<UserService>>();
-            var iRoleRepoMock = new Mock<IRoleRepository>();
-            var iActivationServiceMock = new Mock<IActivationService>();
-            var iAuthenticationServiceMock = new Mock<IAuthenticationService>();
-            var iEmailServiceMock = new Mock<IEmailService>();
-            var iConfigurationMock = new Mock<IConfiguration>();
-            var mockUserRepository = new Mock<IUserRepository>();
-            var mockAuthRepository = new Mock<IAuthenticationRepository>();
-            mockAuthRepository.Setup(x => x.ValidateLogin(user.Email, It.IsAny<string>())).ReturnsAsync(true);
-            var iMapperMock = new Mock<IMapper>();
-            var httpContext = new DefaultHttpContext
-            {
-                User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] {
-                new Claim(ClaimTypes.Email, user.Email)
-                }))
-            };
-
-            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
-            mockHttpContextAccessor.Setup(_ => _.HttpContext).Returns(httpContext);
-
-            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
-                iActivationServiceMock.Object, iEmailServiceMock.Object, iConfigurationMock.Object, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
-
-            // Act & Assert
-            await Assert.ThrowsAsync<ArgumentException>(() => userService.ChangePasswordAsync(currentPassword, newPassword));
         }
 
 
@@ -725,19 +691,52 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var mockAuthRepository = new Mock<IAuthenticationRepository>();
             var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
 
-            mockUserRepository.Setup(x=>x.UpdateUserLoginsPassword(It.IsAny<UserLogin>())).Returns(Task.FromResult(true));
-            mockUserRepository.Setup(x => x.GetUserLoginsByUserId(It.IsAny<int>())).ReturnsAsync(new UserLogin { Password="12345", Username="test", UserId=1 });
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+               .UseInMemoryDatabase(Guid.NewGuid().ToString())
+               .Options;
 
-            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
-              iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
-           
-            var passwordRest = new PasswordResetModel
+            var existingUser = new User()
             {
-                NewPassword = "test1",
-                ConfirmPassword = "test1" 
+                FirstName = "John",
+                LastName = "Doe",
+                Email = "user@example.com"
             };
-            var result = await userService.UpdatePassword(1, passwordRest);
-            Assert.True(result);
+
+            ValidationCode existingValidationCode = new()
+            {
+                Id = 1,
+                UserId = 1,
+                Code = "9fPn1CFhKXoFMa72dmSh",
+                CodeType = CodeType.ResetToken
+            };
+
+            var existingUserLogins = new UserLogin
+            {
+                Password = "12345",
+                Username = "user@example.com",
+                UserId = 1
+            };
+
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+                accountDbContext.Users.Add(existingUser);
+                accountDbContext.ValidationCodes.Add(existingValidationCode);
+
+                mockUserRepository.Setup(x => x.GetUserLoginsByUserId(It.IsAny<int>())).ReturnsAsync(new UserLogin { Password = "12345", Username = "user@example.com", UserId = 1 });
+                mockUserRepository.Setup(x => x.UpdateUserLoginAsync(It.IsAny<User>(), It.IsAny<string>())).Returns(Task.CompletedTask);
+                mockUserRepository.Setup(x => x.GetUserByEmail(existingUser.Email)).ReturnsAsync(new User { Id = 1, Email = "user@example.com", FirstName = "john", LastName = "doe" });
+
+                var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+                  iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+
+                var passwordRest = new PasswordResetModel
+                {
+                    NewPassword = "test1",
+                    ConfirmPassword = "test1"
+                };
+                var result = await userService.UpdatePassword(1, passwordRest);
+                Assert.True(result);
+            }
         }
 
         [Fact]
@@ -753,9 +752,9 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var mockAuthRepository = new Mock<IAuthenticationRepository>();
             var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
 
-
-            mockUserRepository.Setup(x => x.UpdateUserLoginsPassword(It.IsAny<UserLogin>())).Returns(Task.FromResult(true));
             mockUserRepository.Setup(x => x.GetUserLoginsByUserId(It.IsAny<int>())).ReturnsAsync((UserLogin?)null);
+            mockUserRepository.Setup(x => x.GetUserValidationCode("9fPn1CFhKXoFMa72dmSh", CodeType.ResetToken)).ReturnsAsync(new ValidationCode { UserId = 1, Code = "9fPn1CFhKXoFMa72dmSh", CodeType = CodeType.ResetToken });
+            mockUserRepository.Setup(x => x.GetUserByEmail("test@example.com")).ReturnsAsync(new User { Id = 1, Email = "test@example.com", FirstName = "john", LastName = "doe" });
 
             var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
               iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
@@ -782,23 +781,51 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var mockAuthRepository = new Mock<IAuthenticationRepository>();
             var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
 
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
 
-            mockUserRepository.Setup(x => x.UpdateUserLoginsPassword(It.IsAny<UserLogin>())).Returns(Task.FromResult(true));
-            mockUserRepository.Setup(x => x.GetUserLoginsByUserId(It.IsAny<int>())).ReturnsAsync(new UserLogin { Password = "12345", Username = "test", UserId = 1 });
-            mockUserRepository.Setup(x => x.FindPasswordResetToken(It.IsAny<string>())).Returns(true);
-            mockUserRepository.Setup(x => x.GetUserIdByPasswordResetToken(It.IsAny<string>())).ReturnsAsync(1);
-            
-            var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
-              iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
-          
-            var passwordReset = new PasswordResetModel
+            var existingUser = new User()
             {
-                NewPassword = "test1",
-                ConfirmPassword = "test1"
+                FirstName = "John",
+                LastName = "Doe",
+                Email = "user@example.com"
             };
-            var token = "9fPn1CFhKXoFMa72dmSh";
-            var result = await userService.HandlePasswordReset(token, passwordReset);
-            Assert.True(result);
+
+            ValidationCode existingValidationCode = new()
+            {
+                Id = 1,
+                UserId = 1,
+                Code = "9fPn1CFhKXoFMa72dmSh",
+                CodeType = CodeType.ResetToken
+            };
+
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+                accountDbContext.Users.Add(existingUser);
+                accountDbContext.ValidationCodes.Add(existingValidationCode);
+
+                mockUserRepository.Setup(x => x.GetUserLoginsByUserId(It.IsAny<int>())).ReturnsAsync(new UserLogin { Password = "12345", Username = "user@example.com", UserId = 1 });
+                mockUserRepository.Setup(x => x.GetUserValidationCode(existingValidationCode.Code, CodeType.ResetToken)).ReturnsAsync(new ValidationCode { UserId = 1, Code = "9fPn1CFhKXoFMa72dmSh", CodeType = CodeType.ResetToken });
+                mockUserRepository.Setup(x => x.GetUserByEmail(existingUser.Email)).ReturnsAsync(new User { Id = 1, Email = "user@example.com", FirstName = "john", LastName = "doe" });
+
+                var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
+                  iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
+
+                var passwordReset = new PasswordResetModel
+                {
+                    NewPassword = "test1",
+                    ConfirmPassword = "test1"
+                };
+
+                
+
+
+                var token = "9fPn1CFhKXoFMa72dmSh";
+                var result = await userService.HandlePasswordReset(token, passwordReset);
+                Assert.True(result);
+
+            }
         }
 
 
@@ -815,10 +842,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             var mockAuthRepository = new Mock<IAuthenticationRepository>();
             var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
 
-            mockUserRepository.Setup(x => x.UpdateUserLoginsPassword(It.IsAny<UserLogin>())).Returns(Task.FromResult(true));
             mockUserRepository.Setup(x => x.GetUserLoginsByUserId(It.IsAny<int>())).ReturnsAsync(new UserLogin { Password = "12345", Username = "test", UserId = 1 });
-            mockUserRepository.Setup(x => x.FindPasswordResetToken(It.IsAny<string>())).Returns(true);
-            mockUserRepository.Setup(x => x.GetUserIdByPasswordResetToken(It.IsAny<string>())).ReturnsAsync(0);
 
             var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
               iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);

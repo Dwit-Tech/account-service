@@ -15,9 +15,9 @@ namespace DwitTech.AccountService.Data.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<ValidationCode> GetUserValidationCode(string activationCode, CodeType codeType)
+        public async Task<ValidationCode> GetUserValidationCode(string code, CodeType codeType)
         {
-            var result = await _dbContext.ValidationCodes.Where(x => x.Code == activationCode).FirstOrDefaultAsync();
+            var result = await _dbContext.ValidationCodes.Where(x => x.Code == code).FirstOrDefaultAsync();
             return result;
         }
 
@@ -108,25 +108,6 @@ namespace DwitTech.AccountService.Data.Repository
         private IQueryable<User> GetActiveUsers()
         {
             return _dbContext.Users.Where(x => x.Status != UserStatus.Deleted);
-        }
-
-        public bool FindPasswordResetToken(string token)
-        {
-            var tokenExists = _dbContext.ValidationCodes.Any(x => x.Code == token);
-            return tokenExists;
-        }
-
-        public async Task<int> GetUserIdByPasswordResetToken(string token)
-        {
-            var result = await _dbContext.ValidationCodes.Where(x => x.Code == token).FirstOrDefaultAsync();
-            return result.UserId;
-        }
-
-        public async Task UpdateUserLoginsPassword(UserLogin userLogin)
-        {
-            _dbContext.UserLogins.Attach(userLogin);
-            _dbContext.Entry(userLogin).Property(x => x.Password).IsModified = true;
-            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<UserLogin> GetUserLoginsByUserId(int userId)

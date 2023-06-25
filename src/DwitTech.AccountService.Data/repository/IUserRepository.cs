@@ -16,10 +16,10 @@ namespace DwitTech.AccountService.Data.Repository
         Task DeleteUserAsync(int id);
         Task<ValidationCode> FindUserValidationCode(int userId, CodeType codeType);
         Task UpdateValidationCode(ValidationCode validationCode);
-        bool FindPasswordResetToken(string token);
-        Task<int> GetUserIdByPasswordResetToken(string token);
+        //bool FindPasswordResetToken(string token);
+        //Task<int> GetUserIdByPasswordResetToken(string token);
         Task<UserLogin> GetUserLoginsByUserId(int userId);
-        Task UpdateUserLoginsPassword(UserLogin userLogin);
+        //Task UpdateUserLoginsPassword(UserLogin userLogin);
     }
 
 }

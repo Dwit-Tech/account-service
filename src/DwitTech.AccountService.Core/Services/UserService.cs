@@ -155,16 +155,7 @@ namespace DwitTech.AccountService.Core.Services
                 throw new ArgumentException("Invalid current password");
             }
 
-            if (currentPasswordHash == newPasswordHash)
-            {
-                throw new ArgumentException("Passwords are Identical!");
-            }
-
-            var user = await _userRepository.GetUserByEmail(userEmail);            
-
-            await _userRepository.UpdateUserLoginAsync(user, newPasswordHash);
-            _logger.LogInformation(1, $"Password for the user with ID {user.Id} was changed successfully");
-            return true;
+            return await SetPassword(newPassword, userEmail);
         }
 
         public async Task<bool> LogoutUser(string authHeader)
@@ -360,55 +351,47 @@ namespace DwitTech.AccountService.Core.Services
             }
         }
 
-
-        public async Task<bool> HandlePasswordReset(string token, PasswordResetModel passwordResetModel)
+        private async Task<bool> SetPassword(string newPassword, string userEmail)
         {
-            var existsResetToken = _userRepository.FindPasswordResetToken(token);
-            if (existsResetToken is false)
-            {
-                throw new ArgumentException("Invalid token provided");
-            }
+            var newPasswordHash = StringUtil.HashString(newPassword);
+            var user = await _userRepository.GetUserByEmail(userEmail);
+            await _userRepository.UpdateUserLoginAsync(user, newPasswordHash);
+            _logger.LogInformation(1, $"Password for the user with ID {user.Id} was changed successfully");
+            return true;
+        }
+
+        public async Task<bool> HandlePasswordReset(string passwordResetToken, PasswordResetModel passwordResetModel)
+        {
 
             try
             {
-                var userId = await _userRepository.GetUserIdByPasswordResetToken(token);
-                if (userId != 0)
-                {
-                    var resetPasswordResult = await UpdatePassword(userId, passwordResetModel);
-                    if(resetPasswordResult)
-                        return true;
-                    throw new DbUpdateException("Unable to make changes to the record in the database");
-                }
-                else
-                {
-                    _logger.LogError("User does not exist");
-                    throw new NullReferenceException("User with the given token does not exist");
-                }
-
+                var getUserValidationCode = await _userRepository.GetUserValidationCode(passwordResetToken, CodeType.ResetToken);
+                var resetPasswordResult = await UpdatePassword(getUserValidationCode.UserId, passwordResetModel);
+                return true;
             }
             catch (Exception ex)
             {
-                
-                _logger.LogError("This error is due to ", ex);
-                throw;
+                _logger.LogError("User does not exist", ex);
+                throw new NullReferenceException("User with the given token does not exist");
             }
         }
 
         public async Task<bool> UpdatePassword(int userId, PasswordResetModel passwordResetModel)
         {
-            var userLoginsModel = await _userRepository.GetUserLoginsByUserId(userId);
-            if(userLoginsModel != null)
+            var getUserLoginsModel = await _userRepository.GetUserLoginsByUserId(userId);
+            if (getUserLoginsModel != null)
             {
-                userLoginsModel.Password = StringUtil.HashString(passwordResetModel.NewPassword);
-                var updatedUserLogins = new UserLogin { 
-                    Id = userLoginsModel.Id, 
-                    UserId = userLoginsModel.UserId, 
-                    Username = userLoginsModel.Username ,
-                    Password = userLoginsModel.Password 
-                };
-                await _userRepository.UpdateUserLoginsPassword(updatedUserLogins);
-                _logger.LogInformation("Password updated successfully in the database");
-                return true;
+                var setPassword = await SetPassword(passwordResetModel.NewPassword, getUserLoginsModel.Username);
+                if (setPassword)
+                {
+                    _logger.LogInformation("Password updated successfully");
+                    return true;
+                }
+                else
+                {
+                    throw new DbUpdateException("Unable to make changes to the record in the database");
+                }
+
             }
             else
             {
