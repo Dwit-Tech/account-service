@@ -1,25 +1,24 @@
 ﻿using DwitTech.AccountService.Core.Interfaces;
 using DwitTech.AccountService.Core.Models;
 using Microsoft.Extensions.Configuration;
-using System.Text;
-using System.Text.Json;
 
 namespace DwitTech.AccountService.Core.Services
 {
     public class EmailService : IEmailService
     {
-
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IEventPublisher _eventPublisher;
 
-        public EmailService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
+        public EmailService(IConfiguration configuration, IHttpClientFactory httpClientFactory, IEventPublisher eventPublisher)
         {
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
+            _eventPublisher = eventPublisher;
         }
 
 
-        public async Task<bool> SendMailAsync(Email email) 
+        private async Task<bool> SendHttpEmailAsync(Email email)
         {
             return await Task.FromResult(true);
             //TODO Bring up notification service and fix this
@@ -36,6 +35,23 @@ namespace DwitTech.AccountService.Core.Services
             var response = await httpClient.PostAsync(_configuration["NOTIFICATION_SERVICE_SENDMAIL_END_POINT"], content);
             return (response != null && response.IsSuccessStatusCode);
             */
-        }        
+        }
+
+        public async Task<bool> SendMailAsync(Email email, bool useHttp = false)
+        {
+            const string topicName = "email-sent";
+
+            if (useHttp)
+            {
+                var status = await SendHttpEmailAsync(email);
+
+                if (!status)
+                {
+                    return await _eventPublisher.PublishEmailEventAsync(topicName, email);
+                }
+                return status;
+            }
+            return await _eventPublisher.PublishEmailEventAsync(topicName, email);
+        }
     }
 }

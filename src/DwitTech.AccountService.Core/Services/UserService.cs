@@ -35,8 +35,7 @@ namespace DwitTech.AccountService.Core.Services
             IEmailService emailService,
             IConfiguration configuration,
             IAuthenticationService authenticationService,
-            IHttpContextAccessor httpContextAccessor
-            
+            IHttpContextAccessor httpContextAccessor            
             )
         {
             _userRepository = userRepository;
@@ -101,7 +100,6 @@ namespace DwitTech.AccountService.Core.Services
 
         private UserLogin GenerateLoginCredentials(UserDto user, int id)
         {
-
             return new UserLogin
             {
                 Username = user.Email,

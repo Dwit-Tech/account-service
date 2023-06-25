@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using DwitTech.AccountService.Core.Events;
+using Confluent.Kafka;
 
 namespace DwitTech.AccountService.Core.Extension
 
@@ -50,7 +52,20 @@ namespace DwitTech.AccountService.Core.Extension
             service.AddScoped<IUserService, UserService>();
             service.AddScoped<IRoleRepository, RoleRepository>();
             service.AddScoped<IEmailService, EmailService>();
+            service.AddSingleton<IEventPublisher, EventPublisher>();
             service.AddHttpClient();
+            service.AddSingleton<IProducer<string, string>>(provider =>
+            {
+                var producerConfig = new ProducerConfig
+                {
+                    BootstrapServers = configuration["MESSAGE_BROKER_BOOTSTRAP_SERVERS"],
+                    ClientId = configuration["MESSAGE_BROKER_CLIENT_ID"],
+                    // Set other producer configuration properties as needed
+                };
+
+                return new ProducerBuilder<string, string>(producerConfig).Build();
+            });
+
             return service;
         }
 

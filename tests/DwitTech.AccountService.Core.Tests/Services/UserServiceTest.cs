@@ -452,7 +452,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
 
 
             mockUserRepository.Setup(x => x.GetUserByEmail(userEmail)).ReturnsAsync(user);
-            iEmailServiceMock.Setup(x => x.SendMailAsync(It.IsAny<Email>())).ReturnsAsync(true);
+            iEmailServiceMock.Setup(x => x.SendMailAsync(It.IsAny<Email>(), false)).ReturnsAsync(true);
 
             var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
                 iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
@@ -484,7 +484,7 @@ namespace DwitTech.AccountService.Core.Tests.Services
             iActivationServiceMock.Setup(x => x.GetTemplate(templateName)).Returns(Task.FromResult(mockTemplateBody));
 
             mockUserRepository.Setup(x => x.GetUserByEmail(userEmail)).ReturnsAsync(user);
-            iEmailServiceMock.Setup(x => x.SendMailAsync(It.IsAny<Email>())).ReturnsAsync(false);
+            iEmailServiceMock.Setup(x => x.SendMailAsync(It.IsAny<Email>(), false)).ReturnsAsync(false);
 
             var userService = new UserService(mockUserRepository.Object, iRoleRepoMock.Object, mockAuthRepository.Object, iLoggerMock.Object,
                 iActivationServiceMock.Object, iEmailServiceMock.Object, _configuration, iAuthenticationServiceMock.Object, mockHttpContextAccessor.Object);
