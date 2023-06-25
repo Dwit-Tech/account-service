@@ -818,9 +818,6 @@ namespace DwitTech.AccountService.Core.Tests.Services
                     ConfirmPassword = "test1"
                 };
 
-                
-
-
                 var token = "9fPn1CFhKXoFMa72dmSh";
                 var result = await userService.HandlePasswordReset(token, passwordReset);
                 Assert.True(result);
