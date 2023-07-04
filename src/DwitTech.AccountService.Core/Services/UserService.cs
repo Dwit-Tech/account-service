@@ -363,8 +363,8 @@ namespace DwitTech.AccountService.Core.Services
 
             try
             {
-                var getUserValidationCode = await _userRepository.GetUserValidationCode(passwordResetToken, CodeType.ResetToken);
-                var resetPasswordResult = await UpdatePassword(getUserValidationCode.UserId, passwordResetModel);
+                var userValidationCode = await _userRepository.GetUserValidationCode(passwordResetToken, CodeType.ResetToken);
+                var resetPasswordResult = await UpdatePassword(userValidationCode.UserId, passwordResetModel);
                 return true;
             }
             catch (Exception ex)
@@ -376,10 +376,10 @@ namespace DwitTech.AccountService.Core.Services
 
         public async Task<bool> UpdatePassword(int userId, PasswordResetModel passwordResetModel)
         {
-            var getUserLoginsModel = await _userRepository.GetUserLoginsByUserId(userId);
-            if (getUserLoginsModel != null)
+            var userLoginsModel = await _userRepository.GetUserLoginsByUserId(userId);
+            if (userLoginsModel != null)
             {
-                var setPassword = await SetPassword(passwordResetModel.NewPassword, getUserLoginsModel.Username);
+                var setPassword = await SetPassword(passwordResetModel.NewPassword, userLoginsModel.Username);
                 if (setPassword)
                 {
                     _logger.LogInformation("Password updated successfully");
