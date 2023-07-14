@@ -153,16 +153,7 @@ namespace DwitTech.AccountService.Core.Services
                 throw new ArgumentException("Invalid current password");
             }
 
-            if (currentPasswordHash == newPasswordHash)
-            {
-                throw new ArgumentException("Passwords are Identical!");
-            }
-
-            var user = await _userRepository.GetUserByEmail(userEmail);            
-
-            await _userRepository.UpdateUserLoginAsync(user, newPasswordHash);
-            _logger.LogInformation(1, $"Password for the user with ID {user.Id} was changed successfully");
-            return true;
+            return await SetPassword(newPassword, userEmail);
         }
 
         public async Task<bool> LogoutUser(string authHeader)
@@ -355,6 +346,54 @@ namespace DwitTech.AccountService.Core.Services
             {
                 _logger.LogError(ex, "Error! Unable to update the database!");
                 throw;
+            }
+        }
+
+        private async Task<bool> SetPassword(string newPassword, string userEmail)
+        {
+            var newPasswordHash = StringUtil.HashString(newPassword);
+            var user = await _userRepository.GetUserByEmail(userEmail);
+            await _userRepository.UpdateUserLoginAsync(user, newPasswordHash);
+            _logger.LogInformation(1, $"Password for the user with ID {user.Id} was changed successfully");
+            return true;
+        }
+
+        public async Task<bool> HandlePasswordReset(string passwordResetToken, PasswordResetModel passwordResetModel)
+        {
+
+            try
+            {
+                var userValidationCode = await _userRepository.GetUserValidationCode(passwordResetToken, CodeType.ResetToken);
+                var resetPasswordResult = await UpdatePassword(userValidationCode.UserId, passwordResetModel);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("User does not exist", ex);
+                throw new NullReferenceException("User with the given token does not exist");
+            }
+        }
+
+        public async Task<bool> UpdatePassword(int userId, PasswordResetModel passwordResetModel)
+        {
+            var userLoginsModel = await _userRepository.GetUserLoginsByUserId(userId);
+            if (userLoginsModel != null)
+            {
+                var setPassword = await SetPassword(passwordResetModel.NewPassword, userLoginsModel.Username);
+                if (setPassword)
+                {
+                    _logger.LogInformation("Password updated successfully");
+                    return true;
+                }
+                else
+                {
+                    throw new DbUpdateException("Unable to make changes to the record in the database");
+                }
+
+            }
+            else
+            {
+                throw new ArgumentException("User does not exist");
             }
         }
     }

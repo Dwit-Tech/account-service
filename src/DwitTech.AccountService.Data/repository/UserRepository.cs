@@ -2,6 +2,7 @@ using DwitTech.AccountService.Data.Context;
 using DwitTech.AccountService.Data.Entities;
 using DwitTech.AccountService.Data.Enum;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace DwitTech.AccountService.Data.Repository
 {
@@ -14,9 +15,9 @@ namespace DwitTech.AccountService.Data.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<ValidationCode> GetUserValidationCode(string activationCode, CodeType codeType)
+        public async Task<ValidationCode> GetUserValidationCode(string code, CodeType codeType)
         {
-            var result = await _dbContext.ValidationCodes.Where(x => x.Code == activationCode).FirstOrDefaultAsync();
+            var result = await _dbContext.ValidationCodes.Where(x => x.Code == code).FirstOrDefaultAsync();
             return result;
         }
 
@@ -107,6 +108,21 @@ namespace DwitTech.AccountService.Data.Repository
         private IQueryable<User> GetActiveUsers()
         {
             return _dbContext.Users.Where(x => x.Status != UserStatus.Deleted);
+        }
+
+        public async Task<UserLogin> GetUserLoginsByUserId(int userId)
+        {
+            var result = await _dbContext.UserLogins
+                .Where(x => x.UserId == userId)
+                .Select(x=> new UserLogin 
+                    {
+                     Id = x.Id,
+                     UserId = x.UserId,
+                     Username = x.Username
+                    }
+                )
+                .FirstOrDefaultAsync();
+            return result;
         }
     }
 }

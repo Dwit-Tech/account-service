@@ -536,5 +536,44 @@ namespace DwitTech.AccountService.WebApi.Tests.Controllers
             var result = await controller.EditAccount(new EditRequestDto { });
             Assert.IsType<BadRequestObjectResult>(result);
         }
+
+        [Fact]
+        public async Task PasswordReset_Should_Return_Type_OKObjectResult_If_Successful()
+        {
+            var userService = new Mock<IUserService>();
+            var authService = new Mock<IAuthenticationService>();
+            var actService = new Mock<IActivationService>();
+            var iloggerMock = new Mock<ILogger<UserController>>();
+
+            var httpContext = new DefaultHttpContext();
+            var token = httpContext.Request.QueryString = new QueryString("?token=9fPn1CFhKXoFMa72dmSh");
+            var passwordResetModel = new PasswordResetModel
+            {
+                NewPassword = "test1",
+                ConfirmPassword = "test1"
+            };
+            userService.Setup(x => x.HandlePasswordReset(token.ToString(), passwordResetModel)).Returns(Task.FromResult(true));
+            var controller = new UserController(actService.Object, authService.Object, userService.Object, iloggerMock.Object);
+            var result = await controller.PasswordReset(token.ToString(), passwordResetModel);
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task PasswordReset_Should_Return_Type_BadRequestObjectResult_If_Not_Successful()
+        {
+            var userService = new Mock<IUserService>();
+            var authService = new Mock<IAuthenticationService>();
+            var actService = new Mock<IActivationService>();
+            var iloggerMock = new Mock<ILogger<UserController>>();
+
+            userService.Setup(x => x.HandlePasswordReset("", new PasswordResetModel { })).Returns(Task.FromResult(true));
+            var controller = new UserController(actService.Object, authService.Object, userService.Object, iloggerMock.Object);
+            var result = await controller.PasswordReset(null, new PasswordResetModel { });
+            var badRequestMessage = Assert.IsType<BadRequestObjectResult>(result);
+
+            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Unable to Update Password. Please try again later", badRequestMessage.Value.ToString());
+        }
+
     }
 }

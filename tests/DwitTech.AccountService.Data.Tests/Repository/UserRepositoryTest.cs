@@ -381,6 +381,40 @@ namespace DwitTech.AccountService.Data.Tests.Repository
             }
         }
 
+
+        [Fact]
+        public async Task GetUserLoginsByUserId_Should_Return_UserLogin_If_User_Is_Found()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AccountDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            UserLogin userLogin = new()
+            {
+                Id = 1,
+                UserId = 1,
+                Username = "testuser",
+                Password = "password1"
+            };
+
+            using (var accountDbContext = new AccountDbContext(options))
+            {
+
+                accountDbContext.UserLogins.Add(userLogin);
+                await accountDbContext.SaveChangesAsync();
+
+                var userRepository = new UserRepository(accountDbContext);
+
+                var userId = 1;
+                var result = await userRepository.GetUserLoginsByUserId(userId);
+
+                Assert.IsType<UserLogin>(result);
+                Assert.Equal(userLogin.Id,result.Id);
+            }
+        }
+
+
         public void Dispose()
         {
             _accountDbContext.Database.EnsureDeleted();

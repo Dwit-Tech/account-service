@@ -16,6 +16,7 @@ namespace DwitTech.AccountService.Data.Repository
         Task DeleteUserAsync(int id);
         Task<ValidationCode> FindUserValidationCode(int userId, CodeType codeType);
         Task UpdateValidationCode(ValidationCode validationCode);
+        Task<UserLogin> GetUserLoginsByUserId(int userId);
     }
 
 }
