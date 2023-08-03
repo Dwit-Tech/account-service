@@ -60,8 +60,28 @@ namespace DwitTech.AccountService.Core.Extension
                 {
                     BootstrapServers = configuration["MESSAGE_BROKER_BOOTSTRAP_SERVERS"],
                     ClientId = configuration["MESSAGE_BROKER_CLIENT_ID"],
-                    // Set other producer configuration properties as needed
+                   
+                    SecurityProtocol = Enum.Parse<SecurityProtocol>(configuration["KAFKA_SECURITY_PROTOCOL"])
                 };
+
+                switch (producerConfig.SecurityProtocol)
+                {
+                    case null:
+                    case SecurityProtocol.Plaintext:
+                        break;
+                    case SecurityProtocol.Ssl:
+                        break;
+
+                    case SecurityProtocol.SaslSsl:
+                        producerConfig.SaslMechanism = Enum.Parse<SaslMechanism>(configuration["KAFKA_SASL_MECHANISM"]);
+                        producerConfig.SaslUsername = configuration["KAFKA_SASL_USERNAME"];
+                        producerConfig.SaslPassword = configuration["KAFKA_SASL_PASSWORD"];
+                        break;
+
+                    case SecurityProtocol.SaslPlaintext:
+                        throw new NotImplementedException($"Security Protocol {producerConfig.SecurityProtocol} is not implemented");
+
+                }
 
                 return new ProducerBuilder<string, string>(producerConfig).Build();
             });
